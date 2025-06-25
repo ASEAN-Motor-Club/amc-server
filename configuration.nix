@@ -94,41 +94,31 @@
 
   users.users.sftpuser = {
     isNormalUser = true;
-    home = "/var/www/uploads/sftpuser";
+    createHome = false;
+    home = "/var/www";
     group = "sftpuser";
     extraGroups = [ "web-content" ];
     shell = "${pkgs.shadow}/bin/nologin";
     openssh.authorizedKeys.keys = [
       ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJcMiNGgqQtOeACMso3CgZz2J3X8Ne8RxsZrQcsnoewU fmnxl-m2''
+      ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO7Gb+mZklKMeqGhnYZzy40Kl6k7CGNyH989jQwEqI3Q deploy''
     ];
   };
   users.groups.sftpuser = {};
+
+  systemd.tmpfiles.rules = [
+    "d /var/www 0755 root root -"
+    "d /var/www/amc-web 0755 sftpuser sftpuser -"
+  ];
 
   services.openssh.extraConfig = ''
     # Match the SFTP user group.
     Match Group sftpuser
       # Force the use of the internal SFTP server.
-      ForceCommand internal-sftp -u 0027
+      ForceCommand internal-sftp -u 0022
       # Chroot the user to their home directory.
       ChrootDirectory %h
       # Disable TCP forwarding and X11 forwarding for security.
       AllowTcpForwarding no
   '';
-
-  systemd.services.setup-upload-dir = {
-    description = "Set up permissions for the SFTP upload directory";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "network.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = with pkgs; ''
-        ${coreutils}/bin/mkdir -p /var/www/uploads/sftpuser
-        ${coreutils}/bin/chown root:sftpuser /var/www/uploads/sftpuser
-        ${coreutils}/bin/chmod 755 /var/www/uploads/sftpuser
-        ${coreutils}/bin/mkdir -p /var/www/uploads/sftpuser/files
-        ${coreutils}/bin/chown sftpuser:web-content /var/www/uploads/sftpuser/files
-        ${coreutils}/bin/chmod 775 /var/www/uploads/sftpuser/files
-      '';
-    };
-  };
 }
