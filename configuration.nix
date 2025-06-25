@@ -85,12 +85,27 @@
     enable = true;
     user = "nginx";
     group = "web-content";
+    recommendedTlsSettings = true;
+    recommendedProxySettings = true;
+    recommendedOptimisation = true;
+    recommendedGzipSettings = true;
+    # Only allow PFS-enabled ciphers with AES256
+    sslCiphers = "AES256+EECDH:AES256+EDH:!aNULL";
+
     virtualHosts."experimental.aseanmotorclub.com" = {
-      enableACME = false;
-      forceSSL = false;
-      root = "/var/www/amc-web";
+      enableACME = true;
+      default = true;
+      forceSSL = true;
+      locations = {
+        "/" = {
+          root = "/var/www/amc-web";
+          tryFiles = "$uri $uri.html $uri/index.html =404";
+        };
+      };
     };
   };
+  security.acme.defaults.email = "contact@aseanmotorclub.com";
+  security.acme.acceptTerms = true;
 
   users.users.sftpuser = {
     isNormalUser = true;
