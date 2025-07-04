@@ -101,6 +101,13 @@
           root = "/var/www/amc-web";
           tryFiles = "$uri $uri.html $uri/index.html =404";
         };
+    virtualHosts."experimental-server-api.aseanmotorclub.com" = {
+      enableACME = true;
+      forceSSL = true;
+      locations = {
+        "/" = {
+          proxyPass = "http://127.0.0.1:5001";
+        };
       };
     };
   };

@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: Unlicense
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
-    motortown-server.url = "github:ASEAN-Motor-Club/motortown-server-flake";
-    motortown-server.inputs.nixpkgs.follows = "nixpkgs";
+    self.submodules = true;
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    motortown-server.url = "path:mt-server-flake";
     ragenix.url = "github:yaxitech/ragenix";
   };
 
@@ -63,9 +63,9 @@
       nixosConfigurations.amc-experimental = nixpkgs.lib.nixosSystem {
         modules = [
           ragenix.nixosModules.default
+          motortown-server.nixosModules.default
           ./configuration.nix
           ./hardware-configuration.nix
-          motortown-server.nixosModules.default
           self.nixosModules.motortown-server-experimental
         ];
       };
