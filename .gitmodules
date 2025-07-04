@@ -1,3 +1,6 @@
 [submodule "mt-server-flake"]
 	path = mt-server-flake
 	url = git@github.com:ASEAN-Motor-Club/motortown-server-flake.git
+[submodule "amc-backend"]
+	path = amc-backend
+	url = git@github.com:ASEAN-Motor-Club/amc-backend.git
