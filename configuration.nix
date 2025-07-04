@@ -143,4 +143,9 @@
       # Disable TCP forwarding and X11 forwarding for security.
       AllowTcpForwarding no
   '';
+
+  programs.bash.promptInit = ''
+    # Set a custom prompt color
+    PS1='\[\e[38;5;40m\]\u\[\e[38;5;40m\]@\h\[\e[0m\]:\W '
+  '';
 }
