@@ -101,6 +101,11 @@
           root = "/var/www/amc-web";
           tryFiles = "$uri $uri.html $uri/index.html =404";
         };
+        "/map_tiles/" = {
+          alias = "${./map_tiles}/";
+        };
+      };
+    };
     virtualHosts."experimental-server-api.aseanmotorclub.com" = {
       enableACME = true;
       forceSSL = true;
