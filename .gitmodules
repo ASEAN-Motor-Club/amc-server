@@ -4,3 +4,6 @@
 [submodule "amc-backend"]
 	path = amc-backend
 	url = git@github.com:ASEAN-Motor-Club/amc-backend.git
+[submodule "amc-radio"]
+	path = amc-radio
+	url = git@github.com:ASEAN-Motor-Club/amc-radio.git

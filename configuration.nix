@@ -1,11 +1,12 @@
 { lib, pkgs, config, ... }: {
   boot.tmp.cleanOnBoot = true;
   zramSwap.enable = true;
+  nixpkgs.config.allowUnfree = true;
   networking.hostName = "amc-experimental";
   networking.domain = "";
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [80 443 22];
+    allowedTCPPorts = [80 443 22 222];
   };
   networking.networkmanager.enable = true;
   services.openssh.enable = true;
@@ -28,7 +29,7 @@
     openssh.authorizedKeys.keys = [
       ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJcMiNGgqQtOeACMso3CgZz2J3X8Ne8RxsZrQcsnoewU fmnxl-m2''
     ];
-    extraGroups = [ "modders" ];
+    extraGroups = [ "modders" "spawners" ];
   };
   users.users.kambing = {
     isNormalUser  = true;
@@ -49,6 +50,16 @@
     ];
     extraGroups = [ "modders" ];
   };
+  users.users.dunst = {
+    isNormalUser  = true;
+    description  = "Dunst";
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPs3C6y03LXc81nENxb5Q6S91XMtH/+iu5/JhYNedJj8"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILMW89zmdnCyR7EK7thvGAEW8bW8/aDXsbxd5/bJcQKT"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA2WPVkEwdrGTjZ9JEiGYWyhC0Q/Pet1iP3LJz9ewpmd"
+    ];
+    extraGroups = [ "modders" "spawners" ];
+  };
   system.stateVersion = "23.11";
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
@@ -58,6 +69,15 @@
       commands = [
         {
           command = "/run/current-system/sw/bin/systemctl restart motortown-server";
+          options = [ "NOPASSWD" ];
+        }
+      ];
+    }
+    {
+      groups = [ "spawners" ];
+      commands = [
+        {
+          command = "/run/current-system/sw/bin/extra-container *";
           options = [ "NOPASSWD" ];
         }
       ];
@@ -73,6 +93,10 @@
     file = ./secrets/steam.age;
     mode = "400";
     owner = "steam";
+  };
+
+  age.secrets.tailscale = {
+    file = ./secrets/tailscale.age;
   };
 
   users.groups.nginx = {};
@@ -101,6 +125,12 @@
           root = "/var/www/amc-web";
           tryFiles = "$uri $uri.html $uri/index.html =404";
         };
+        "/api" = {
+          proxyPass = "http://127.0.0.1:9000";
+        };
+        "/admin" = {
+          proxyPass = "http://127.0.0.1:9000";
+        };
         "/map_tiles/" = {
           alias = "${./map_tiles}/";
         };
@@ -112,6 +142,15 @@
       locations = {
         "/" = {
           proxyPass = "http://127.0.0.1:5001";
+        };
+      };
+    };
+    virtualHosts."experimental-backend.aseanmotorclub.com" = {
+      enableACME = true;
+      forceSSL = true;
+      locations = {
+        "/" = {
+          proxyPass = "http://127.0.0.1:9000";
         };
       };
     };
@@ -153,4 +192,20 @@
     # Set a custom prompt color
     PS1='\[\e[38;5;40m\]\u\[\e[38;5;40m\]@\h\[\e[0m\]:\W '
   '';
+
+  services.amc-backend = {
+    enable = true;
+    port = 9000;
+    workers = 1;
+    environment = {
+      ALLOWED_HOSTS = "experimental.aseanmotorclub.com experimental-backend.aseanmotorclub.com";
+    };
+  };
+
+  services.tailscale = {
+    enable = true;
+    authKeyFile = config.age.secrets.tailscale.path;
+  };
+
+  programs.extra-container.enable = true;
 }

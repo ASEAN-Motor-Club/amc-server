@@ -4,4 +4,5 @@ let
 in
 {
   "steam.age".publicKeys = [ experimentalServer experimentalServerContabo ];
+  "tailscale.age".publicKeys = [ experimentalServer experimentalServerContabo ];
 }
