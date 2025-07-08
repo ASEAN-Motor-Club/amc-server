@@ -6,7 +6,7 @@
   networking.domain = "";
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [80 443 22 222];
+    allowedTCPPorts = [80 443 22];
   };
   networking.networkmanager.enable = true;
   services.openssh.enable = true;

@@ -125,6 +125,7 @@
           ./hardware-configuration.nix
           self.nixosModules.motortown-server-experimental
           ({ config, ... }: {
+            networking.firewall.allowedTCPPorts = [222];
             containers.amc-radio-experimental = {
               autoStart = true;
               config = self.nixosModules.amc-radio-experimental;
