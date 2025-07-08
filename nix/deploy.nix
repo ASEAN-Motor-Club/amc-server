@@ -82,7 +82,7 @@ pkgs.writeShellScriptBin "deploy" ''
   echo "--------------------------------"
 
 
-  NIX_SSHOPTS="-p $SSH_PORT" ${pkgs.nixos-rebuild}/bin/nixos-rebuild --target-host "$TARGET_HOST" --build-host "$TARGET_HOST" --flake . --fast switch
+  NIX_SSHOPTS="-p $SSH_PORT" ${pkgs.nixos-rebuild}/bin/nixos-rebuild --target-host "$TARGET_HOST" --build-host "$TARGET_HOST" --flake .?submodules=1# switch
 
   exit 0
 ''
