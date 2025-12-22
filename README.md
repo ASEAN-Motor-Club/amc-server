@@ -1,53 +1,55 @@
-# ASEAN Motortown Club Server
+# ASEAN Motor Club Server Infrastructure
 
-## Usage
-Please use Nix. Use this to install Nix on your system:
-https://zero-to-nix.com/concepts/nix-installer/
+This monorepo manages the infrastructure and deployment for the ASEAN Motor Club (AMC) game servers and backend services. It is a NixOS-based setup using Nix Flakes and Git submodules components.
 
-Run `nix develop` (or look into `nix-direnv`) to get the dev shell.
+## Repository Structure
 
-
-## Dedicated Server Mod development
-To facilitate a faster feedback look between code changes and testing, you can modify the files directly.
-
-1. SSH into the server,
-2. The dedi files are in `/var/lib/motortown-server`, modify them directly or via `scp`,
-3. To restart the service, use `sudo systemctl restart motortown-server`
-
+- **`flake.nix`**: The entry point for the system configuration. Defines the NixOS configurations for various servers.
+- **`configuration.nix`**: The main configuration file for the production game server (`asean-mt-server`). Handles networking, services (MotorTown, Necesse), and reverse proxying.
+- **`amc-backend/`**: A git submodule containing the Django-based backend application. This resides in a separate organization (`ASEAN-Motor-Club/amc-backend`) and uses an absolute URL.
+- **`nix/deploy.nix`**: The deployment script wrapper around `nixos-rebuild`.
 
 ## Deployment
-You will need root SSH access to deploy the server.
 
-### Container Deployment
-Some stuff, like the radio, has been bootstrapped to make deployment easier.
-They run on a NixOS container, and therefore behaves like a standalone server.
+### Prerequisites
 
-For example, to deploy the radio on the experimental server, do:
-```bash
-nix-develop
-deploy amc-radio-experimental
-```
-See `nix/deploy.nix` for a list of special deployments.
+- [Nix](https://nixos.org/download.html) installed with flakes enabled.
+- [direnv](https://direnv.net/) (optional but recommended) for automatic shell environment loading.
 
-### General Deployment
-Deploy to any arbitrary server with SSH access. The hostname of the server and `nixosConfiguration.${hostname}` must match!
+### How to Deploy
 
-```bash
-nix-develop
-deploy --ssh-port=22 root@$SERVER_IP
-```
+1.  **Enter the environment**:
+    If you use `direnv`, just `cd` into the directory and `direnv allow`.
+    Otherwise, run:
+    ```bash
+    nix develop
+    ```
 
+2.  **Deploy to a host**:
+    The repository includes a `deploy` script helper. Run it with the target hostname:
 
-## Adding/Updating Secrets
-Secrets are encrypted by the servers' public SSH keys, and can only be read by the server.
+    ```bash
+    # Deploy to the main production server
+    deploy asean-mt-server
+    
+    # Deploy to the HQ server
+    deploy hq
+    
+    # Deploy to other configurations as defined in flake.nix (e.g., amc-peripheral)
+    deploy amc-peripheral
+    ```
 
-### Example
+    The `deploy` script executes `nixos-rebuild --target-host <host> --build-host <host> --flake . --fast switch`. It builds the configuration on the remote host (or your local machine if configured) and switches to it.
 
-```bash
-cd secrets
-# steam.env is an gitignored file
-cat steam.env | ragenix --editor - -e steam.age
-# this will produce steam.age, which is the encrypted file
-```
+### Configurations
 
+- **`asean-mt-server`**: defined in `configuration.nix` and `flake.nix`.
+  - Runs the MotorTown dedicated server.
+  - Runs the backend API containers (`amc-backend`).
+  - Runs the Necesse server.
+  - Hosts the main `server.aseanmotorclub.com` Nginx proxy.
+
+## Development
+
+- **`amc-backend`**: To work on the backend, check out the `amc-backend` submodule. Changes merged to the `amc-backend` master branch can be deployed by updating the submodule in this repository and running the deployment script.
 

@@ -1,211 +1,184 @@
 { lib, pkgs, config, ... }: {
+  imports = let
+    disko = builtins.fetchTarball {
+      url = "https://github.com/nix-community/disko/archive/85555d27ded84604ad6657ecca255a03fd878607.tar.gz";
+      sha256 = "sha256:173zd7p46kmbk75v5nc2mvnmq1x2i5rxs1wymg0hvmqan0w2q7pm";
+    };
+  in [
+    ./hardware-configuration.nix
+    "${disko}/module.nix"
+    ./disko-config.nix
+  ];
+  disko.devices.disk.main.device = "/dev/nvme0n1";
+
   boot.tmp.cleanOnBoot = true;
   zramSwap.enable = true;
-  nixpkgs.config.allowUnfree = true;
-  networking.hostName = "amc-experimental";
+  networking.hostName = "asean-mt-server";
   networking.domain = "";
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [80 443 22];
+    allowedTCPPorts = [22 80 443 8000 8008 7777 27015];
+    allowedUDPPorts = [7777 27015];
   };
   networking.networkmanager.enable = true;
   services.openssh.enable = true;
   users.users.root.openssh.authorizedKeys.keys = [
     ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJcMiNGgqQtOeACMso3CgZz2J3X8Ne8RxsZrQcsnoewU fmnxl-m2''
     ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO75UM3IHNzJKUxgABH6OHa/hxfQIoxTs+nGUtSU1TID''
+    ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMgWg22wCzJ4qJKDnAXz/q+LsUTyuSGO7R91C+h8B1qE github-actions-deploy''
   ];
-  users.users.steam = {
-    isNormalUser  = true;
-    home  = "/home/steam";
-    description  = "Steam";
-    openssh.authorizedKeys.keys = [
-      ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJcMiNGgqQtOeACMso3CgZz2J3X8Ne8RxsZrQcsnoewU fmnxl-m2''
-    ];
-    extraGroups = [ "modders" ];
-  };
-  users.users.freeman = {
-    isNormalUser  = true;
-    description  = "Freeman";
-    openssh.authorizedKeys.keys = [
-      ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJcMiNGgqQtOeACMso3CgZz2J3X8Ne8RxsZrQcsnoewU fmnxl-m2''
-    ];
-    extraGroups = [ "modders" "spawners" ];
-  };
-  users.users.kambing = {
-    isNormalUser  = true;
-    description  = "Kambing";
-    openssh.authorizedKeys.keys = [
-      "ecdsa-sha2-nistp521 AAAAE2VjZHNhLXNoYTItbmlzdHA1MjEAAAAIbmlzdHA1MjEAAACFBAAHjoR/hPAAW8Bdg9UHm0M82YOP4K80cXjTQGDFhFXu+1XsN0LA5kflclnbGnVabITg4MbStfNdJewNMa95u7j+WQC9+z2v3jaqR15KphA3RTCirDCRq1QBW61I8NWpIiHdhAlERHw9kWHtQajKIjUnS+tijxLTamf5OgO4+l4CB6MZ/w=="
-      "ecdsa-sha2-nistp521 AAAAE2VjZHNhLXNoYTItbmlzdHA1MjEAAAAIbmlzdHA1MjEAAACFBAG+LQz7JhKpIRpFwiI6iUFW9O1UDC8URQMKitMI1k8/+QMLR9ju3xr2VQIyh/fQOFMVN5miVx2WevyjiZju6+5SuwDNNFyMNvXNFGWUrmGNr/7YWbo0jiLidc/GGldcbC8EQX9xnj7S6lp1xfaQDO+5cYx1Vvbi01Yy+ZQBluYt8tTW5w=="
-      "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDZg9/W9XT+JLXbuHOVQe8rBY/vDE+0jUgXaKLuG9NpBxE/pE8jiC8pFNOBS5EjLMXJWhQcJxoeeUF9rvt+IQjm5BZveC2/SE766l+rDemtopjabO4T6fxQupK8sF/D0km7evSFtdOrE0VS033awdi+qywqk35BFS9I98pVL5muL5u4LjJzSfc6nBgFcl0TvlSzW2EH3PDWOw2F6k7PLKWOemCX8CNjHqrwtjy7cthk7/jCmwVAGDa9/MFRPTsSCTLw5dUk4dJz2TA6ai7fyiM9n1eCvBhLvWCN06DQvU9lv695r0qa+54U3rQIKKtrunKZd8tZ6NMPH5slpVen6MFUyV5oIESTFsBQ45jbJmXfYTNw6jeYumlOhDTZhLCenIJcZ/bKY7BLLkoTq7SwivY32FK6wsh/d5RFl9bPP2yaUSlEie7Z8fyNMfFeIqWLMYFHlSyVRkR0ii+je+vM2y2JRdJoFRD/l0y/Qehz68WjPEOzyxKf5LBwKzcWPK4hmDitQxNIUQ6iKOySzPBJHMJWyKiarbURLsO+FJUWWpyIqhVD+R509g7dxVAPxJ2X/uejVgD8DrphqDOsk1COkgqFwCaX/+n5eRjFnX55v+xe6M4uab0bknu5FjHGzZCf8yTUaHyYvv17pwv9Ik02b4FAixBO/5VQe8jtL3NWrV8FvQ=="
-      "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDIoXSAtm0gk3yBFlW+ZDpcwp9RUdmwAh171TiLnFetaTzT1ySNuObLxbB+GvSJGuzNchbHXa2m6WACR0EqjAMMX12P2e1pWRyyE65AJcQ8lbYeK1yOa9jBrGiJcGpqLeIR+EaIau73YTgRTUjoTj1W6rvlikZCMFWpPPhEiUNAeOfCItOko1FUFdOavS4QoT4x39nm+DS9fG9nWUn7vkE4o4lJkD680HOr17XxlxoPyQ0U2jgbkWUoFUmGMcCd0EU6W84WqKIFh8U6SbVSBBldM+R9Cng7274MnpclXyND1oeP7m4+vL7829RflS+8jMWz3pkmjY1tNZ3/Z6S5z0rwSxYAYL0qTwxUCoyLc6qYThT0CdKLNiEE0xJB9IBdm+/t3bXsX+LZjFzzEAUqA8qfdmY7PUBuXa124KM3qStORhoOz2ZHSYFoohhRjXKTWHGfANE87TKNh7OfRfOlFtlFThDWkzBXfpjSQnLiKY9T7ZCr1TPcIL9yToE2ZbnMovM+7UdtzfrWKaBdKr2/HzZtWYGdeIsN4p4key/o0IwByJMzXWJyGj3HMaQEaJao3XLMeSkaw0qB1L33MzLjtoDF5MapaunpQi/DqGEvfsM68KnxsDP02z+SdJHltIMUyTv01w0xvcBH9hYNQ7QABU0eXaiMBFfewykpPCy0SSqJlw=="
-    ];
-    extraGroups = [ "modders" ];
-  };
-  users.users.meehoi = {
-    isNormalUser  = true;
-    description  = "Meehoi";
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIUfkuxtTxshbjadPUfsltYHbPmrWDuIaqGK71wLooIL"
-    ];
-    extraGroups = [ "modders" ];
-  };
-  users.users.dunst = {
-    isNormalUser  = true;
-    description  = "Dunst";
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPs3C6y03LXc81nENxb5Q6S91XMtH/+iu5/JhYNedJj8"
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILMW89zmdnCyR7EK7thvGAEW8bW8/aDXsbxd5/bJcQKT"
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA2WPVkEwdrGTjZ9JEiGYWyhC0Q/Pet1iP3LJz9ewpmd"
-    ];
-    extraGroups = [ "modders" "spawners" ];
-  };
   system.stateVersion = "23.11";
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  services.xserver.enable = true;
+  services.xserver.displayManager.gdm.enable = true;
+  services.xserver.displayManager.gdm.autoSuspend = false;
+  services.xserver.desktopManager.gnome.enable = true;
+  services.displayManager.autoLogin.enable = true;
+  services.displayManager.autoLogin.user = "steam";
+  services.xserver.xkb = {
+    layout = "us";
+  };
+  systemd.targets.sleep.enable = false;
+  systemd.targets.suspend.enable = false;
+  systemd.targets.hibernate.enable = false;
+  systemd.targets.hybrid-sleep.enable = false;
 
-  security.sudo.extraRules = [
-    {
-      groups = [ "modders" ];
-      commands = [
-        {
-          command = "/run/current-system/sw/bin/systemctl restart motortown-server";
-          options = [ "NOPASSWD" ];
-        }
-      ];
-    }
-    {
-      groups = [ "spawners" ];
-      commands = [
-        {
-          command = "/run/current-system/sw/bin/extra-container *";
-          options = [ "NOPASSWD" ];
-        }
-      ];
-    }
+  programs.atop.enable = true;
+  time.timeZone = "Asia/Bangkok";
+
+  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+    "steam"
+    "steamcmd"
+    "steam-original"
+    "steam-unwrapped"
+    "steam-run"
+    "motortown-server"
+    "steamworks-sdk-redist"
   ];
+  programs.steam = {
+    enable = true;
+    extraCompatPackages = with pkgs; [
+      proton-ge-bin
+    ];
+    package = pkgs.steam.override {
+      extraPkgs = pkgs: [
+        pkgs.openssl
+        pkgs.libgdiplus
+      ];
+    };
+  };
+  programs.steam.protontricks.enable = true;
 
   environment.systemPackages = with pkgs; [
     kakoune
+    steamcmd
+    depotdownloader
     htop
+    steam-tui
   ];
-
-  age.secrets.steam = {
-    file = ./secrets/steam.age;
-    mode = "400";
-    owner = "steam";
+  services.tailscale = {
+    enable = true;
+    authKeyFile = config.age.secrets.tailscale.path;
   };
-
-  age.secrets.tailscale = {
-    file = ./secrets/tailscale.age;
-  };
-
-  users.groups.nginx = {};
-  users.groups.web-content = {};
-  users.groups.sftpuser = {};
-
-  users.users.nginx.extraGroups = [ "web-content" ];
 
   services.nginx = {
     enable = true;
-    user = "nginx";
-    group = "web-content";
     recommendedTlsSettings = true;
     recommendedProxySettings = true;
     recommendedOptimisation = true;
     recommendedGzipSettings = true;
     # Only allow PFS-enabled ciphers with AES256
     sslCiphers = "AES256+EECDH:AES256+EDH:!aNULL";
-
-    virtualHosts."experimental.aseanmotorclub.com" = {
+    
+    virtualHosts."server.aseanmotorclub.com" = {
       enableACME = true;
       default = true;
-      forceSSL = true;
       locations = {
-        "/" = {
-          root = "/var/www/amc-web";
-          tryFiles = "$uri $uri.html $uri/index.html =404";
+        "/api/player_positions/" = {
+          proxyPass = "http://localhost:9000/api/player_positions/";
+          recommendedProxySettings = true;
+          extraConfig = ''
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'POST, PUT, DELETE, GET, PATCH, OPTIONS' always;
+          '';
         };
         "/api" = {
-          proxyPass = "http://127.0.0.1:9000";
+          proxyPass = "http://127.0.0.1:9000/api";
+          extraConfig = ''
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'POST, PUT, DELETE, GET, PATCH, OPTIONS' always;
+          '';
         };
-        "/admin" = {
-          proxyPass = "http://127.0.0.1:9000";
+        "/login/token" = {
+          proxyPass = "http://127.0.0.1:9000/login/token";
+          extraConfig = ''
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'POST, PUT, DELETE, GET, PATCH, OPTIONS' always;
+          '';
         };
-        "/map_tiles/" = {
-          alias = "${./map_tiles}/";
+        "/docs" = {
+          proxyPass = "http://127.0.0.1:8002/docs";
+          extraConfig = ''
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'POST, PUT, DELETE, GET, PATCH, OPTIONS' always;
+          '';
         };
-      };
-    };
-    virtualHosts."experimental-server-api.aseanmotorclub.com" = {
-      enableACME = true;
-      forceSSL = true;
-      locations = {
+        "/openapi.json" = {
+          proxyPass = "http://127.0.0.1:8002/openapi.json";
+          extraConfig = ''
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'POST, PUT, DELETE, GET, PATCH, OPTIONS' always;
+          '';
+        };
         "/" = {
-          proxyPass = "http://127.0.0.1:5001";
-        };
-      };
-    };
-    virtualHosts."experimental-backend.aseanmotorclub.com" = {
-      enableACME = true;
-      forceSSL = true;
-      locations = {
-        "/" = {
-          proxyPass = "http://127.0.0.1:9000";
+          root = "/srv/www";
+          extraConfig = ''
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'POST, PUT, DELETE, GET, PATCH, OPTIONS' always;
+          '';
         };
       };
     };
   };
-  security.acme.defaults.email = "contact@aseanmotorclub.com";
+
+  security.acme.defaults.email = "contact@fmnxl.xyz";
   security.acme.acceptTerms = true;
 
-  users.users.sftpuser = {
-    isNormalUser = true;
-    createHome = false;
-    home = "/var/www";
-    group = "sftpuser";
-    extraGroups = [ "web-content" ];
-    shell = "${pkgs.shadow}/bin/nologin";
-    openssh.authorizedKeys.keys = [
-      ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJcMiNGgqQtOeACMso3CgZz2J3X8Ne8RxsZrQcsnoewU fmnxl-m2''
-      ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO7Gb+mZklKMeqGhnYZzy40Kl6k7CGNyH989jQwEqI3Q deploy''
-    ];
-  };
-  users.groups.sftpuser = {};
-
-  systemd.tmpfiles.rules = [
-    "d /var/www 0755 root root -"
-    "d /var/www/amc-web 0755 sftpuser sftpuser -"
-  ];
-
-  services.openssh.extraConfig = ''
-    # Match the SFTP user group.
-    Match Group sftpuser
-      # Force the use of the internal SFTP server.
-      ForceCommand internal-sftp -u 0022
-      # Chroot the user to their home directory.
-      ChrootDirectory %h
-      # Disable TCP forwarding and X11 forwarding for security.
-      AllowTcpForwarding no
-  '';
-
-  programs.bash.promptInit = ''
-    # Set a custom prompt color
-    PS1='\[\e[38;5;40m\]\u\[\e[38;5;40m\]@\h\[\e[0m\]:\W '
-  '';
-
-  services.amc-backend = {
-    enable = true;
-    port = 9000;
-    workers = 1;
-    environment = {
-      ALLOWED_HOSTS = "experimental.aseanmotorclub.com experimental-backend.aseanmotorclub.com";
+  services.dokuwiki = {
+    webserver = "nginx";
+    sites = let
+    dokuwiki-plugin-infobox = pkgs.stdenv.mkDerivation {
+      name = "infobox";
+      src = pkgs.fetchzip {
+        url = "https://github.com/Kanaru92/DokuWiki-InfoBox/archive/refs/heads/main.zip";
+        sha256 = "sha256-0te3irbkhSA6VxLQq3qIY49y5AgEKm5LgvZGJrOMjAU=";
+      };
+      sourceRoot = ".";
+      installPhase = "mkdir -p $out; cp -R source/* $out/;";
+    };
+    dokuwiki-plugin-imagebox = pkgs.stdenv.mkDerivation {
+      name = "imagebox";
+      src = fetchTarball {
+        url = "https://github.com/flammy/imagebox/tarball/master";
+        sha256 = "sha256:0ir4xavz47qhhk9xiy7rm723scygsgyhgd142js21ga0997wxsbj";
+      };
+      sourceRoot = ".";
+      installPhase = "mkdir -p $out; cp -R source/* $out/;";
+    };
+    in {
+      "wiki.aseanmotorclub.com" = {
+        plugins = [
+          dokuwiki-plugin-infobox
+          dokuwiki-plugin-imagebox
+        ];
+        settings = {
+          title = "ASEAN Motor Club";
+          tagline = "AMC Wiki for Motor Town: Behind The Wheel";
+          useacl = false;
+          userewrite = true;
+          updatecheck = false;
+        };
+      };
     };
   };
-
-  services.tailscale = {
-    enable = true;
-    authKeyFile = config.age.secrets.tailscale.path;
-  };
-
-  programs.extra-container.enable = true;
 }
