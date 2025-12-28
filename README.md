@@ -12,7 +12,8 @@ amc-server/
 ├── amc-backend/               # [submodule] Django backend application
 ├── motortown-server-flake/    # [submodule] MotorTown game server module
 ├── necesse-server/            # [submodule] Necesse game server module
-└── eco-server/                # [submodule] Eco game server module
+├── eco-server/                # [submodule] Eco game server module
+└── amc-peripheral/            # [submodule] Discord bots and auxiliary services
 ```
 
 ### Key Files
@@ -29,6 +30,7 @@ All submodules reside in the [ASEAN-Motor-Club](https://github.com/ASEAN-Motor-C
 | `motortown-server-flake` | [ASEAN-Motor-Club/motortown-server-flake](https://github.com/ASEAN-Motor-Club/motortown-server-flake) | MotorTown dedicated server Nix module |
 | `necesse-server` | [ASEAN-Motor-Club/necesse-server](https://github.com/ASEAN-Motor-Club/necesse-server) | Necesse game server Nix module |
 | `eco-server` | [ASEAN-Motor-Club/eco-server](https://github.com/ASEAN-Motor-Club/eco-server) | Eco game server Nix module |
+| `amc-peripheral` | [ASEAN-Motor-Club/amc-peripheral](https://github.com/ASEAN-Motor-Club/amc-peripheral) | Discord bots and auxiliary services |
 
 ---
 
@@ -111,6 +113,9 @@ journalctl -u <service-name> -f  # Follow logs
   - Runs the Necesse server
   - Runs the Eco server  
   - Hosts the main `server.aseanmotorclub.com` Nginx proxy
+- **`amc-peripheral`**: A dedicated machine for auxiliary services.
+  - Runs community Discord bots
+  - Runs the AMC Radio service
 
 ---
 
