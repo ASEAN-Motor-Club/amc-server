@@ -19,9 +19,18 @@ jobs:
           submodules: false
           persist-credentials: false
 
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "Host 127.0.0.1" >> ~/.ssh/config
+          echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+          echo "  UserKnownHostsFile /dev/null" >> ~/.ssh/config
+
       - name: Deploy
         run: |
-          /run/wrappers/bin/sudo nixos-rebuild switch \
+          nixos-rebuild switch \
+            --target-host root@127.0.0.1 \
+            --build-host root@127.0.0.1 \
             --flake .#asean-mt-server \
             --option access-tokens "github.com=${{ secrets.AMC_SERVER_DISPATCH_TOKEN }}" \
             --fast
@@ -34,20 +43,20 @@ jobs:
           case "$SUB" in
             *amc-backend*)
               echo "Restarting amc-backend-worker.service"
-              systemctl restart amc-backend-worker.service
+              ssh root@127.0.0.1 systemctl restart amc-backend-worker.service
               ;;
             *motortown-server*)
               echo "Restarting motortown test/event containers"
-              nixos-container restart test
-              nixos-container restart event
+              ssh root@127.0.0.1 nixos-container restart test
+              ssh root@127.0.0.1 nixos-container restart event
               ;;
             *necesse-server*)
               echo "Restarting necesse-server.service"
-              systemctl restart necesse-server.service
+              ssh root@127.0.0.1 systemctl restart necesse-server.service
               ;;
             *eco-server*)
               echo "Restarting eco-server.service"
-              systemctl restart eco-server.service
+              ssh root@127.0.0.1 systemctl restart eco-server.service
               ;;
             *)
               echo "No specific service restart defined for $SUB"

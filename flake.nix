@@ -421,42 +421,12 @@ Indonesia, Philippines, Vietnam, Thailand, Myanmar, Malaysia, Cambodia, Laos, Si
             tokenFile = config.age.secrets.github-runner-token.path;
             package = nixpkgs-unstable.legacyPackages.${pkgs.system}.github-runner;
             extraLabels = [ "deploy" "nix" ];
-            extraPackages = with pkgs; [ nix git openssh sudo nixos-rebuild ];
+            extraPackages = with pkgs; [ nix git openssh nixos-rebuild ];
             serviceOverrides = {
-              NoNewPrivileges = false;
-              ProtectSystem = "none";
+              # Allow SSH to localhost
               ProtectHome = "none";
-              PrivateDevices = false;
-              RestrictAddressFamilies = [ ];
-              RestrictNamespaces = false;
-              SystemCallFilter = [ ];
-              RestrictSUIDSGID = false;
-              PrivateTmp = false;
-              ProtectKernelTunables = false;
-              ProtectKernelModules = false;
-              ProtectControlGroups = false;
-              MemoryDenyWriteExecute = false;
-              LockPersonality = false;
-              ProtectHostname = false;
-              ProtectClock = false;
-              ProtectProc = "default";
-              ProcSubset = "all";
-              RestrictRealtime = false;
-              SystemCallArchitectures = [ ];
             };
           };
-
-          security.sudo.extraRules = [
-            {
-              users = [ "github-runner-amc-deploy" ];
-              commands = [
-                {
-                  command = "${pkgs.nixos-rebuild}/bin/nixos-rebuild";
-                  options = [ "NOPASSWD" ];
-                }
-              ];
-            }
-          ];
 
 
 
@@ -505,6 +475,12 @@ Indonesia, Philippines, Vietnam, Thailand, Myanmar, Malaysia, Cambodia, Laos, Si
               age.secrets.github-runner-token = {
                 file = ./secrets/github-runner-token.age;
                 mode = "400";
+              };
+              age.secrets.github-runner-ssh = {
+                file = ./secrets/github-runner-ssh.age;
+                mode = "400";
+                owner = "github-runner-amc-deploy";
+                path = "/var/lib/github-runner-amc-deploy/.ssh/id_ed25519";
               };
             })
 

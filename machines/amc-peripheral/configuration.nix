@@ -164,9 +164,6 @@
         "/track" = {
           root = "/srv/www";
         };
-        "/static" = {
-          root = ./files;
-        };
         "/routes" = {
           root = "/srv/www";
         };
@@ -339,7 +336,7 @@
     radio = pkgs.writeText "radio.liq" ''
       log.level := 5
       server.telnet()
-      default_playlist = single("${./radio/intro.wav}")
+      default_playlist = single("");
       settings.encoder.metadata.export := ["filename", "artist", "title", "album", "genre", "date", "tracknumber", "comment", "track", "year", "dj", "next", "apic", "metadata_url", "metadata_block_picture", "coverart"]
       queue = request.queue(id="song_requests")
 
@@ -457,7 +454,6 @@
 
   services.tailscale = {
     enable = true;
-    authKeyFile = ./tailscale;
   };
 
 }

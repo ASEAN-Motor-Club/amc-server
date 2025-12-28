@@ -10,5 +10,6 @@
   boot.initrd.availableKernelModules = [ "ata_piix" "uhci_hcd" "xen_blkfront" "vmw_pvscsi" ];
   boot.initrd.kernelModules = [ "nvme" ];
   fileSystems."/" = { device = "/dev/vda2"; fsType = "ext4"; };
+  fileSystems."/var/lib/radio" = { device = "/dev/vdb"; fsType = "ext4"; };
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
 }
