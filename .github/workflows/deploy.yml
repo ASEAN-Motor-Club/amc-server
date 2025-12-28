@@ -41,7 +41,10 @@ jobs:
           git submodule update --init --recursive
 
       - name: Deploy
-        run: nix develop --command deploy root@localhost
+        run: |
+          nix develop \
+            --option access-tokens "github.com=${{ secrets.AMC_SERVER_DISPATCH_TOKEN }}" \
+            --command deploy root@localhost
 
       - name: Restart affected services
         run: |
