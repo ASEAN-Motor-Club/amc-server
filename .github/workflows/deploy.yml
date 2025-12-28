@@ -15,25 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Don't checkout submodules automatically, we'll do it manually after config
+          # Let Nix handle submodule fetching via access-tokens
           submodules: false
-          fetch-depth: 0
-          token: ${{ secrets.AMC_SERVER_DISPATCH_TOKEN }}
-
-      - name: Initialize and update submodules
-        run: |
-          git submodule init
-          
-          # If triggered by a submodule update, update that specific one to the SHA
-          if [ "${{ github.event.client_payload.sha }}" != "" ]; then
-            SUB=$(echo "${{ github.event.client_payload.submodule }}" | sed 's|ASEAN-Motor-Club/||')
-            echo "Specifically fetching submodule $SUB at SHA ${{ github.event.client_payload.sha }}"
-            git submodule update --init -- $SUB
-            cd $SUB && git fetch origin && git checkout ${{ github.event.client_payload.sha }} && cd ..
-          fi
-          
-          # Update all other submodules to what's defined in the repo
-          git submodule update --init --recursive
+          persist-credentials: false
 
       - name: Deploy
         run: |
