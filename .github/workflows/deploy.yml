@@ -15,7 +15,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: recursive
+          # Don't checkout submodules automatically, we'll do it manually after config
+          submodules: false
           fetch-depth: 0
           token: ${{ secrets.AMC_SERVER_DISPATCH_TOKEN }}
 
@@ -24,14 +25,20 @@ jobs:
           git config --global url."https://x-access-token:${{ secrets.AMC_SERVER_DISPATCH_TOKEN }}@github.com/ASEAN-Motor-Club/".insteadOf "git@github.com:ASEAN-Motor-Club/"
           git config --global url."https://x-access-token:${{ secrets.AMC_SERVER_DISPATCH_TOKEN }}@github.com/ASEAN-Motor-Club/".insteadOf "https://github.com/ASEAN-Motor-Club/"
 
-      - name: Update submodule to triggered SHA
-        if: github.event.client_payload.sha
+      - name: Initialize and update submodules
         run: |
-          # Extract submodule name from full repo name (e.g., ASEAN-Motor-Club/amc-backend -> amc-backend)
-          SUB=$(echo "${{ github.event.client_payload.submodule }}" | sed 's|ASEAN-Motor-Club/||')
+          git submodule init
           
-          echo "Updating submodule: $SUB to ${{ github.event.client_payload.sha }}"
-          cd $SUB && git fetch origin && git checkout ${{ github.event.client_payload.sha }}
+          # If triggered by a submodule update, update that specific one to the SHA
+          if [ "${{ github.event.client_payload.sha }}" != "" ]; then
+            SUB=$(echo "${{ github.event.client_payload.submodule }}" | sed 's|ASEAN-Motor-Club/||')
+            echo "Specifically fetching submodule $SUB at SHA ${{ github.event.client_payload.sha }}"
+            git submodule update --init -- $SUB
+            cd $SUB && git fetch origin && git checkout ${{ github.event.client_payload.sha }} && cd ..
+          fi
+          
+          # Update all other submodules to what's defined in the repo
+          git submodule update --init --recursive
 
       - name: Deploy
         run: nix develop --command deploy root@localhost
