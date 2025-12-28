@@ -26,11 +26,13 @@
     ragenix.url = "github:yaxitech/ragenix";
     ragenix.inputs.nixpkgs.follows = "nixpkgs";
     quadlet-nix.url = "github:SEIAROTg/quadlet-nix";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
   outputs = inputs @ {
     self,
     nixpkgs,
+    nixpkgs-unstable,
     flake-parts,
     amc-backend,
     motortown-server,
@@ -412,6 +414,7 @@ Indonesia, Philippines, Vietnam, Thailand, Myanmar, Malaysia, Cambodia, Laos, Si
             enable = true;
             url = "https://github.com/ASEAN-Motor-Club/amc-server";
             tokenFile = config.age.secrets.github-runner-token.path;
+            package = nixpkgs-unstable.legacyPackages.${pkgs.system}.github-runner;
             extraLabels = [ "deploy" "nix" ];
             extraPackages = with pkgs; [ nix git ];
           };
