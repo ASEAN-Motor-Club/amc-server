@@ -19,18 +19,46 @@ jobs:
           submodules: false
           persist-credentials: false
 
-      - name: Configure SSH
+      - name: Configure Git Auth
         run: |
-          mkdir -p ~/.ssh
-          echo "Host 127.0.0.1" >> ~/.ssh/config
-          echo "  StrictHostKeyChecking no" >> ~/.ssh/config
-          echo "  UserKnownHostsFile /dev/null" >> ~/.ssh/config
+          mkdir -p $HOME/.ssh
+          chmod 700 $HOME/.ssh
+          
+          # SSH key for server deployment (nixos-rebuild)
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > $HOME/.ssh/id_ed25519
+          chmod 600 $HOME/.ssh/id_ed25519
+          
+          # SSH config for server access during nixos-rebuild
+          cat > $HOME/.ssh/config << EOF
+          Host 127.0.0.1
+            IdentityFile $HOME/.ssh/id_ed25519
+            StrictHostKeyChecking no
+            UserKnownHostsFile /dev/null
+          EOF
+          chmod 600 $HOME/.ssh/config
+          
+          # Configure git to use PAT for submodules Fetching
+          # Using relative paths in .gitmodules, combined with the PAT rewrite, 
+          # ensures we don't need SSH keys for any repository access.
+          TOKEN="${{ secrets.AMC_SERVER_DISPATCH_TOKEN }}"
+          git config --global url."https://x-access-token:$TOKEN@github.com/".insteadOf "git@github.com:"
+          git config --global url."https://x-access-token:$TOKEN@github.com/".insteadOf "ssh://git@github.com/"
+          git config --global url."https://x-access-token:$TOKEN@github.com/".insteadOf "https://github.com/"
+          
+          echo "GIT_SSH_COMMAND=ssh -F $HOME/.ssh/config" >> $GITHUB_ENV
+          echo "NIX_SSHOPTS=-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $HOME/.ssh/id_ed25519" >> $GITHUB_ENV
+      - name: Prepare Submodules
+        run: |
+          # Sync handles cached URLs on self-hosted runners; git config handles auth
+          git submodule sync --recursive
+          git submodule update --init --recursive --force
+
+
 
       - name: Deploy
         run: |
           nixos-rebuild switch \
             --target-host root@127.0.0.1 \
-            --build-host root@127.0.0.1 \
             --flake .#asean-mt-server \
             --option access-tokens "github.com=${{ secrets.AMC_SERVER_DISPATCH_TOKEN }}" \
             --fast
