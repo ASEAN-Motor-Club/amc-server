@@ -422,6 +422,28 @@ Indonesia, Philippines, Vietnam, Thailand, Myanmar, Malaysia, Cambodia, Laos, Si
             package = nixpkgs-unstable.legacyPackages.${pkgs.system}.github-runner;
             extraLabels = [ "deploy" "nix" ];
             extraPackages = with pkgs; [ nix git openssh sudo nixos-rebuild ];
+            serviceOverrides = {
+              NoNewPrivileges = false;
+              ProtectSystem = "none";
+              ProtectHome = "none";
+              PrivateDevices = false;
+              RestrictAddressFamilies = [ ];
+              RestrictNamespaces = false;
+              SystemCallFilter = [ ];
+              RestrictSUIDSGID = false;
+              PrivateTmp = false;
+              ProtectKernelTunables = false;
+              ProtectKernelModules = false;
+              ProtectControlGroups = false;
+              MemoryDenyWriteExecute = false;
+              LockPersonality = false;
+              ProtectHostname = false;
+              ProtectClock = false;
+              ProtectProc = "default";
+              ProcSubset = "all";
+              RestrictRealtime = false;
+              SystemCallArchitectures = [ ];
+            };
           };
 
           security.sudo.extraRules = [
@@ -436,28 +458,7 @@ Indonesia, Philippines, Vietnam, Thailand, Myanmar, Malaysia, Cambodia, Laos, Si
             }
           ];
 
-          systemd.services."github-runner-amc-deploy".serviceConfig = {
-            NoNewPrivileges = lib.mkForce false;
-            ProtectSystem = lib.mkForce "none";
-            ProtectHome = lib.mkForce "none";
-            PrivateDevices = lib.mkForce false;
-            RestrictAddressFamilies = [ ];
-            RestrictNamespaces = lib.mkForce false;
-            SystemCallFilter = [ ];
-            RestrictSUIDSGID = lib.mkForce false;
-            PrivateTmp = lib.mkForce false;
-            ProtectKernelTunables = lib.mkForce false;
-            ProtectKernelModules = lib.mkForce false;
-            ProtectControlGroups = lib.mkForce false;
-            MemoryDenyWriteExecute = lib.mkForce false;
-            LockPersonality = lib.mkForce false;
-            ProtectHostname = lib.mkForce false;
-            ProtectClock = lib.mkForce false;
-            ProtectProc = lib.mkForce "default";
-            ProcSubset = lib.mkForce "all";
-            RestrictRealtime = lib.mkForce false;
-            SystemCallArchitectures = [ ];
-          };
+
 
           networking.firewall.interfaces."tailscale0".allowedTCPPorts =
             lib.mkIf config.services.tailscale.enable [
