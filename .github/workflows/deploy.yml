@@ -19,6 +19,11 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.AMC_SERVER_DISPATCH_TOKEN }}
 
+      - name: Configure Git to use HTTPS for submodules
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.AMC_SERVER_DISPATCH_TOKEN }}@github.com/ASEAN-Motor-Club/".insteadOf "git@github.com:ASEAN-Motor-Club/"
+          git config --global url."https://x-access-token:${{ secrets.AMC_SERVER_DISPATCH_TOKEN }}@github.com/ASEAN-Motor-Club/".insteadOf "https://github.com/ASEAN-Motor-Club/"
+
       - name: Update submodule to triggered SHA
         if: github.event.client_payload.sha
         run: |
