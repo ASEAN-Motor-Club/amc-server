@@ -416,7 +416,7 @@ Indonesia, Philippines, Vietnam, Thailand, Myanmar, Malaysia, Cambodia, Laos, Si
             tokenFile = config.age.secrets.github-runner-token.path;
             package = nixpkgs-unstable.legacyPackages.${pkgs.system}.github-runner;
             extraLabels = [ "deploy" "nix" ];
-            extraPackages = with pkgs; [ nix git ];
+            extraPackages = with pkgs; [ nix git openssh ];
           };
 
           networking.firewall.interfaces."tailscale0".allowedTCPPorts =
