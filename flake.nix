@@ -425,12 +425,21 @@ Indonesia, Philippines, Vietnam, Thailand, Myanmar, Malaysia, Cambodia, Laos, Si
               commands = [
                 {
                   command = "${pkgs.nixos-rebuild}/bin/nixos-rebuild";
+                  options = [ "NOPASSWD" ];
                 }
               ];
             }
           ];
 
-          systemd.services."github-runner-amc-deploy".serviceConfig.NoNewPrivileges = lib.mkForce false;
+          systemd.services."github-runner-amc-deploy".serviceConfig = {
+            NoNewPrivileges = lib.mkForce false;
+            ProtectSystem = lib.mkForce "none";
+            ProtectHome = lib.mkForce "none";
+            PrivateDevices = lib.mkForce false;
+            RestrictAddressFamilies = [ ];
+            RestrictNamespaces = lib.mkForce false;
+            SystemCallFilter = [ ];
+          };
 
           networking.firewall.interfaces."tailscale0".allowedTCPPorts =
             lib.mkIf config.services.tailscale.enable [
