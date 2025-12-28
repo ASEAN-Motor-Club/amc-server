@@ -20,12 +20,6 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.AMC_SERVER_DISPATCH_TOKEN }}
 
-      - name: Configure Git to use HTTPS for submodules
-        run: |
-          # Configure global auth header for all github.com requests
-          AUTH=$(echo -n "x-access-token:${{ secrets.AMC_SERVER_DISPATCH_TOKEN }}" | base64 -w 0)
-          git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic $AUTH"
-
       - name: Initialize and update submodules
         run: |
           git submodule init
