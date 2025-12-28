@@ -43,7 +43,7 @@ jobs:
 
       - name: Deploy
         run: |
-          sudo nixos-rebuild switch \
+          /run/wrappers/bin/sudo nixos-rebuild switch \
             --flake .#asean-mt-server \
             --option access-tokens "github.com=${{ secrets.AMC_SERVER_DISPATCH_TOKEN }}" \
             --fast
