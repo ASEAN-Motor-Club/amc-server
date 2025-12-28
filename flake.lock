@@ -38,14 +38,19 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "path": "amc-backend",
-        "type": "path"
+        "lastModified": 1766895923,
+        "narHash": "sha256-/BC2AU+boB+Ok/HsNMz+H6S5R0pzBwHX+kw33ebwbcM=",
+        "ref": "master",
+        "rev": "894122e50a42ed1ab06a1f073de21edb1249219f",
+        "revCount": 536,
+        "type": "git",
+        "url": "https://github.com/ASEAN-Motor-Club/amc-backend"
       },
       "original": {
-        "path": "amc-backend",
-        "type": "path"
-      },
-      "parent": []
+        "ref": "master",
+        "type": "git",
+        "url": "https://github.com/ASEAN-Motor-Club/amc-backend"
+      }
     },
     "crane": {
       "locked": {
@@ -93,14 +98,19 @@
         "systems": "systems"
       },
       "locked": {
-        "path": "eco-server",
-        "type": "path"
+        "lastModified": 1766893412,
+        "narHash": "sha256-5BlzSW2ncBLthBunaCzSQBMTVhFn+DcmRnbX486zGto=",
+        "ref": "master",
+        "rev": "40eba696e7cc0c937ee9421513bbb9ccfdacd77a",
+        "revCount": 9,
+        "type": "git",
+        "url": "https://github.com/ASEAN-Motor-Club/eco-server"
       },
       "original": {
-        "path": "eco-server",
-        "type": "path"
-      },
-      "parent": []
+        "ref": "master",
+        "type": "git",
+        "url": "https://github.com/ASEAN-Motor-Club/eco-server"
+      }
     },
     "flake-parts": {
       "inputs": {
@@ -186,14 +196,20 @@
         "systems": "systems_2"
       },
       "locked": {
-        "path": "motortown-server-flake",
-        "type": "path"
+        "lastModified": 1766898061,
+        "narHash": "sha256-ieNElLF2iFBOLbMqyN2KDurmfZblDRup1GMZsPAj/ZA=",
+        "ref": "master",
+        "rev": "3c5cafcdc4488fee24813ced10283ccd7ceb2b5f",
+        "revCount": 139,
+        "submodules": true,
+        "type": "git",
+        "url": "https://github.com/ASEAN-Motor-Club/motortown-server-flake"
       },
       "original": {
-        "path": "motortown-server-flake",
-        "type": "path"
-      },
-      "parent": []
+        "ref": "master",
+        "type": "git",
+        "url": "https://github.com/ASEAN-Motor-Club/motortown-server-flake"
+      }
     },
     "necesse-server": {
       "inputs": {
@@ -203,14 +219,19 @@
         "systems": "systems_3"
       },
       "locked": {
-        "path": "necesse-server",
-        "type": "path"
+        "lastModified": 1766893264,
+        "narHash": "sha256-ze4iKBIYZichr4hJS3wKeoCRw8AKf2X7xoWr/Vbbre0=",
+        "ref": "master",
+        "rev": "c6ec2ad2ffdd01ec219ed876c5bf1a5b507af144",
+        "revCount": 9,
+        "type": "git",
+        "url": "https://github.com/ASEAN-Motor-Club/necesse-server"
       },
       "original": {
-        "path": "necesse-server",
-        "type": "path"
-      },
-      "parent": []
+        "ref": "master",
+        "type": "git",
+        "url": "https://github.com/ASEAN-Motor-Club/necesse-server"
+      }
     },
     "nixpkgs": {
       "locked": {
