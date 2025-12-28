@@ -6,20 +6,20 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
     flake-parts.url = "github:hercules-ci/flake-parts";
     motortown-server = {
-      url = "path:motortown-server-flake";
+      url = "git+https://github.com/ASEAN-Motor-Club/motortown-server-flake?ref=master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     necesse-server = {
-      url = "path:necesse-server";
+      url = "git+https://github.com/ASEAN-Motor-Club/necesse-server?ref=master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     eco-server = {
-      url = "path:eco-server";
+      url = "git+https://github.com/ASEAN-Motor-Club/eco-server?ref=master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     amc-backend = {
-      url = "path:amc-backend";
+      url = "git+https://github.com/ASEAN-Motor-Club/amc-backend?ref=master";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.ragenix.follows = "ragenix";
     };
