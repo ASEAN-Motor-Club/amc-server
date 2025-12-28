@@ -1,4 +1,9 @@
-{ lib, pkgs, config, ... }: {
+{
+  lib,
+  pkgs,
+  config,
+  ...
+}: {
   imports = let
     disko = builtins.fetchTarball {
       url = "https://github.com/nix-community/disko/archive/85555d27ded84604ad6657ecca255a03fd878607.tar.gz";
@@ -29,7 +34,7 @@
     ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOrAFqHJ125VEDd7jFhOtmBOWg+HSFdRwLSCnUlRtY// github-runner-amc-deploy''
   ];
   system.stateVersion = "23.11";
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = ["nix-command" "flakes"];
   services.xserver.enable = true;
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.displayManager.gdm.autoSuspend = false;
@@ -47,15 +52,16 @@
   programs.atop.enable = true;
   time.timeZone = "Asia/Bangkok";
 
-  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
-    "steam"
-    "steamcmd"
-    "steam-original"
-    "steam-unwrapped"
-    "steam-run"
-    "motortown-server"
-    "steamworks-sdk-redist"
-  ];
+  nixpkgs.config.allowUnfreePredicate = pkg:
+    builtins.elem (lib.getName pkg) [
+      "steam"
+      "steamcmd"
+      "steam-original"
+      "steam-unwrapped"
+      "steam-run"
+      "motortown-server"
+      "steamworks-sdk-redist"
+    ];
   programs.steam = {
     enable = true;
     extraCompatPackages = with pkgs; [
@@ -90,7 +96,7 @@
     recommendedGzipSettings = true;
     # Only allow PFS-enabled ciphers with AES256
     sslCiphers = "AES256+EECDH:AES256+EDH:!aNULL";
-    
+
     virtualHosts."server.aseanmotorclub.com" = {
       enableACME = true;
       default = true;
@@ -148,24 +154,24 @@
   services.dokuwiki = {
     webserver = "nginx";
     sites = let
-    dokuwiki-plugin-infobox = pkgs.stdenv.mkDerivation {
-      name = "infobox";
-      src = pkgs.fetchzip {
-        url = "https://github.com/Kanaru92/DokuWiki-InfoBox/archive/refs/heads/main.zip";
-        sha256 = "sha256-0te3irbkhSA6VxLQq3qIY49y5AgEKm5LgvZGJrOMjAU=";
+      dokuwiki-plugin-infobox = pkgs.stdenv.mkDerivation {
+        name = "infobox";
+        src = pkgs.fetchzip {
+          url = "https://github.com/Kanaru92/DokuWiki-InfoBox/archive/refs/heads/main.zip";
+          sha256 = "sha256-0te3irbkhSA6VxLQq3qIY49y5AgEKm5LgvZGJrOMjAU=";
+        };
+        sourceRoot = ".";
+        installPhase = "mkdir -p $out; cp -R source/* $out/;";
       };
-      sourceRoot = ".";
-      installPhase = "mkdir -p $out; cp -R source/* $out/;";
-    };
-    dokuwiki-plugin-imagebox = pkgs.stdenv.mkDerivation {
-      name = "imagebox";
-      src = fetchTarball {
-        url = "https://github.com/flammy/imagebox/tarball/master";
-        sha256 = "sha256:0ir4xavz47qhhk9xiy7rm723scygsgyhgd142js21ga0997wxsbj";
+      dokuwiki-plugin-imagebox = pkgs.stdenv.mkDerivation {
+        name = "imagebox";
+        src = fetchTarball {
+          url = "https://github.com/flammy/imagebox/tarball/master";
+          sha256 = "sha256:0ir4xavz47qhhk9xiy7rm723scygsgyhgd142js21ga0997wxsbj";
+        };
+        sourceRoot = ".";
+        installPhase = "mkdir -p $out; cp -R source/* $out/;";
       };
-      sourceRoot = ".";
-      installPhase = "mkdir -p $out; cp -R source/* $out/;";
-    };
     in {
       "wiki.aseanmotorclub.com" = {
         plugins = [

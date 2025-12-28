@@ -7,4 +7,3 @@ pkgs.writeShellScriptBin "deploy" ''
   --override-input amc-peripheral ./amc-peripheral \
   --override-input motortown-server ./motortown-server-flake
 ''
-

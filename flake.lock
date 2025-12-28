@@ -236,20 +236,14 @@
         "systems": "systems_2"
       },
       "locked": {
-        "lastModified": 1766898061,
-        "narHash": "sha256-ieNElLF2iFBOLbMqyN2KDurmfZblDRup1GMZsPAj/ZA=",
-        "ref": "master",
-        "rev": "3c5cafcdc4488fee24813ced10283ccd7ceb2b5f",
-        "revCount": 139,
-        "submodules": true,
-        "type": "git",
-        "url": "https://github.com/ASEAN-Motor-Club/motortown-server-flake"
+        "path": "./motortown-server-flake",
+        "type": "path"
       },
       "original": {
-        "ref": "master",
-        "type": "git",
-        "url": "https://github.com/ASEAN-Motor-Club/motortown-server-flake"
-      }
+        "path": "./motortown-server-flake",
+        "type": "path"
+      },
+      "parent": []
     },
     "necesse-server": {
       "inputs": {

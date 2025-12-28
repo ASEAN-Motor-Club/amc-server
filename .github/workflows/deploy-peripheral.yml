@@ -1,17 +1,17 @@
-name: Deploy
+name: Deploy Peripheral
 
 on:
   repository_dispatch:
-    types: [submodule-update]
+    types: [peripheral-update]
   workflow_dispatch:
     inputs:
       submodule:
-        description: 'Submodule name (e.g., amc-backend)'
+        description: 'Submodule name (e.g., amc-peripheral)'
         required: false
 
 jobs:
   deploy:
-    runs-on: [self-hosted, deploy]
+    runs-on: [self-hosted, deploy-peripheral]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,6 +25,7 @@ jobs:
           chmod 700 $HOME/.ssh
           
           # SSH key for server deployment (nixos-rebuild)
+          # Reusing the shared SSH key secret, assuming it's valid for localhost access
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > $HOME/.ssh/id_ed25519
           chmod 600 $HOME/.ssh/id_ed25519
           
@@ -59,7 +60,7 @@ jobs:
         run: |
           nixos-rebuild switch \
             --target-host root@127.0.0.1 \
-            --flake .#asean-mt-server \
+            --flake .#amc-peripheral \
             --option access-tokens "github.com=${{ secrets.AMC_SERVER_DISPATCH_TOKEN }}" \
             --fast
 
@@ -68,23 +69,11 @@ jobs:
           SUB="${{ github.event.client_payload.submodule || inputs.submodule }}"
           echo "Processing restart for submodule: $SUB"
           
+          # For amc-peripheral, we primarily only have the bot service
           case "$SUB" in
-            *amc-backend*)
-              echo "Restarting amc-backend-worker.service"
-              ssh root@127.0.0.1 systemctl restart amc-backend-worker.service
-              ;;
-            *motortown-server*)
-              echo "Restarting motortown test/event containers"
-              ssh root@127.0.0.1 nixos-container restart test
-              ssh root@127.0.0.1 nixos-container restart event
-              ;;
-            *necesse-server*)
-              echo "Restarting necesse-server.service"
-              ssh root@127.0.0.1 systemctl restart necesse-server.service
-              ;;
-            *eco-server*)
-              echo "Restarting eco-server.service"
-              ssh root@127.0.0.1 systemctl restart eco-server.service
+            *amc-peripheral*)
+              echo "Restarting amc-radio.service and amc-bot.service"
+              ssh root@127.0.0.1 systemctl restart amc-radio.service amc-bot.service || echo "Services not found or failed to restart"
               ;;
             *)
               echo "No specific service restart defined for $SUB"

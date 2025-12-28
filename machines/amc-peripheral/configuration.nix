@@ -1,4 +1,9 @@
-{ lib, pkgs, config, ... }: {
+{
+  lib,
+  pkgs,
+  config,
+  ...
+}: {
   imports = [
     ./hardware-configuration.nix
   ];
@@ -18,14 +23,14 @@
     ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO75UM3IHNzJKUxgABH6OHa/hxfQIoxTs+nGUtSU1TID''
   ];
   users.users.freeman = {
-    isNormalUser  = true;
-    home  = "/home/freeman";
-    description  = "Alice Foobar";
-    extraGroups  = [ "wheel" "networkmanager" ];
-    openssh.authorizedKeys.keys = [''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJcMiNGgqQtOeACMso3CgZz2J3X8Ne8RxsZrQcsnoewU fmnxl-m2'' ];
+    isNormalUser = true;
+    home = "/home/freeman";
+    description = "Alice Foobar";
+    extraGroups = ["wheel" "networkmanager"];
+    openssh.authorizedKeys.keys = [''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJcMiNGgqQtOeACMso3CgZz2J3X8Ne8RxsZrQcsnoewU fmnxl-m2''];
   };
   system.stateVersion = "23.11";
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = ["nix-command" "flakes"];
 
   environment.systemPackages = with pkgs; [
     kakoune
@@ -42,7 +47,6 @@
     recommendedGzipSettings = true;
     # Only allow PFS-enabled ciphers with AES256
     sslCiphers = "AES256+EECDH:AES256+EDH:!aNULL";
-    
 
     virtualHosts."www.aseanmotorclub.com" = {
       enableACME = true;
@@ -68,12 +72,12 @@
             # 1. CORS Headers
             add_header 'Access-Control-Allow-Origin' '*';
             add_header 'Access-Control-Allow-Methods' 'GET, OPTIONS';
-            
+
             # 2. Cache Headers (REPEATED)
             # We must repeat these because 'add_header' above clears parent headers
             expires 1y;
             add_header Cache-Control "public, max-age=31536000, immutable";
-            
+
             # 3. Security Headers (REPEATED - Example)
             # If you define HSTS or other security headers in the server block,
             # you MUST repeat them here or they will be lost for tile requests.
@@ -240,17 +244,17 @@
   services.icecast = {
     enable = true;
     hostname = "aseanmotorclub.com";
-    admin.password = "aseanmotorclub1234";  # Admin password
-    
+    admin.password = "aseanmotorclub1234"; # Admin password
+
     # Bind to localhost only since Nginx will proxy
     listen.address = "0.0.0.0";
     listen.port = 8000;
-    
+
     # Additional Icecast settings
     extraConf = ''
       <location>ASEAN Motor Club</location>
       <admin>admin@aseanmotorclub.com</admin>
-      
+
       <limits>
         <clients>100</clients>
         <sources>2</sources>
@@ -261,7 +265,7 @@
         <burst-on-connect>1</burst-on-connect>
         <burst-size>128000</burst-size>
       </limits>
-      
+
       <mount>
         <mount-name>/stream</mount-name>
         <username>source</username>
@@ -302,7 +306,7 @@
     createHome = true;
     home = "/home/sftpuser";
     group = "sftpuser";
-    extraGroups = [ "web-content" ];
+    extraGroups = ["web-content"];
     openssh.authorizedKeys.keys = [
       (
         "command=\"${pkgs.rrsync}/bin/rrsync /var/www/www.aseanmotorclub.com\" "
@@ -316,7 +320,7 @@
   };
   users.groups.sftpuser = {};
   users.groups.web-content = {};
-  users.users.nginx.extraGroups = [ "web-content" ];
+  users.users.nginx.extraGroups = ["web-content"];
 
   systemd.tmpfiles.rules = [
     "d /var/www 0755 root root -"
@@ -455,5 +459,4 @@
   services.tailscale = {
     enable = true;
   };
-
 }
