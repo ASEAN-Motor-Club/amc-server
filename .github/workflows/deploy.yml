@@ -43,9 +43,10 @@ jobs:
 
       - name: Deploy
         run: |
-          nix develop \
+          sudo nixos-rebuild switch \
+            --flake .#asean-mt-server \
             --option access-tokens "github.com=${{ secrets.AMC_SERVER_DISPATCH_TOKEN }}" \
-            --command deploy root@localhost
+            --fast
 
       - name: Restart affected services
         run: |

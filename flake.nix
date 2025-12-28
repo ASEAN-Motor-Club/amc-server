@@ -416,8 +416,20 @@ Indonesia, Philippines, Vietnam, Thailand, Myanmar, Malaysia, Cambodia, Laos, Si
             tokenFile = config.age.secrets.github-runner-token.path;
             package = nixpkgs-unstable.legacyPackages.${pkgs.system}.github-runner;
             extraLabels = [ "deploy" "nix" ];
-            extraPackages = with pkgs; [ nix git openssh ];
+            extraPackages = with pkgs; [ nix git openssh sudo ];
           };
+
+          security.sudo.extraRules = [
+            {
+              users = [ "github-runner-amc-deploy" ];
+              commands = [
+                {
+                  command = "${pkgs.nixos-rebuild}/bin/nixos-rebuild";
+                  options = [ "NOPASSWD" ];
+                }
+              ];
+            }
+          ];
 
           networking.firewall.interfaces."tailscale0".allowedTCPPorts =
             lib.mkIf config.services.tailscale.enable [
