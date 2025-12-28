@@ -10,21 +10,21 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     necesse-server = {
-      url = "git+https://github.com/ASEAN-Motor-Club/necesse-server?ref=master";
+      url = "github:ASEAN-Motor-Club/necesse-server";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     eco-server = {
-      url = "git+https://github.com/ASEAN-Motor-Club/eco-server?ref=master";
+      url = "github:ASEAN-Motor-Club/eco-server";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     amc-backend = {
-      url = "git+https://github.com/ASEAN-Motor-Club/amc-backend?ref=master";
+      url = "github:ASEAN-Motor-Club/amc-backend";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.ragenix.follows = "ragenix";
     };
     amc-peripheral = {
-      url = "git+https://github.com/ASEAN-Motor-Club/amc-peripheral?ref=master";
+      url = "github:ASEAN-Motor-Club/amc-peripheral";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     ragenix.url = "github:yaxitech/ragenix";
@@ -440,53 +440,43 @@ Indonesia, Philippines, Vietnam, Thailand, Myanmar, Malaysia, Cambodia, Laos, Si
 
         };
 
-        nixosModules.backend = { config, pkgs, lib, ... }: {
-        };
-        # "motortown" must match the networking.hostName config inside configuration.nix
-        nixosConfigurations.motortown = nixpkgs.lib.nixosSystem {
-          modules = [
-            ./machines/asean-mt-server/configuration.nix
-            self.nixosModules.backend
-          ];
-        };
         nixosConfigurations.asean-mt-server = nixpkgs.lib.nixosSystem {
           modules = [
             ./machines/asean-mt-server/configuration.nix
             ragenix.nixosModules.default
 
             ({ ... }: {
-              imports = [
-                ragenix.nixosModules.default
-              ];
-              age.secrets.steam = {
-                file = ./secrets/steam.age;
-                mode = "400";
-                owner = "steam";
-              };
-              age.secrets.tailscale = {
-                file = ./secrets/tailscale.age;
-                mode = "400";
-              };
-              age.secrets.ecoUserToken = {
-                file = ./secrets/ecoUserToken.age;
-                mode = "400";
-                owner = "steam";
-              };
-              age.secrets.github-runner-token = {
-                file = ./secrets/github-runner-token.age;
-                mode = "400";
-              };
-              age.secrets.github-runner-ssh = {
-                file = ./secrets/github-runner-ssh.age;
-                mode = "400";
-                owner = "github-runner-amc-deploy";
-                path = "/var/lib/github-runner-amc-deploy/.ssh/id_ed25519";
-              };
+          imports = [
+            ragenix.nixosModules.default
+          ];
+          age.secrets.steam = {
+            file = ./secrets/steam.age;
+            mode = "400";
+            owner = "steam";
+          };
+          age.secrets.tailscale = {
+            file = ./secrets/tailscale.age;
+            mode = "400";
+          };
+          age.secrets.ecoUserToken = {
+            file = ./secrets/ecoUserToken.age;
+            mode = "400";
+            owner = "steam";
+          };
+          age.secrets.github-runner-token = {
+            file = ./secrets/github-runner-token.age;
+            mode = "400";
+          };
+          age.secrets.github-runner-ssh = {
+            file = ./secrets/github-runner-ssh.age;
+            mode = "400";
+            owner = "github-runner-amc-deploy";
+            path = "/var/lib/github-runner-amc-deploy/.ssh/id_ed25519";
+          };
             })
 
             self.nixosModules.motortown-server
             self.nixosModules.motortown-server-containers
-            self.nixosModules.backend
             ({ config, pkgs, lib, ... }: {
               imports = [
                 amc-backend.nixosModules.containers
@@ -557,7 +547,6 @@ Indonesia, Philippines, Vietnam, Thailand, Myanmar, Malaysia, Cambodia, Laos, Si
         system,
         ...
       }: let
-        inherit (nixpkgs) lib;
         pkgs = nixpkgs.legacyPackages.${system};
 
 

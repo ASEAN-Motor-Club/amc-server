@@ -38,18 +38,17 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1766895923,
-        "narHash": "sha256-/BC2AU+boB+Ok/HsNMz+H6S5R0pzBwHX+kw33ebwbcM=",
-        "ref": "master",
-        "rev": "894122e50a42ed1ab06a1f073de21edb1249219f",
-        "revCount": 536,
-        "type": "git",
-        "url": "https://github.com/ASEAN-Motor-Club/amc-backend"
+        "lastModified": 1766933776,
+        "narHash": "sha256-9FaXEzfK5ja5awxgnDLoFNpFzFcWCixo4CAc/6jMdc0=",
+        "owner": "ASEAN-Motor-Club",
+        "repo": "amc-backend",
+        "rev": "ac66f4e9061d5c4804b7560ccfa495892d91d96d",
+        "type": "github"
       },
       "original": {
-        "ref": "master",
-        "type": "git",
-        "url": "https://github.com/ASEAN-Motor-Club/amc-backend"
+        "owner": "ASEAN-Motor-Club",
+        "repo": "amc-backend",
+        "type": "github"
       }
     },
     "amc-peripheral": {
@@ -63,18 +62,17 @@
         "uv2nix": "uv2nix_2"
       },
       "locked": {
-        "lastModified": 1766921181,
-        "narHash": "sha256-4r0gRh7joOuCwujTXDAjZ0WauAivEgvBvAc9deUPSKU=",
-        "ref": "master",
-        "rev": "3737e665534081b8c2075cbb4db68b98d7ce1c64",
-        "revCount": 5,
-        "type": "git",
-        "url": "https://github.com/ASEAN-Motor-Club/amc-peripheral"
+        "lastModified": 1766934140,
+        "narHash": "sha256-rlvPv27zGDPQYBVb73EYm2S+1n3bVBJ/C729AiRxe/s=",
+        "owner": "ASEAN-Motor-Club",
+        "repo": "amc-peripheral",
+        "rev": "d44fd9e6fe46b9f97689bd51e4a92275d3d3f94e",
+        "type": "github"
       },
       "original": {
-        "ref": "master",
-        "type": "git",
-        "url": "https://github.com/ASEAN-Motor-Club/amc-peripheral"
+        "owner": "ASEAN-Motor-Club",
+        "repo": "amc-peripheral",
+        "type": "github"
       }
     },
     "crane": {
@@ -123,18 +121,17 @@
         "systems": "systems"
       },
       "locked": {
-        "lastModified": 1766893412,
-        "narHash": "sha256-5BlzSW2ncBLthBunaCzSQBMTVhFn+DcmRnbX486zGto=",
-        "ref": "master",
-        "rev": "40eba696e7cc0c937ee9421513bbb9ccfdacd77a",
-        "revCount": 9,
-        "type": "git",
-        "url": "https://github.com/ASEAN-Motor-Club/eco-server"
+        "lastModified": 1766921271,
+        "narHash": "sha256-1wmbuxfkk5bMIw6Zv1G4Bkyva7EURuvrzxMosutaa/E=",
+        "owner": "ASEAN-Motor-Club",
+        "repo": "eco-server",
+        "rev": "ca711b28fd2084bdc3cb5eec01d5c62d7785169a",
+        "type": "github"
       },
       "original": {
-        "ref": "master",
-        "type": "git",
-        "url": "https://github.com/ASEAN-Motor-Club/eco-server"
+        "owner": "ASEAN-Motor-Club",
+        "repo": "eco-server",
+        "type": "github"
       }
     },
     "flake-parts": {
@@ -264,16 +261,15 @@
       "locked": {
         "lastModified": 1766893264,
         "narHash": "sha256-ze4iKBIYZichr4hJS3wKeoCRw8AKf2X7xoWr/Vbbre0=",
-        "ref": "master",
+        "owner": "ASEAN-Motor-Club",
+        "repo": "necesse-server",
         "rev": "c6ec2ad2ffdd01ec219ed876c5bf1a5b507af144",
-        "revCount": 9,
-        "type": "git",
-        "url": "https://github.com/ASEAN-Motor-Club/necesse-server"
+        "type": "github"
       },
       "original": {
-        "ref": "master",
-        "type": "git",
-        "url": "https://github.com/ASEAN-Motor-Club/necesse-server"
+        "owner": "ASEAN-Motor-Club",
+        "repo": "necesse-server",
+        "type": "github"
       }
     },
     "nixpkgs": {
