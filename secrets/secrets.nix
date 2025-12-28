@@ -10,4 +10,5 @@ in
   "backend.age".publicKeys = [ experimentalServer experimentalServerContabo peripheral  asean-mt-server ];
   "cookies.age".publicKeys = [ experimentalServer experimentalServerContabo peripheral  asean-mt-server ];
   "ecoUserToken.age".publicKeys = [ experimentalServer experimentalServerContabo peripheral  asean-mt-server ];
+  "github-runner-token.age".publicKeys = [ asean-mt-server ];
 }

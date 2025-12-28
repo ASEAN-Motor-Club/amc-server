@@ -407,6 +407,15 @@ Indonesia, Philippines, Vietnam, Thailand, Myanmar, Malaysia, Cambodia, Laos, Si
             };
           };
 
+
+          services.github-runners."amc-deploy" = {
+            enable = true;
+            url = "https://github.com/ASEAN-Motor-Club/amc-server";
+            tokenFile = config.age.secrets.github-runner-token.path;
+            extraLabels = [ "deploy" "nix" ];
+            extraPackages = with pkgs; [ nix git ];
+          };
+
           networking.firewall.interfaces."tailscale0".allowedTCPPorts =
             lib.mkIf config.services.tailscale.enable [
               config.services.motortown-server.dedicatedServerConfig.HostWebAPIServerPort
@@ -448,6 +457,10 @@ Indonesia, Philippines, Vietnam, Thailand, Myanmar, Malaysia, Cambodia, Laos, Si
                 file = ./secrets/ecoUserToken.age;
                 mode = "400";
                 owner = "steam";
+              };
+              age.secrets.github-runner-token = {
+                file = ./secrets/github-runner-token.age;
+                mode = "400";
               };
             })
 

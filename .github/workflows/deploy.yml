@@ -1,0 +1,59 @@
+name: Deploy
+
+on:
+  repository_dispatch:
+    types: [submodule-update]
+  workflow_dispatch:
+    inputs:
+      submodule:
+        description: 'Submodule name (e.g., amc-backend)'
+        required: false
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Update submodule to triggered SHA
+        if: github.event.client_payload.sha
+        run: |
+          # Extract submodule name from full repo name (e.g., ASEAN-Motor-Club/amc-backend -> amc-backend)
+          SUB=$(echo "${{ github.event.client_payload.submodule }}" | sed 's|ASEAN-Motor-Club/||')
+          
+          echo "Updating submodule: $SUB to ${{ github.event.client_payload.sha }}"
+          cd $SUB && git fetch origin && git checkout ${{ github.event.client_payload.sha }}
+
+      - name: Deploy
+        run: nix develop --command deploy root@localhost
+
+      - name: Restart affected services
+        run: |
+          SUB="${{ github.event.client_payload.submodule || inputs.submodule }}"
+          echo "Processing restart for submodule: $SUB"
+          
+          case "$SUB" in
+            *amc-backend*)
+              echo "Restarting amc-backend-worker.service"
+              systemctl restart amc-backend-worker.service
+              ;;
+            *motortown-server*)
+              echo "Restarting motortown test/event containers"
+              nixos-container restart test
+              nixos-container restart event
+              ;;
+            *necesse-server*)
+              echo "Restarting necesse-server.service"
+              systemctl restart necesse-server.service
+              ;;
+            *eco-server*)
+              echo "Restarting eco-server.service"
+              systemctl restart eco-server.service
+              ;;
+            *)
+              echo "No specific service restart defined for $SUB"
+              ;;
+          esac
