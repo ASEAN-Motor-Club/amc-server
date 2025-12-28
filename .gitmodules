@@ -10,3 +10,6 @@
 [submodule "eco-server"]
 	path = eco-server
 	url = https://github.com/ASEAN-Motor-Club/eco-server.git
+[submodule "amc-peripheral"]
+	path = amc-peripheral
+	url = git@github.com:ASEAN-Motor-Club/amc-peripheral.git

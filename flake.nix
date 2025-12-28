@@ -23,6 +23,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.ragenix.follows = "ragenix";
     };
+    amc-peripheral = {
+      url = "git+https://github.com/ASEAN-Motor-Club/amc-peripheral?ref=master";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     ragenix.url = "github:yaxitech/ragenix";
     ragenix.inputs.nixpkgs.follows = "nixpkgs";
     quadlet-nix.url = "github:SEIAROTg/quadlet-nix";
@@ -35,6 +39,7 @@
     nixpkgs-unstable,
     flake-parts,
     amc-backend,
+    amc-peripheral,
     motortown-server,
     necesse-server,
     eco-server,
@@ -439,6 +444,19 @@ Indonesia, Philippines, Vietnam, Thailand, Myanmar, Malaysia, Cambodia, Laos, Si
             RestrictAddressFamilies = [ ];
             RestrictNamespaces = lib.mkForce false;
             SystemCallFilter = [ ];
+            RestrictSUIDSGID = lib.mkForce false;
+            PrivateTmp = lib.mkForce false;
+            ProtectKernelTunables = lib.mkForce false;
+            ProtectKernelModules = lib.mkForce false;
+            ProtectControlGroups = lib.mkForce false;
+            MemoryDenyWriteExecute = lib.mkForce false;
+            LockPersonality = lib.mkForce false;
+            ProtectHostname = lib.mkForce false;
+            ProtectClock = lib.mkForce false;
+            ProtectProc = lib.mkForce "default";
+            ProcSubset = lib.mkForce "all";
+            RestrictRealtime = lib.mkForce false;
+            SystemCallArchitectures = [ ];
           };
 
           networking.firewall.interfaces."tailscale0".allowedTCPPorts =
@@ -456,13 +474,13 @@ Indonesia, Philippines, Vietnam, Thailand, Myanmar, Malaysia, Cambodia, Laos, Si
         # "motortown" must match the networking.hostName config inside configuration.nix
         nixosConfigurations.motortown = nixpkgs.lib.nixosSystem {
           modules = [
-            ./configuration.nix
+            ./machines/asean-mt-server/configuration.nix
             self.nixosModules.backend
           ];
         };
         nixosConfigurations.asean-mt-server = nixpkgs.lib.nixosSystem {
           modules = [
-            ./configuration.nix
+            ./machines/asean-mt-server/configuration.nix
             ragenix.nixosModules.default
 
             ({ ... }: {
@@ -528,6 +546,31 @@ Indonesia, Philippines, Vietnam, Thailand, Myanmar, Malaysia, Cambodia, Laos, Si
             })
           ];
         };
+
+        nixosConfigurations.amc-peripheral = nixpkgs.lib.nixosSystem {
+          modules = [
+            ./machines/amc-peripheral/configuration.nix
+            ragenix.nixosModules.default
+            amc-peripheral.nixosModules.default
+
+            ({config, ...}: {
+              age.secrets.peripheral-bots = {
+                file = ./secrets/peripheral-bots.age;
+                mode = "400";
+              };
+              age.secrets.cookies = {
+                file = ./secrets/cookies.age;
+                mode = "400";
+              };
+
+              services.amc-peripheral = {
+                enable = true;
+                environmentFile = config.age.secrets.peripheral-bots.path;
+                cookiesPath = config.age.secrets.cookies.path;
+              };
+            })
+          ];
+        };
       };
       perSystem = {
         config,
@@ -553,6 +596,7 @@ Indonesia, Philippines, Vietnam, Thailand, Myanmar, Malaysia, Cambodia, Laos, Si
             pkgs.cargo
             pkgs.jq
             pkgs.rsync
+            pkgs.gh
             (import ./nix/deploy.nix { inherit pkgs; })
           ];
           buildInputs = [
