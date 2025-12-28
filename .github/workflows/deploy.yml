@@ -22,8 +22,9 @@ jobs:
 
       - name: Configure Git to use HTTPS for submodules
         run: |
-          git config --global url."https://x-access-token:${{ secrets.AMC_SERVER_DISPATCH_TOKEN }}@github.com/ASEAN-Motor-Club/".insteadOf "git@github.com:ASEAN-Motor-Club/"
-          git config --global url."https://x-access-token:${{ secrets.AMC_SERVER_DISPATCH_TOKEN }}@github.com/ASEAN-Motor-Club/".insteadOf "https://github.com/ASEAN-Motor-Club/"
+          # Configure global auth header for all github.com requests
+          AUTH=$(echo -n "x-access-token:${{ secrets.AMC_SERVER_DISPATCH_TOKEN }}" | base64 -w 0)
+          git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic $AUTH"
 
       - name: Initialize and update submodules
         run: |
