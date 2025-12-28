@@ -1,12 +1,12 @@
 [submodule "motortown-server-flake"]
 	path = motortown-server-flake
-	url = git@github.com:ASEAN-Motor-Club/motortown-server-flake.git
+	url = https://github.com/ASEAN-Motor-Club/motortown-server-flake.git
 [submodule "amc-backend"]
 	path = amc-backend
-	url = git@github.com:ASEAN-Motor-Club/amc-backend.git
+	url = https://github.com/ASEAN-Motor-Club/amc-backend.git
 [submodule "necesse-server"]
 	path = necesse-server
-	url = git@github.com:ASEAN-Motor-Club/necesse-server.git
+	url = https://github.com/ASEAN-Motor-Club/necesse-server.git
 [submodule "eco-server"]
 	path = eco-server
-	url = git@github.com:ASEAN-Motor-Club/eco-server.git
+	url = https://github.com/ASEAN-Motor-Club/eco-server.git
