@@ -310,7 +310,7 @@ Visit aseanmotorclub.com to join the discord server.
             ownerName = "freeman";
           };
           services.eco-server = {
-            enable = false;
+            enable = true;
             openFirewall = true;
             enableLogStreaming = false;
             credentialsFile = config.age.secrets.ecoUserToken.path;
