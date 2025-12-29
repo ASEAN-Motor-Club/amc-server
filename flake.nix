@@ -558,7 +558,7 @@
 
               services.github-runners."amc-peripheral-deploy" = {
                 enable = true;
-                url = "https://github.com/ASEAN-Motor-Club/amc-server";
+                url = "https://github.com/ASEAN-Motor-Club";
                 tokenFile = config.age.secrets.github-runner-token.path;
                 package = nixpkgs-unstable.legacyPackages.${pkgs.system}.github-runner;
                 extraLabels = ["deploy-peripheral" "nix"];
