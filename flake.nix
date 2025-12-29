@@ -546,18 +546,17 @@
               };
 
               age.secrets.github-runner-token = {
-                file = ./secrets/github-runner-token.age;
+                file = ./secrets/github-runner-token-peripheral.age;
                 mode = "400";
               };
               age.secrets.github-runner-ssh = {
                 file = ./secrets/github-runner-ssh.age;
                 mode = "400";
-                owner = "github-runner-amc-peripheral-deploy";
-                path = "/var/lib/github-runner-amc-peripheral-deploy/.ssh/id_ed25519";
               };
 
               services.github-runners."amc-peripheral-deploy" = {
                 enable = true;
+                replace = true;  # Automatically replace existing runner with same name
                 url = "https://github.com/ASEAN-Motor-Club";
                 tokenFile = config.age.secrets.github-runner-token.path;
                 package = nixpkgs-unstable.legacyPackages.${pkgs.system}.github-runner;
