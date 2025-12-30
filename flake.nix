@@ -549,6 +549,7 @@
                 enable = true;
                 environmentFile = config.age.secrets.peripheral-bots.path;
                 cookiesPath = config.age.secrets.cookies.path;
+                dbPath = "/var/lib/radio/radio.db";
               };
 
               age.secrets.github-runner-token = {
@@ -561,7 +562,7 @@
               };
 
               services.github-runners."amc-peripheral-deploy" = {
-                enable = true;
+                enable = false;
                 replace = true;  # Automatically replace existing runner with same name
                 url = "https://github.com/ASEAN-Motor-Club";
                 tokenFile = config.age.secrets.github-runner-token.path;
