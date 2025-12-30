@@ -12,4 +12,5 @@ in {
   "github-runner-token-peripheral.age".publicKeys = [owner peripheral];
   "github-runner-ssh.age".publicKeys = [owner asean-mt-server peripheral];
   "peripheral-bots.age".publicKeys = [owner peripheral];
+  "discordlink-bot-token.age".publicKeys = [owner peripheral asean-mt-server];
 }
