@@ -497,7 +497,9 @@
                 config.services.amc-backend-containers.relpPort
               ];
 
-              services.amc-backend-containers = {
+              services.amc-backend-containers = let
+                necesseFifoPath = config.systemd.sockets.necesse-server.socketConfig.ListenFIFO;
+              in {
                 enable = true;
                 fqdn = "api.aseanmotorclub.com";
                 allowedHosts = [
@@ -510,9 +512,13 @@
                 port = 9000;
                 relpPort = 2514;
                 secretFile = ./secrets/backend.age;
-                necesseFifoPath = config.systemd.sockets.necesse-server.socketConfig.ListenFIFO;
+                extraBindMounts = {
+                  # For save files reading
+                  "/var/lib/motortown-server/MotorTown/Saved/".isReadOnly = true;
+                  "${necesseFifoPath}".isReadOnly = false;
+                };
                 backendSettings.environment = {
-                  NECESSE_FIFO_PATH = config.systemd.sockets.necesse-server.socketConfig.ListenFIFO;
+                  NECESSE_FIFO_PATH = necesseFifoPath;
                   MOD_SERVER_API_URL = "http://localhost:5001";
                   GAME_SERVER_API_URL = "http://localhost:8080";
                   EVENT_GAME_SERVER_API_URL = "http://127.0.0.1:8082";
