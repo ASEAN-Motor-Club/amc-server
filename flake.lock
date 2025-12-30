@@ -121,18 +121,14 @@
         "systems": "systems"
       },
       "locked": {
-        "lastModified": 1766921271,
-        "narHash": "sha256-1wmbuxfkk5bMIw6Zv1G4Bkyva7EURuvrzxMosutaa/E=",
-        "owner": "ASEAN-Motor-Club",
-        "repo": "eco-server",
-        "rev": "ca711b28fd2084bdc3cb5eec01d5c62d7785169a",
-        "type": "github"
+        "path": "./eco-server",
+        "type": "path"
       },
       "original": {
-        "owner": "ASEAN-Motor-Club",
-        "repo": "eco-server",
-        "type": "github"
-      }
+        "path": "./eco-server",
+        "type": "path"
+      },
+      "parent": []
     },
     "flake-parts": {
       "inputs": {

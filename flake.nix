@@ -14,7 +14,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     eco-server = {
-      url = "github:ASEAN-Motor-Club/eco-server";
+      url = "path:./eco-server";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -331,6 +331,7 @@
             openFirewall = true;
             enableLogStreaming = false;
             credentialsFile = config.age.secrets.ecoUserToken.path;
+            discordlinkSecretFile = config.age.secrets.discordlinkBotToken.path;
           };
           services.motortown-server = {
             enable = true;
@@ -465,6 +466,11 @@
               };
               age.secrets.ecoUserToken = {
                 file = ./secrets/ecoUserToken.age;
+                mode = "400";
+                owner = "steam";
+              };
+              age.secrets.discordlinkBotToken = {
+                file = ./secrets/discordlink-bot-token.age;
                 mode = "400";
                 owner = "steam";
               };
