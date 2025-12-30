@@ -53,7 +53,31 @@ jobs:
           git submodule sync --recursive
           git submodule update --init --recursive --force
 
-
+      - name: Update Submodule Reference
+        run: |
+          SUBMODULE="${{ github.event.client_payload.submodule }}"
+          SHA="${{ github.event.client_payload.sha }}"
+          
+          # Only update if triggered by repository_dispatch with payload
+          if [ -n "$SUBMODULE" ] && [ -n "$SHA" ]; then
+            # Extract just the repo name (e.g., "amc-backend" from "ASEAN-Motor-Club/amc-backend")
+            SUBMODULE_NAME=$(echo "$SUBMODULE" | cut -d'/' -f2)
+            
+            echo "Updating $SUBMODULE_NAME to $SHA"
+            cd "$SUBMODULE_NAME"
+            git fetch origin
+            git checkout "$SHA"
+            cd ..
+            
+            # Commit and push the submodule update
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add "$SUBMODULE_NAME"
+            git commit -m "chore: update $SUBMODULE_NAME to $SHA" || echo "No changes to commit"
+            git push
+          else
+            echo "No submodule payload; skipping reference update."
+          fi
 
       - name: Deploy
         run: |
