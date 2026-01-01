@@ -104,6 +104,9 @@
           proxyPass = "http://127.0.0.1:8000/stream";
           extraConfig = ''
             proxy_http_version 1.1;
+            proxy_connect_timeout 5s;
+            proxy_read_timeout 86400s;
+            proxy_send_timeout 86400s;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection "keep-alive";
             proxy_set_header Host $host;
@@ -121,6 +124,14 @@
           proxyPass = "http://127.0.0.1:8001/proxy";
           extraConfig = ''
             add_header Access-Control-Allow-Origin *;
+          '';
+        };
+        "/hls" = {
+          root = "/var/lib/radio";
+          extraConfig = ''
+            add_header Cache-Control "no-cache";
+            add_header Access-Control-Allow-Origin "*";
+            types { application/vnd.apple.mpegurl m3u8; }
           '';
         };
         "/routes" = {
@@ -178,6 +189,9 @@
           proxyPass = "http://127.0.0.1:8000/stream";
           extraConfig = ''
             proxy_http_version 1.1;
+            proxy_connect_timeout 5s;
+            proxy_read_timeout 86400s;
+            proxy_send_timeout 86400s;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection "keep-alive";
             proxy_set_header Host $host;
@@ -193,6 +207,9 @@
           proxyPass = "http://127.0.0.1:8000/stream";
           extraConfig = ''
             proxy_http_version 1.1;
+            proxy_connect_timeout 5s;
+            proxy_read_timeout 86400s;
+            proxy_send_timeout 86400s;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection "keep-alive";
             proxy_set_header Host $host;
@@ -256,21 +273,21 @@
       <admin>admin@aseanmotorclub.com</admin>
 
       <limits>
-        <clients>100</clients>
+        <clients>500</clients>
         <sources>2</sources>
-        <queue-size>524288</queue-size>
-        <client-timeout>30</client-timeout>
+        <queue-size>1048576</queue-size>
+        <client-timeout>120</client-timeout>
         <header-timeout>15</header-timeout>
         <source-timeout>10</source-timeout>
         <burst-on-connect>1</burst-on-connect>
-        <burst-size>128000</burst-size>
+        <burst-size>262144</burst-size>
       </limits>
 
       <mount>
         <mount-name>/stream</mount-name>
         <username>source</username>
         <password>hackme</password>
-        <max-listeners>100</max-listeners>
+        <max-listeners>500</max-listeners>
         <public>1</public>
         <stream-name>ASEAN Motor Club Radio</stream-name>
         <stream-description>Your home for automotive enthusiasm in Southeast Asia</stream-description>
