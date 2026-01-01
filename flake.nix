@@ -321,7 +321,7 @@
           ];
 
           services.necesse-server = {
-            enable = true;
+            enable = false;
             openFirewall = true;
             enableLogStreaming = true;
             ownerName = "freeman";
@@ -504,7 +504,7 @@
               ];
 
               services.amc-backend-containers = let
-                necesseFifoPath = config.systemd.sockets.necesse-server.socketConfig.ListenFIFO;
+                # necesseFifoPath = config.systemd.sockets.necesse-server.socketConfig.ListenFIFO;
               in {
                 enable = true;
                 fqdn = "api.aseanmotorclub.com";
@@ -521,10 +521,10 @@
                 extraBindMounts = {
                   # For save files reading
                   "/var/lib/motortown-server/MotorTown/Saved/".isReadOnly = true;
-                  "${necesseFifoPath}".isReadOnly = false;
+                  # "${necesseFifoPath}".isReadOnly = false;
                 };
                 backendSettings.environment = {
-                  NECESSE_FIFO_PATH = necesseFifoPath;
+                  # NECESSE_FIFO_PATH = necesseFifoPath;
                   MOD_SERVER_API_URL = "http://localhost:5001";
                   GAME_SERVER_API_URL = "http://localhost:8080";
                   EVENT_GAME_SERVER_API_URL = "http://127.0.0.1:8082";
@@ -556,6 +556,9 @@
                 environmentFile = config.age.secrets.peripheral-bots.path;
                 cookiesPath = config.age.secrets.cookies.path;
                 dbPath = "/var/lib/radio/radio.db";
+                # Pass the monorepo source path from inputs.self
+                jarvisRepoPath = inputs.self.outPath;
+                jarvisAiModel = "anthropic/claude-3.7-sonnet";
               };
 
               age.secrets.github-runner-token = {
