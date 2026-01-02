@@ -1,7 +1,5 @@
 {
-  lib,
   pkgs,
-  config,
   ...
 }: {
   imports = [
@@ -96,6 +94,9 @@
         };
         "/api" = {
           proxyPass = "http://asean-mt-server:9000/api";
+        };
+        "/admin" = {
+          proxyPass = "http://asean-mt-server:9000/admin";
         };
         "/login/token" = {
           proxyPass = "http://asean-mt-server:9000/login/token";
