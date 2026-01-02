@@ -316,7 +316,7 @@
           imports = [
             motortown-server.nixosModules.default
             necesse-server.nixosModules.default
-            eco-server.nixosModules.default
+            eco-server.nixosModules.amc
             self.nixosModules.gameSyslog
           ];
 
