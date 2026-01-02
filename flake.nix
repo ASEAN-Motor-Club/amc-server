@@ -514,6 +514,7 @@
                   "server.aseanmotorclub.com"
                   "www.aseanmotorclub.com"
                   "admin.aseanmotorclub.com"
+                  "asean-mt-server"
                 ];
                 port = 9000;
                 relpPort = 2514;
