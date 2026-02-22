@@ -97,6 +97,15 @@
     # Only allow PFS-enabled ciphers with AES256
     sslCiphers = "AES256+EECDH:AES256+EDH:!aNULL";
 
+    virtualHosts."eco.aseanmotorclub.com" = {
+      enableACME = true;
+      forceSSL = true;
+      locations = {
+        "/" = {
+          proxyPass = "http://127.0.0.1:3001";
+        };
+      };
+    };
     virtualHosts."server.aseanmotorclub.com" = {
       enableACME = true;
       default = true;
@@ -105,12 +114,14 @@
           proxyPass = "http://localhost:9000/api/player_positions/";
           recommendedProxySettings = true;
           extraConfig = ''
+            proxy_buffering off;
             add_header 'Access-Control-Allow-Origin' '*' always;
             add_header 'Access-Control-Allow-Methods' 'POST, PUT, DELETE, GET, PATCH, OPTIONS' always;
           '';
         };
         "/api" = {
           proxyPass = "http://127.0.0.1:9000/api";
+          recommendedProxySettings = true;
           extraConfig = ''
             add_header 'Access-Control-Allow-Origin' '*' always;
             add_header 'Access-Control-Allow-Methods' 'POST, PUT, DELETE, GET, PATCH, OPTIONS' always;
@@ -136,6 +147,9 @@
             add_header 'Access-Control-Allow-Origin' '*' always;
             add_header 'Access-Control-Allow-Methods' 'POST, PUT, DELETE, GET, PATCH, OPTIONS' always;
           '';
+        };
+        "/eco" = {
+          proxyPass = "http://127.0.0.1:3001";
         };
         "/" = {
           root = "/srv/www";
@@ -203,6 +217,7 @@
     description = "OpenCode Serve (Headless API)";
     after = ["network.target"];
     wantedBy = ["multi-user.target"];
+    path = [pkgs.git pkgs.ripgrep pkgs.fzf];
     serviceConfig = {
       Type = "simple";
       User = "opencode";
@@ -221,6 +236,7 @@
     description = "OpenCode Web UI";
     after = ["network.target" "opencode-serve.service"];
     wantedBy = ["multi-user.target"];
+    path = [pkgs.git pkgs.ripgrep pkgs.fzf];
     serviceConfig = {
       Type = "simple";
       User = "opencode";
