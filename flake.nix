@@ -126,7 +126,7 @@
                 enableMods = true;
                 restartSchedule = "3000-01-01 00:00:00";
                 betaBranch = "test";
-                modVersion = "dev-cpp";
+                modVersion = "v0.30.0";
                 enableExternalMods = {
                   qxZap_CranyUnlocked_P = true;
                   MajasDetailWorks7_17_P = true;
@@ -197,7 +197,7 @@
                 self.nixosModules.gameSyslog
               ];
               motortown-server = {
-                enable = true;
+                enable = false;
                 enableMods = true;
                 modVersion = "v12";
                 enableExternalMods = {
@@ -337,7 +337,7 @@
             enable = true;
             enableMods = true;
             enableLogStreaming = true;
-            modVersion = "v19";
+            modVersion = "v0.30.0";
             enableExternalMods = {
               MajasDetailWorks7_17_P = true;
               MajasMnTrailerworks7_17_P = true;
@@ -493,7 +493,17 @@
               pkgs,
               lib,
               ...
-            }: {
+            }: let
+              # === Container→Host Restart Bridge ===
+              # The container can't call host systemctl directly.
+              # Instead: container writes a trigger file → host systemd .path unit watches → starts the restart service.
+              restartTriggerDir = "/var/lib/motortown-restart-trigger";
+
+              # Wrapper script: writes a trigger file (runs inside the container)
+              restartScript = pkgs.writeShellScriptBin "restart-motortown" ''
+                echo "restart requested at $(date)" > ${restartTriggerDir}/trigger
+              '';
+            in {
               imports = [
                 amc-backend.nixosModules.containers
               ];
@@ -503,9 +513,7 @@
                 config.services.amc-backend-containers.relpPort
               ];
 
-              services.amc-backend-containers = let
-                # necesseFifoPath = config.systemd.sockets.necesse-server.socketConfig.ListenFIFO;
-              in {
+              services.amc-backend-containers = {
                 enable = true;
                 fqdn = "api.aseanmotorclub.com";
                 allowedHosts = [
@@ -522,15 +530,51 @@
                 extraBindMounts = {
                   # For save files reading
                   "/var/lib/motortown-server/MotorTown/Saved/".isReadOnly = true;
-                  # "${necesseFifoPath}".isReadOnly = false;
+                  # Bind-mount the restart wrapper script (read-only)
+                  "/usr/local/bin/restart-motortown" = {
+                    hostPath = "${restartScript}/bin/restart-motortown";
+                    isReadOnly = true;
+                  };
+                  # Bind-mount the shared trigger directory (writable)
+                  "${restartTriggerDir}" = {
+                    hostPath = restartTriggerDir;
+                    isReadOnly = false;
+                  };
                 };
                 backendSettings.environment = {
-                  # NECESSE_FIFO_PATH = necesseFifoPath;
                   MOD_SERVER_API_URL = "http://localhost:5001";
                   GAME_SERVER_API_URL = "http://localhost:8080";
                   EVENT_GAME_SERVER_API_URL = "http://127.0.0.1:8082";
                   EVENT_MOD_SERVER_API_URL = "http://localhost:5011";
+                  RESTART_MOTORTOWN_SCRIPT = "/usr/local/bin/restart-motortown";
                 };
+              };
+
+              # Create the trigger directory on the host
+              systemd.tmpfiles.rules = [
+                "d ${restartTriggerDir} 0777 root root -"
+              ];
+
+              # Host-side: watch for trigger file and start the restart service
+              systemd.paths.motortown-restart-trigger = {
+                description = "Watch for restart trigger from container";
+                wantedBy = [ "multi-user.target" ];
+                pathConfig = {
+                  PathChanged = "${restartTriggerDir}/trigger";
+                  Unit = "motortown-restart-triggered.service";
+                };
+              };
+
+              # Triggered by the .path unit — starts the existing motortown-server-restart service
+              systemd.services.motortown-restart-triggered = {
+                description = "Restart motortown-server (triggered from container)";
+                serviceConfig = {
+                  Type = "oneshot";
+                };
+                script = ''
+                  rm -f ${restartTriggerDir}/trigger
+                  systemctl start motortown-server-restart.service
+                '';
               };
             })
           ];
@@ -558,8 +602,24 @@
                 cookiesPath = config.age.secrets.cookies.path;
                 dbPath = "/var/lib/radio/radio.db";
                 # Pass the monorepo source path from inputs.self
-                jarvisRepoPath = inputs.self.outPath;
+                # Use cleanSource (filters .git, result, .DS_Store, etc.) + custom filter for heavy files
+                jarvisRepoPath = toString (pkgs.lib.cleanSourceWith {
+                  src = pkgs.lib.cleanSource inputs.self.outPath;
+                  filter = path: type:
+                    let baseName = baseNameOf path;
+                    in !(baseName == ".xwin-cache")
+                      && !(baseName == ".venv")
+                      && !(baseName == "package" && type == "directory")
+                      && !(baseName == "mods" && type == "directory")
+                      && !(pkgs.lib.hasPrefix "UE4SS_v" baseName)
+                      && !(pkgs.lib.hasSuffix ".pak" baseName)
+                      && !(pkgs.lib.hasSuffix ".zip" baseName)
+                      && !(pkgs.lib.hasSuffix ".dll" baseName);
+                });
                 jarvisAiModel = "anthropic/claude-3.7-sonnet";
+                sharry = {
+                  enable = true;
+                };
               };
 
               age.secrets.github-runner-token = {
