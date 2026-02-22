@@ -231,25 +231,6 @@
     };
   };
 
-  # Browser UI
-  systemd.services.opencode-web = {
-    description = "OpenCode Web UI";
-    after = ["network.target" "opencode-serve.service"];
-    wantedBy = ["multi-user.target"];
-    path = [pkgs.git pkgs.ripgrep pkgs.fzf];
-    serviceConfig = {
-      Type = "simple";
-      User = "opencode";
-      Group = "opencode";
-      WorkingDirectory = "/var/lib/opencode/workspace";
-      EnvironmentFile = config.age.secrets.opencode.path;
-      Environment = "HOME=/var/lib/opencode";
-      ExecStart = "${pkgs.opencode}/bin/opencode web --hostname 127.0.0.1 --port 4097";
-      Restart = "on-failure";
-      RestartSec = 5;
-    };
-  };
-
   # Ensure workspace directory exists
   systemd.tmpfiles.rules = [
     "d /var/lib/opencode/workspace 0755 opencode opencode -"
@@ -261,7 +242,7 @@
     enable = true;
     httpAddress = "http://127.0.0.1:4180";
     reverseProxy = true;
-    upstream = "http://127.0.0.1:4097";
+    upstream = "http://127.0.0.1:4096";
     provider = "github";
     github.org = "ASEAN-Motor-Club";
     cookie.domain = "code.aseanmotorclub.com";
