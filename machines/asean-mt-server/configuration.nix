@@ -212,23 +212,38 @@
   };
   users.groups.opencode = {};
 
-  # Headless API server (Tailscale-internal + localhost)
+  # Headless API server + web UI (v1.2.x serve includes web UI)
   systemd.services.opencode-serve = {
     description = "OpenCode Serve (Headless API)";
     after = ["network.target"];
     wantedBy = ["multi-user.target"];
-    path = [pkgs.git pkgs.ripgrep pkgs.fzf];
+    path = with pkgs; [git openssh gh ripgrep fzf coreutils jq];
+
+    environment = {
+      HOME = "/var/lib/opencode";
+      GIT_SSH_COMMAND = "ssh -i ${config.age.secrets.coding-agent-deploy-key.path} -o StrictHostKeyChecking=accept-new";
+    };
+
     serviceConfig = {
       Type = "simple";
       User = "opencode";
       Group = "opencode";
       WorkingDirectory = "/var/lib/opencode/workspace";
       EnvironmentFile = config.age.secrets.opencode.path;
-      Environment = "HOME=/var/lib/opencode";
-      ExecStart = "${pkgs.opencode}/bin/opencode serve --hostname 127.0.0.1 --port 4096";
       Restart = "on-failure";
       RestartSec = 5;
     };
+
+    script = ''
+      # GH_TOKEN for gh CLI (PR creation)
+      export GH_TOKEN="$(cat ${config.age.secrets.coding-agent-gh-token.path})"
+
+      # Configure git identity
+      git config --global user.name "AMC Coding Agent"
+      git config --global user.email "agent@aseanmotorclub.com"
+
+      exec ${pkgs.opencode}/bin/opencode serve --hostname 127.0.0.1 --port 4096
+    '';
   };
 
   # Ensure workspace directory exists

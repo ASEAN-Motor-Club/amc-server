@@ -15,4 +15,6 @@ in {
   "discordlink-bot-token.age".publicKeys = [owner peripheral asean-mt-server];
   "opencode.age".publicKeys = [owner asean-mt-server];
   "oauth2-proxy.age".publicKeys = [owner asean-mt-server];
+  "coding-agent-deploy-key.age".publicKeys = [owner asean-mt-server];
+  "coding-agent-gh-token.age".publicKeys = [owner asean-mt-server];
 }
