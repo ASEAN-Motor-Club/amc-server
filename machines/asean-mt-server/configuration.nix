@@ -88,6 +88,12 @@
     authKeyFile = config.age.secrets.tailscale.path;
   };
 
+  age.secrets.dokuwiki-oauth = {
+    file = ../../secrets/dokuwiki-oauth.age;
+    mode = "400";
+    owner = "dokuwiki";
+  };
+
   services.nginx = {
     enable = true;
     recommendedTlsSettings = true;
@@ -165,6 +171,11 @@
   security.acme.defaults.email = "contact@fmnxl.xyz";
   security.acme.acceptTerms = true;
 
+  services.nginx.virtualHosts."wiki.aseanmotorclub.com" = {
+    enableACME = true;
+    forceSSL = true;
+  };
+
   services.dokuwiki = {
     webserver = "nginx";
     sites = let
@@ -186,11 +197,31 @@
         sourceRoot = ".";
         installPhase = "mkdir -p $out; cp -R source/* $out/;";
       };
+      dokuwiki-plugin-oauth = pkgs.stdenv.mkDerivation {
+        name = "oauth";
+        src = fetchTarball {
+          url = "https://github.com/cosmocode/dokuwiki-plugin-oauth/archive/refs/heads/master.tar.gz";
+          sha256 = "sha256:1c0b6iwqsllk2fp2k77k4aavz84m6cfnddp51410pxlg19mf3wib";
+        };
+        sourceRoot = ".";
+        installPhase = "mkdir -p $out; cp -R * $out/;";
+      };
+      dokuwiki-plugin-oauthgeneric = pkgs.stdenv.mkDerivation {
+        name = "oauthgeneric";
+        src = fetchTarball {
+          url = "https://github.com/cosmocode/dokuwiki-plugin-oauthgeneric/archive/refs/heads/master.tar.gz";
+          sha256 = "sha256:1adgw67g32rmx4byx7iamikg3krynl4pyp1yjmfwvdlmq8zxvg81";
+        };
+        sourceRoot = ".";
+        installPhase = "mkdir -p $out; cp -R * $out/;";
+      };
     in {
       "wiki.aseanmotorclub.com" = {
         plugins = [
           dokuwiki-plugin-infobox
           dokuwiki-plugin-imagebox
+          dokuwiki-plugin-oauth
+          dokuwiki-plugin-oauthgeneric
         ];
         settings = {
           title = "ASEAN Motor Club";
@@ -198,6 +229,18 @@
           useacl = false;
           userewrite = true;
           updatecheck = false;
+          
+          authtype = "oauth";
+          plugin____oauth____registerOnAuth = true;
+          plugin____oauthgeneric____key = "dokuwiki";
+          plugin____oauthgeneric____secret._file = config.age.secrets.dokuwiki-oauth.path;
+          plugin____oauthgeneric____authurl = "https://api.aseanmotorclub.com/o/authorize/";
+          plugin____oauthgeneric____tokenurl = "https://api.aseanmotorclub.com/o/token/";
+          plugin____oauthgeneric____userurl = "https://api.aseanmotorclub.com/api/users/me/";
+          plugin____oauthgeneric____json_user = "user";
+          plugin____oauthgeneric____json_name = "name";
+          plugin____oauthgeneric____json_mail = "mail";
+          plugin____oauthgeneric____json_grps = "grps";
         };
       };
     };
