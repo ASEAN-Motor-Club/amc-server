@@ -16,4 +16,5 @@ in {
   "opencode.age".publicKeys = [owner asean-mt-server];
   "oauth2-proxy.age".publicKeys = [owner asean-mt-server];
   "coding-agent-app-key.age".publicKeys = [owner asean-mt-server];
+  "dokuwiki-oauth.age".publicKeys = [owner asean-mt-server];
 }
