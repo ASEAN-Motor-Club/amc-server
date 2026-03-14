@@ -140,9 +140,12 @@
           root = "/srv/www";
         };
         "/stream_high" = {
-          proxyPass = "http://127.0.0.1:8000/stream";
+          proxyPass = "http://127.0.0.1:8000/stream_high";
           extraConfig = ''
             proxy_http_version 1.1;
+            proxy_connect_timeout 5s;
+            proxy_read_timeout 86400s;
+            proxy_send_timeout 86400s;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection "keep-alive";
             proxy_set_header Host $host;
@@ -150,6 +153,8 @@
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_buffering off;  # Disable buffering for streaming
             proxy_cache off;      # Ensure no cache is used for streaming data
+            gzip off; # Don't try to compress an already compressed media stream
+            access_log off;
             # Optionally, add the header to explicitly disable internal buffering
             add_header X-Accel-Buffering no;
           '';
@@ -206,7 +211,7 @@
           '';
         };
         "/stream_high" = {
-          proxyPass = "http://127.0.0.1:8000/stream";
+          proxyPass = "http://127.0.0.1:8000/stream_high";
           extraConfig = ''
             proxy_http_version 1.1;
             proxy_connect_timeout 5s;
@@ -219,6 +224,8 @@
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_buffering off;  # Disable buffering for streaming
             proxy_cache off;      # Ensure no cache is used for streaming data
+            gzip off;
+            access_log off;
             # Optionally, add the header to explicitly disable internal buffering
             add_header X-Accel-Buffering no;
           '';
@@ -301,9 +308,9 @@
         <clients>500</clients>
         <sources>2</sources>
         <queue-size>1048576</queue-size>
-        <client-timeout>120</client-timeout>
+        <client-timeout>300</client-timeout>
         <header-timeout>15</header-timeout>
-        <source-timeout>10</source-timeout>
+        <source-timeout>30</source-timeout>
         <burst-on-connect>1</burst-on-connect>
         <burst-size>262144</burst-size>
       </limits>
