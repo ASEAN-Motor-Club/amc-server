@@ -48,6 +48,7 @@
 
     virtualHosts."www.aseanmotorclub.com" = {
       enableACME = true;
+      forceSSL = true;
       locations = {
         "/" = {
           root = "/var/www/www.aseanmotorclub.com";
