@@ -93,6 +93,12 @@
             }
           '';
         };
+        "/releases/" = {
+          alias = "/var/lib/mod-releases/";
+          extraConfig = ''
+            autoindex on;
+          '';
+        };
         "/api" = {
           proxyPass = "http://asean-mt-server:9000/api";
         };
@@ -374,6 +380,7 @@
   systemd.tmpfiles.rules = [
     "d /var/www 0755 root root -"
     "d /var/www/www.aseanmotorclub.com 0755 sftpuser sftpuser -"
+    "d /var/lib/mod-releases 0755 root root -"
   ];
 
   services.openssh.extraConfig = ''

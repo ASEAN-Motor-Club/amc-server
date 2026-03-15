@@ -128,7 +128,7 @@
                 enableMods = true;
                 restartSchedule = "3000-01-01 00:00:00";
                 betaBranch = "test";
-                modVersion = "v0.30.0";
+                modVersion = "v0.31.0-rc1";
                 enableExternalMods = {
                   qxZap_CranyUnlocked_P = true;
                   MajasDetailWorks7_17_P = true;
@@ -508,6 +508,10 @@
                 owner = "opencode";
                 mode = "400";
               };
+              age.secrets.backend = {
+                file = ./secrets/backend.age;
+                mode = "400";
+              };
             })
 
 
@@ -531,6 +535,7 @@
             in {
               imports = [
                 amc-backend.nixosModules.containers
+                (import ./nix/db_backup.nix)
               ];
 
               # Expose log server on tailscale interface only
