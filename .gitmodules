@@ -13,3 +13,6 @@
 [submodule "amc-peripheral"]
 	path = amc-peripheral
 	url = ../amc-peripheral.git
+[submodule "MTDediMod"]
+	path = MTDediMod
+	url = https://github.com/ASEAN-Motor-Club/MTDediMod.git
