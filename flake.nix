@@ -263,7 +263,7 @@
             enableMods = true;
             enableLogStreaming = true;
             # modVersion = "server-v0.37.5";
-            modVersion = "server-v0.39.0-rc2";
+            modVersion = "server-v0.39.0-rc5";
             enableExternalMods = {
               "MajasDetailWorksV3-7.18_P" = true;
               "MajasMnTrailerworksV6-7.18_P" = true;
@@ -275,8 +275,9 @@
               mh.maxCombinedVehicleLength=10000
               mh.fuelPriceByInventoryMax=3
               mh.housingValidateHousingArea=0
+              mh.housingMaxBuildingPerHouse=120
               mh.invalidPartsDisableLeaderboard=0
-              mh.refuelEVMinPercentPerSeconds=0.001000000026077032
+              mh.refuelEVMinPercentPerSeconds=0.002000000026077032
               mh.refuelkWPerSeconds=0.2
               mh.trafficSpawnVehicleMaxDistance=40000.0
               mh.trafficSpawnVehicleMinDistance=25000.0
@@ -795,7 +796,7 @@
                 maxFps = 30;
                 restartSchedule = "3000-01-01 00:00:00";
                 betaBranch = "beta";
-                modVersion = "server-v0.39.0-rc5";
+                modVersion = "server-v0.39.0-rc6";
                 enableExternalMods = {
                   CarPartsImport_P = false;
                   MoneyRun_P = false;
