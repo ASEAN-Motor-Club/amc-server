@@ -580,6 +580,8 @@ in {
     "d /var/lib/data/radio 0755 root root -"
     "d /var/lib/data/opencode 0755 opencode opencode -"
     "d /var/lib/data/mod-releases 0775 steam modders -"
+    "d /var/lib/data/amc-memory 0755 root root -"
+    "d /var/lib/data/amc-memory-bot 0755 root root -"
     # OpenCode workspace directories (created on the volume via bind mount)
     "d /var/lib/opencode 0755 opencode opencode -"
     "d /var/lib/opencode/workspace 0755 opencode opencode -"
