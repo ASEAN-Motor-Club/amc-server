@@ -263,7 +263,7 @@
             enableMods = true;
             enableLogStreaming = true;
             # modVersion = "server-v0.37.5";
-            modVersion = "server-v0.39.0-rc5";
+            modVersion = "server-v0.39.0-rc8";
             enableExternalMods = {
               "MajasDetailWorksV3-7.18_P" = true;
               "MajasMnTrailerworksV6-7.18_P" = true;
@@ -341,7 +341,7 @@
               MaxHousingPlotRentalDays = 15;
               HousingPlotRentalPriceRatio = 0.1;
               bAllowModdedVehicle = true;
-              NPCVehicleDensity = 0.5;
+              NPCVehicleDensity = 0.3;
               NPCPoliceDensity = 0.0;
               bEnableHostWebAPIServer = true;
               HostWebAPIServerPassword = "";
@@ -780,6 +780,7 @@
                   CHAT_VIA_WEBHOOK = "1";
                   CACHE_KEY_PREFIX = "test_";
                   IS_TEST_SERVER = "1";
+                  GAME_LOG_TIMEZONE = "UTC";
                 };
               };
 
@@ -796,7 +797,7 @@
                 maxFps = 30;
                 restartSchedule = "3000-01-01 00:00:00";
                 betaBranch = "beta";
-                modVersion = "server-v0.39.0-rc6";
+                modVersion = "server-v0.39.0-rc8";
                 enableExternalMods = {
                   CarPartsImport_P = false;
                   MoneyRun_P = false;
