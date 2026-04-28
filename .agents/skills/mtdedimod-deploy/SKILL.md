@@ -205,6 +205,9 @@ modVersion = "server-v0.34.0-rc5";
 modVersion = "server-v0.33.0-rc7";
 ```
 
+> [!WARNING]
+> **Don't update the wrong `modVersion`!** The flake has two `modVersion` entries — one for the **main server** (asean-mt-server, inside `nixosModules.motortown-server` around line 266) and one for the **staging/test server** (amc-peripheral, inside the staging server config around line 800). When deploying to the test server, only update the staging `modVersion`. When promoting to production, only update the main server `modVersion`. Updating the wrong one will deploy an untested mod version to production or leave the test server on a stale version.
+
 **No hash calculation needed** — the mod is downloaded at runtime via `curl` during service `preStart`.
 
 ### 7. Deploy and restart
