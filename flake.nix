@@ -490,6 +490,8 @@
                   UPDATE_MOTORTOWN_SCRIPT = "${updateScript}/bin/update-motortown";
                   PARTY_BONUS_ENABLED = "1";
                   WEBHOOK_SSE_ENABLED = "1";
+                  DISCORD_CRIMINAL_STATS_CHANNEL_ID = "1486645816042061864";
+                  DISCORD_COP_STATS_CHANNEL_ID = "1486645931595272222";
                 };
               };
 
@@ -797,7 +799,7 @@
                 maxFps = 30;
                 restartSchedule = "3000-01-01 00:00:00";
                 betaBranch = "beta";
-                modVersion = "server-v0.39.0-rc8";
+                modVersion = "server-v0.40.0-rc1";
                 enableExternalMods = {
                   CarPartsImport_P = false;
                   MoneyRun_P = false;
