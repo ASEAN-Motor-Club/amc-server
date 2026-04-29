@@ -486,6 +486,8 @@
                   GAME_SERVER_API_URL = "http://localhost:8080";
                   EVENT_GAME_SERVER_API_URL = "http://127.0.0.1:8082";
                   EVENT_MOD_SERVER_API_URL = "http://localhost:5011";
+                  MOD_MANAGEMENT_API_URL = "http://localhost:5000";
+                  EVENT_MOD_MANAGEMENT_API_URL = "http://localhost:5010";
                   RESTART_MOTORTOWN_SCRIPT = "${restartScript}/bin/restart-motortown";
                   UPDATE_MOTORTOWN_SCRIPT = "${updateScript}/bin/update-motortown";
                   PARTY_BONUS_ENABLED = "1";
@@ -777,6 +779,7 @@
                   GAME_SERVER_API_URL = "http://localhost:8081";
                   MOD_SERVER_API_URL = "http://localhost:5001";
                   WEBHOOK_SERVER_API_URL = "http://localhost:5000";
+                  MOD_MANAGEMENT_API_URL = "http://localhost:5000";
                   PARTY_BONUS_ENABLED = "1";
                   WEBHOOK_SSE_ENABLED = "1";
                   CHAT_VIA_WEBHOOK = "1";
@@ -799,7 +802,7 @@
                 maxFps = 30;
                 restartSchedule = "3000-01-01 00:00:00";
                 betaBranch = "beta";
-                modVersion = "server-v0.40.0-rc1";
+                modVersion = "server-v0.40.0-rc5";
                 enableExternalMods = {
                   CarPartsImport_P = false;
                   MoneyRun_P = false;
@@ -856,7 +859,7 @@
                   MaxHousingPlotRentalDays = 180;
                   HousingPlotRentalPriceRatio = 0.0001;
                   bAllowModdedVehicle = true;
-                  NPCVehicleDensity = 0.0;
+                  NPCVehicleDensity = 1.0;
                   NPCPoliceDensity = 0.0;
                   bEnableHostWebAPIServer = true;
                   HostWebAPIServerPassword = "";
@@ -870,9 +873,8 @@
                 };
               };
 
-              systemd.services.motortown-server.serviceConfig = {
-                CPUAffinity = lib.mkForce "";
-              };
+              # Use default CPUAffinity from motortown-server.nix ("0 1 2 3")
+              # to isolate game server from backend services on shared host.
 
               networking.firewall.allowedTCPPorts = [
                 9001
