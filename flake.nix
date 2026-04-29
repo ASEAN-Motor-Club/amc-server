@@ -268,7 +268,7 @@
               "MajasDetailWorksV3-7.18_P" = true;
               "MajasMnTrailerworksV6-7.18_P" = true;
               qxZap_CranyUnlocked_P = true;
-              "Schedule_I_v0.3.0_0.7.18+1_P" = true;
+              "Schedule_I_v0.3.1_0.7.18+1_P" = true;
               qxZap_satigt3_MoreAttachments_P = true;
             };
             engineIni = ''
@@ -802,14 +802,14 @@
                 maxFps = 30;
                 restartSchedule = "3000-01-01 00:00:00";
                 betaBranch = "beta";
-                modVersion = "server-v0.40.0-rc5";
+                modVersion = "server-v0.40.0-rc8";
                 enableExternalMods = {
                   CarPartsImport_P = false;
                   MoneyRun_P = false;
                   qxZap_CranyUnlocked_P = false;
                   "MajasDetailWorksV3-7.18_P" = false;
                   "MajasMnTrailerworksV6-7.18_P" = false;
-                  "Schedule_I_v0.3.0_0.7.18+1_P" = true;
+                  "Schedule_I_v0.3.1_0.7.18+1_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
@@ -859,7 +859,7 @@
                   MaxHousingPlotRentalDays = 180;
                   HousingPlotRentalPriceRatio = 0.0001;
                   bAllowModdedVehicle = true;
-                  NPCVehicleDensity = 1.0;
+                  NPCVehicleDensity = 0.01;
                   NPCPoliceDensity = 0.0;
                   bEnableHostWebAPIServer = true;
                   HostWebAPIServerPassword = "";
