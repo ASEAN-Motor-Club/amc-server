@@ -673,7 +673,7 @@ in {
         "provider": {
           "openrouter": {}
         },
-        "model": "opencode/mimo-v2-pro-free",
+        "model": "xiaomi/mimo-v2.5-pro",
         "command": {
           "pr": {
             "description": "commit, push, and create a PR from current changes",
