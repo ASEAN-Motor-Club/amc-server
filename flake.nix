@@ -263,7 +263,7 @@
             enableMods = true;
             enableLogStreaming = true;
             # modVersion = "server-v0.37.5";
-            modVersion = "server-v0.39.0-rc8";
+            modVersion = "server-v0.40.0-rc8";
             enableExternalMods = {
               "MajasDetailWorksV3-7.18_P" = true;
               "MajasMnTrailerworksV6-7.18_P" = true;
@@ -339,7 +339,7 @@
               bAllowCorporation = false;
               MaxHousingPlotRentalPerPlayer = 1;
               MaxHousingPlotRentalDays = 15;
-              HousingPlotRentalPriceRatio = 0.1;
+              HousingPlotRentalPriceRatio = 5.0;
               bAllowModdedVehicle = true;
               NPCVehicleDensity = 0.3;
               NPCPoliceDensity = 0.0;
@@ -366,25 +366,6 @@
             ./machines/asean-mt-server/configuration.nix
             ragenix.nixosModules.default
 
-            # Use opencode from the official flake — nixpkgs versions are too old.
-            # Mark prettier as external so bun's bundler skips resolving it.
-            # Only the dev-only `generate` command imports prettier; `serve` doesn't.
-            ({pkgs, ...}: {
-              nixpkgs.overlays = [
-                (final: prev: {
-                  opencode = (opencode.packages.${prev.system}.default).overrideAttrs (old: {
-                    postPatch =
-                      (old.postPatch or "")
-                      + ''
-                        substituteInPlace packages/opencode/script/build.ts \
-                          --replace-fail 'external: ["node-gyp"]' \
-                            'external: ["node-gyp", "prettier", "prettier/plugins/babel", "prettier/plugins/estree"]'
-                      '';
-                  });
-                })
-              ];
-            })
-
             ({...}: {
               imports = [
                 ragenix.nixosModules.default
@@ -409,19 +390,6 @@
                 owner = "steam";
               };
 
-              age.secrets.opencode = {
-                file = ./secrets/opencode.age;
-                mode = "400";
-              };
-              age.secrets.oauth2-proxy = {
-                file = ./secrets/oauth2-proxy.age;
-                mode = "400";
-              };
-              age.secrets.coding-agent-app-key = {
-                file = ./secrets/coding-agent-app-key.age;
-                owner = "opencode";
-                mode = "400";
-              };
               age.secrets.backend = {
                 file = ./secrets/backend.age;
                 mode = "400";
@@ -856,8 +824,8 @@
                   bAllowPlayerToJoinWithCompanyVehicles = true;
                   bAllowCompanyAIDriver = true;
                   MaxHousingPlotRentalPerPlayer = 20;
-                  MaxHousingPlotRentalDays = 180;
-                  HousingPlotRentalPriceRatio = 0.0001;
+                  MaxHousingPlotRentalDays = 15;
+                  HousingPlotRentalPriceRatio = 5.0;
                   bAllowModdedVehicle = true;
                   NPCVehicleDensity = 0.01;
                   NPCPoliceDensity = 0.0;

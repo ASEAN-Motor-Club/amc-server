@@ -203,81 +203,8 @@
   security.acme.defaults.email = "contact@fmnxl.xyz";
   security.acme.acceptTerms = true;
 
-  # === OpenCode ===
-  users.users.opencode = {
-    isSystemUser = true;
-    group = "opencode";
-    home = "/var/lib/opencode";
-    createHome = true;
-  };
-  users.groups.opencode = {};
-
-  # Headless API server + web UI (v1.2.x serve includes web UI)
-  systemd.services.opencode-serve = {
-    description = "OpenCode Serve (Headless API)";
-    after = ["network.target"];
-    wantedBy = ["multi-user.target"];
-    path = with pkgs; [git openssh gh ripgrep fzf coreutils jq openssl curl];
-
-    environment = {
-      HOME = "/var/lib/opencode";
-      GITHUB_APP_ID = "2922326";
-      GITHUB_INSTALLATION_ID = "111712229";
-    };
-
-    serviceConfig = {
-      Type = "simple";
-      User = "opencode";
-      Group = "opencode";
-      WorkingDirectory = "/var/lib/opencode/workspace";
-      EnvironmentFile = config.age.secrets.opencode.path;
-      Restart = "on-failure";
-      RestartSec = 5;
-    };
-
-    script = ''
-      set -euo pipefail
-
-      # --- Generate GitHub App installation token ---
-      APP_KEY="${config.age.secrets.coding-agent-app-key.path}"
-      NOW=$(date +%s)
-      IAT=$((NOW - 60))
-      EXP=$((NOW + 600))
-
-      # Base64url encode helper
-      b64url() { openssl base64 -e -A | tr '+/' '-_' | tr -d '='; }
-
-      HEADER=$(echo -n '{"alg":"RS256","typ":"JWT"}' | b64url)
-      PAYLOAD=$(echo -n "{\"iat\":$IAT,\"exp\":$EXP,\"iss\":\"$GITHUB_APP_ID\"}" | b64url)
-      SIGNATURE=$(echo -n "$HEADER.$PAYLOAD" | openssl dgst -sha256 -sign "$APP_KEY" | b64url)
-      JWT="$HEADER.$PAYLOAD.$SIGNATURE"
-
-      # Exchange JWT for installation access token
-      RESPONSE=$(curl -s -X POST \
-        -H "Authorization: Bearer $JWT" \
-        -H "Accept: application/vnd.github+json" \
-        "https://api.github.com/app/installations/$GITHUB_INSTALLATION_ID/access_tokens")
-
-      export GH_TOKEN=$(echo "$RESPONSE" | jq -r '.token')
-      if [ "$GH_TOKEN" = "null" ] || [ -z "$GH_TOKEN" ]; then
-        echo "ERROR: Failed to get installation token: $RESPONSE"
-        exit 1
-      fi
-      echo "GitHub App token acquired"
-
-      # Configure git to use HTTPS with token
-      git config --global user.name "AMC Coding Agent[bot]"
-      git config --global user.email "2922326+amc-coding-agent[bot]@users.noreply.github.com"
-      git config --global url."https://x-access-token:$GH_TOKEN@github.com/".insteadOf "https://github.com/"
-      git config --global url."https://x-access-token:$GH_TOKEN@github.com/".insteadOf "git@github.com:"
-
-      exec ${pkgs.opencode}/bin/opencode serve --hostname 127.0.0.1 --port 4096
-    '';
-  };
-
   # Ensure workspace directory exists
   systemd.tmpfiles.rules = [
-    "d /var/lib/opencode/workspace 0755 opencode opencode -"
     "d /var/lib/mod-releases 0775 steam modders -"
     # Transparent Huge Pages: reduces TLB misses for game server's 7.6 GB working set.
     # Wine/Proton won't call madvise(), so 'always' is needed.
@@ -285,39 +212,4 @@
     "w /sys/kernel/mm/transparent_hugepage/enabled - - - - always"
     "w /sys/kernel/mm/transparent_hugepage/defrag - - - - defer+madvise"
   ];
-
-  # oauth2-proxy: GitHub authentication for OpenCode web UI
-  services.oauth2-proxy = {
-    enable = true;
-    httpAddress = "http://127.0.0.1:4180";
-    reverseProxy = true;
-    upstream = "http://127.0.0.1:4096";
-    provider = "github";
-    github.org = "ASEAN-Motor-Club";
-    cookie.domain = "code.aseanmotorclub.com";
-    cookie.secure = true;
-    email.domains = ["*"];
-    setXauthrequest = true;
-    extraConfig = {
-      skip-provider-button = "true";
-    };
-    keyFile = config.age.secrets.oauth2-proxy.path;
-  };
-
-  # Nginx vhost for OpenCode web UI (behind oauth2-proxy)
-  services.nginx.virtualHosts."code.aseanmotorclub.com" = {
-    enableACME = true;
-    forceSSL = true;
-    locations."/" = {
-      proxyPass = "http://127.0.0.1:4180";
-      extraConfig = ''
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-      '';
-    };
-  };
 }

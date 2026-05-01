@@ -745,11 +745,9 @@ in {
       | Radio bots | `amc-radio` | Liquidsoap radio + Discord bots |
       | Fallback stream | `fallback` | Fallback radio stream |
       | Discord bots | `amc-bot` | Discord bots |
-      | Kimaki | `kimaki` | Discord↔OpenCode bridge (Jarvis) |
+      | Kimaki | `kimaki` | Discord↔OpenCode bridge (Jarvis) — spawns its own opencode serve on port 33405 |
       | Nginx | `nginx` | Reverse proxy for all web services |
       | Tailscale | `tailscale` | VPN for SSH access |
-      | OpenCode Serve | `opencode-serve` | This agent's API (port 4096) |
-      | OpenCode Web | `opencode-web` | This agent's web UI (port 4097) |
       | OAuth2 Proxy | `oauth2-proxy` | GitHub auth for web UI (port 4180) |
 
       ### Check service status
@@ -796,92 +794,74 @@ in {
       - The Django backend runs on `asean-mt-server` (a separate host)
       - The `amc-peripheral` Python package (radio bots, Discord bots) is in
         the `amc-peripheral/` submodule
+
+      ## Development Tools (Nix Flakes)
+
+      This monorepo uses **Nix flakes** to provide all development tools.
+      Python, pytest, ruff, and other tools are **NOT** installed globally —
+      they are only available inside nix devShells.
+
+      A **PostgreSQL** instance with PostGIS is running at `/run/postgresql`
+      (shared with the staging backend). The `PGHOST` and `PGUSER` env vars
+      are pre-configured, so Django and psql connect automatically.
+
+      ### Running tests
+
+      Use `nix develop` to enter a devShell with Python, pytest, and all
+      dependencies. pytest-django creates a temporary test database
+      (`test_amc`) automatically — no manual `migrate` needed:
+
+      ```bash
+      # Run specific tests
+      nix develop ./amc-backend --override-input amc-backend ./amc-backend -c bash -c '
+        python -m pytest src/amc/test_criminals.py -v --tb=short
+      '
+
+      # Run the full suite
+      nix develop ./amc-backend --override-input amc-backend ./amc-backend -c bash -c '
+        python -m pytest src/ --tb=short -q
+      '
+      ```
+
+      Alternatively, `nix flake check` runs the full suite in an **isolated
+      sandbox** with its own temporary Postgres (slower but fully self-contained):
+
+      ```bash
+      nix flake check ./amc-backend -L --override-input amc-backend ./amc-backend
+      ```
+
+      Lint and type check (no database needed):
+
+      ```bash
+      nix flake check ./amc-backend#ruff --override-input amc-backend ./amc-backend
+      nix flake check ./amc-backend#pyrefly --override-input amc-backend ./amc-backend
+      ```
+
+      ### Important
+
+      - Always run Python/pytest inside `nix develop ./amc-backend` so the
+        correct virtualenv and native libraries (GEOS, GDAL, PostGIS) are available.
+      - Do **NOT** use `pip install` or `uv sync` directly — the Nix devShell
+        manages the Python environment via uv2nix.
+      - When running in a worktree, pass `--override-input` to point at the
+        local submodule checkout.
+      - pytest-django handles test database creation/deletion. Do NOT run
+        `migrate` against the main `amc` database — it's used by the staging
+        backend. Tests use `test_amc` which pytest-django manages automatically.
       AGENTS_EOF
 
       echo "Workspace ready at $REPO_DIR"
     '';
   };
 
-  # ── OpenCode serve (persistent API server) ─────────────────────────
-  systemd.services.opencode-serve = {
-    description = "OpenCode Serve (Headless API)";
-    after = ["network-online.target" "opencode-workspace.service"];
-    wants = ["network-online.target" "opencode-workspace.service"];
-    wantedBy = ["multi-user.target"];
-    path = with pkgs; [git openssh gh ripgrep fzf coreutils jq openssl curl nix nixos-rebuild] ++ [git-credential-github-app gh-token];
-
-    environment = {
-      HOME = "/var/lib/opencode";
-    };
-
-    serviceConfig = {
-      Type = "simple";
-      User = "opencode";
-      Group = "opencode";
-      WorkingDirectory = "/var/lib/opencode/workspace";
-      EnvironmentFile = config.age.secrets.opencode-peripheral.path;
-      Restart = "on-failure";
-      RestartSec = 5;
-    };
-
-    script = ''
-      set -euo pipefail
-
-      # Git credential helper is deployed by opencode-workspace service.
-      # It generates fresh GitHub App tokens on every git operation.
-
-      # Write auth.json for opencode credential store
-      mkdir -p "$HOME/.local/share/opencode"
-      echo "{\"openrouter\":{\"apiKey\":\"$OPENROUTER_API_KEY\"}}" \
-        | jq . > "$HOME/.local/share/opencode/auth.json"
-
-      exec ${pkgs.opencode}/bin/opencode serve --hostname 127.0.0.1 --port 4096
-    '';
-  };
-
-  # ── OpenCode web (interactive web UI) ──────────────────────────────
-  systemd.services.opencode-web = {
-    description = "OpenCode Web UI";
-    after = ["network-online.target" "opencode-workspace.service"];
-    wants = ["network-online.target" "opencode-workspace.service"];
-    wantedBy = ["multi-user.target"];
-    path = with pkgs; [git openssh gh ripgrep fzf coreutils jq openssl curl nix nixos-rebuild] ++ [git-credential-github-app gh-token];
-
-    environment = {
-      HOME = "/var/lib/opencode";
-    };
-
-    serviceConfig = {
-      Type = "simple";
-      User = "opencode";
-      Group = "opencode";
-      WorkingDirectory = "/var/lib/opencode/workspace";
-      EnvironmentFile = config.age.secrets.opencode-peripheral.path;
-      Restart = "on-failure";
-      RestartSec = 5;
-    };
-
-    script = ''
-      set -euo pipefail
-
-      # Git credential helper is deployed by opencode-workspace service.
-      # It generates fresh GitHub App tokens on every git operation.
-
-      mkdir -p "$HOME/.local/share/opencode"
-      echo "{\"openrouter\":{\"apiKey\":\"$OPENROUTER_API_KEY\"}}" \
-        | jq . > "$HOME/.local/share/opencode/auth.json"
-
-      exec ${pkgs.opencode}/bin/opencode web --port 4097 --hostname 127.0.0.1
-    '';
-  };
-
   # ── Kimaki (Discord↔OpenCode bridge) ───────────────────────────────
   # Replaces the old amc-jarvis bot. Uses the Jarvis Discord bot token
   # to bridge Discord messages directly into OpenCode coding sessions.
+  # Kimaki spawns its own opencode serve on port 33405.
   systemd.services.kimaki = {
     description = "Kimaki – Discord↔OpenCode Bridge";
-    after = ["network-online.target" "opencode-serve.service"];
-    wants = ["network-online.target" "opencode-serve.service"];
+    after = ["network-online.target" "opencode-workspace.service"];
+    wants = ["network-online.target" "opencode-workspace.service"];
     wantedBy = ["multi-user.target"];
 
     serviceConfig = {
@@ -897,7 +877,15 @@ in {
       RestartSec = 10;
     };
 
-    path = with pkgs; [opencode bun bash git openssh gh coreutils nodejs unzip which];
+    environment = {
+      PGHOST = "/run/postgresql";
+      PGUSER = "amc";
+      REDIS_PORT = "6379";
+      GEOS_LIBRARY_PATH = "${pkgs.geos}/lib/libgeos_c.so";
+      GDAL_LIBRARY_PATH = "${pkgs.gdal}/lib/libgdal.so";
+    };
+
+    path = with pkgs; [opencode bun bash git openssh gh coreutils nodejs unzip which nix direnv];
 
     script = ''
       set -euo pipefail
@@ -934,6 +922,11 @@ in {
 
     environment = {
       HOME = "/var/lib/opencode";
+      PGHOST = "/run/postgresql";
+      PGUSER = "amc";
+      REDIS_PORT = "6379";
+      GEOS_LIBRARY_PATH = "${pkgs.geos}/lib/libgeos_c.so";
+      GDAL_LIBRARY_PATH = "${pkgs.gdal}/lib/libgdal.so";
     };
 
     path = with pkgs; [git openssh gh coreutils jq openssl curl nix opencode] ++ [git-credential-github-app gh-token];
