@@ -78,6 +78,16 @@ in {
 
   boot.tmp.cleanOnBoot = true;
 
+  # ── Swap ────────────────────────────────────────────────────────────
+  # 8GB swap file on the data volume to prevent OOM kills from
+  # kimaki/opencode (UAssetTool can grow to 11GB RSS).
+  swapDevices = [
+    {
+      device = "/var/lib/data/swapfile";
+      size = 8 * 1024; # 8GB in MB
+    }
+  ];
+
   # ── Disk space management ──────────────────────────────────────────
   # Cap journal logs to prevent unbounded growth (was 4GB+ uncapped)
   services.journald.extraConfig = ''
