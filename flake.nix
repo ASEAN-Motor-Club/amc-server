@@ -777,7 +777,7 @@
                   qxZap_CranyUnlocked_P = false;
                   "MajasDetailWorksV3-7.18_P" = false;
                   "MajasMnTrailerworksV6-7.18_P" = false;
-                  "Schedule_I_v0.3.1_0.7.18+1_P" = true;
+                  "Schedule_I_v0.3.2_0.7.18+1_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
