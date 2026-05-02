@@ -777,7 +777,7 @@
                   qxZap_CranyUnlocked_P = false;
                   "MajasDetailWorksV3-7.18_P" = false;
                   "MajasMnTrailerworksV6-7.18_P" = false;
-                  "Schedule_I_v0.3.2_0.7.18+1_P" = true;
+                  "Schedule_I_v0.4.0_0.7.18+1_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
@@ -812,6 +812,10 @@
                   MOD_SERVER_PORT = "5001";
                   MOD_MANAGEMENT_PORT = "5000";
                   MOD_WEBHOOK_ENABLE_EVENTS = "none";
+                  MOD_AUTO_INJECT_DP = "1";
+                  MOD_INJECT_DP_LOC_X = "-290000";
+                  MOD_INJECT_DP_LOC_Y = "190000";
+                  MOD_INJECT_DP_LOC_Z = "-21900";
                 };
                 credentialsFile = config.age.secrets.steam-game.path;
                 dedicatedServerConfig = {
