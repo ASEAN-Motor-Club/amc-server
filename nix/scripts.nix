@@ -177,7 +177,25 @@
         echo "  ✅ Flake evaluates cleanly"
       fi
 
-      # ── 3. Deploy ─────────────────────────────────────────────────────────
+      # ── 3. Mod zip validation ────────────────────────────────────────────
+      HOSTNAME=$(echo "$argc_target" | cut -d@ -f2)
+      MODS_ENABLED=$(${pkgs.nix}/bin/nix eval ".#nixosConfigurations.${HOSTNAME}.config.services.motortown-server.enableMods" 2>/dev/null || echo "false")
+
+      if [[ "$MODS_ENABLED" == "true" ]]; then
+        MOD_VERSION=$(${pkgs.nix}/bin/nix eval --raw ".#nixosConfigurations.${HOSTNAME}.config.services.motortown-server.modVersion")
+        if [[ "$MOD_VERSION" != "dev" ]]; then
+          MOD_URL="https://www.aseanmotorclub.com/releases/MotorTownMods_${MOD_VERSION}.zip"
+          if ! ${pkgs.curl}/bin/curl -sfI --max-time 10 "$MOD_URL" > /dev/null 2>&1; then
+            echo "  ❌ Mod zip not found: MotorTownMods_${MOD_VERSION}.zip"
+            echo "     Upload it first: scp MotorTownMods-package.zip root@amc-peripheral:/var/lib/mod-releases/MotorTownMods_${MOD_VERSION}.zip"
+            echo "     Or use: deploy-mod --server <target>"
+            exit 1
+          fi
+          echo "  ✅ Mod zip verified: MotorTownMods_${MOD_VERSION}.zip"
+        fi
+      fi
+
+      # ── 4. Deploy ─────────────────────────────────────────────────────────
       echo ""
       echo "📡 Running nixos-rebuild on $argc_target..."
       echo "   (builds on target — x86_64-linux)"
@@ -193,7 +211,7 @@
 
       echo "  ✅ nixos-rebuild complete"
 
-      # ── 4. Post-deploy actions ─────────────────────────────────────────────
+      # ── 5. Post-deploy actions ─────────────────────────────────────────────
       if [[ -n $argc_migrate ]]; then
         echo ""
         echo "🗄️  Running migrations..."
@@ -208,7 +226,7 @@
         echo "  ✅ Services restarted"
       fi
 
-      # ── 5. Health check ───────────────────────────────────────────────────
+      # ── 6. Health check ───────────────────────────────────────────────────
       if [[ -z $argc_no_health_check ]]; then
         echo ""
         health-check "$argc_target" || {
@@ -219,7 +237,7 @@
         }
       fi
 
-      # ── 6. macOS notification ─────────────────────────────────────────────
+      # ── 7. macOS notification ─────────────────────────────────────────────
       osascript -e "display notification \"$argc_target\" with title \"✅ Deployed\" sound name \"Morse\"" 2>/dev/null || true
 
       echo ""
@@ -316,6 +334,96 @@
       echo "✅ Rollback complete"
       echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     '';
+
+    # ---------------------------------------------------------------------------
+    # deploy-mod
+    # ---------------------------------------------------------------------------
+    # One-command mod deployment cycle:
+    #   1. Auto-increment RC version (or use --version)
+    #   2. Build C++ if changed since last tag (skip with --skip-build)
+    #   3. Package the mod
+    #   4. Upload to amc-peripheral
+    #   5. Verify upload via HTTP HEAD
+    #   6. Update modVersion in flake.nix
+    #   7. Deploy to target server
+    # ---------------------------------------------------------------------------
+    deploy-mod =
+      ''
+        # @arg --server!     Target server: 'test' (amc-peripheral) or 'main' (asean-mt-server)
+        # @flag --version    Override version (default: auto-increment from last tag)
+        # @flag --skip-build Skip C++ build
+        # @flag --skip-deploy Stop after upload (don't update mod-versions.nix or deploy)
+
+        eval "$(${argc}/bin/argc --argc-eval "$0" "$@")"
+
+        set -eo pipefail
+        cd "$(git rev-parse --show-toplevel)"
+
+        # Map server name to SSH target and mod-versions.nix key
+        case "$argc_server" in
+          test) TARGET="root@amc-peripheral"; VERSION_KEY="staging" ;;
+          main) TARGET="root@asean-mt-server"; VERSION_KEY="main" ;;
+          *) echo "Unknown server: $argc_server"; exit 1 ;;
+        esac
+
+        # Determine version
+        cd MTDediMod
+        if [[ -n "$argc_version" ]]; then
+          NEW_VERSION="$argc_version"
+        else
+          LAST_TAG=$(git tag -l 'server/*' --sort=-v:refname | head -1)
+          # Increment RC: server/v0.40.1-rc4 → server/v0.40.1-rc5
+          RC_NUM=$(echo "$LAST_TAG" | sed 's/.*rc\([0-9]*\).*/\1/')
+          NEW_VERSION=$(echo "$LAST_TAG" | sed "s/rc${RC_NUM}/rc$((RC_NUM + 1))/")
+          echo "Auto-incrementing: $LAST_TAG → $NEW_VERSION"
+        fi
+
+        # Build C++ if needed
+        if [[ -z "$argc_skip_build" ]]; then
+          PREV_TAG=$(git tag -l 'server/*' --sort=-v:refname | sed -n '2p')
+          if git diff --name-only "$PREV_TAG" HEAD | grep -q '^src/'; then
+            echo "C++ changes detected, building..."
+            nix run .#build
+          else
+            echo "No C++ changes, skipping build"
+          fi
+        fi
+
+        # Package
+        echo "Packaging mod..."
+        nix run .#package
+        cd ..
+
+        # Upload
+        MOD_ZIP_NAME="MotorTownMods_${NEW_VERSION}.zip"
+        echo "Uploading $MOD_ZIP_NAME to amc-peripheral..."
+        scp MTDediMod/MotorTownMods-package.zip "root@amc-peripheral:/var/lib/mod-releases/${MOD_ZIP_NAME}"
+
+        # Verify
+        MOD_URL="https://www.aseanmotorclub.com/releases/${MOD_ZIP_NAME}"
+        if ${pkgs.curl}/bin/curl -sfI --max-time 10 "$MOD_URL" > /dev/null 2>&1; then
+          echo "✅ Verified: $MOD_URL"
+        else
+          echo "❌ Upload verification failed: $MOD_URL"
+          exit 1
+        fi
+
+        if [[ -n "$argc_skip_deploy" ]]; then
+          sed -i '' "s/${VERSION_KEY} = \".*\"/${VERSION_KEY} = \"${NEW_VERSION}\"/" mod-versions.nix
+          echo "Upload complete (--skip-deploy)."
+          echo "  Updated mod-versions.nix: ${VERSION_KEY} → $NEW_VERSION"
+          echo "  Deploy manually: deploy $TARGET"
+          exit 0
+        fi
+
+        # Update modVersion for the target server in mod-versions.nix
+        sed -i '' "s/${VERSION_KEY} = \".*\"/${VERSION_KEY} = \"${NEW_VERSION}\"/" mod-versions.nix
+        echo "Updated mod-versions.nix: ${VERSION_KEY} → $NEW_VERSION"
+
+        # Deploy
+        echo "Deploying to $TARGET..."
+        deploy "$TARGET"
+      '';
   };
 in
   lib.mapAttrsToList (name: script: pkgs.writeShellScriptBin name script) scripts

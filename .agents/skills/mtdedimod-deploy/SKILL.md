@@ -195,18 +195,24 @@ Mod zips are served from `/var/lib/mod-releases/` on `amc-peripheral` (via nginx
 
 ### 6. Set the version in Nix config
 
-In the root `flake.nix`, update the `modVersion` for the **target server only**:
+Update `mod-versions.nix` (in the repo root) for the **target server only**:
 
 ```nix
-# Test server — update this for test deploys
-modVersion = "server-v0.34.0-rc5";
-
-# Main server (in nixosModules.motortown-server) — update separately when promoting
-modVersion = "server-v0.33.0-rc7";
+{
+  main = "server-v0.34.0-rc5";      # Main server (asean-mt-server)
+  staging = "server-v0.33.0-rc7";    # Staging/test server (amc-peripheral)
+}
 ```
 
-> [!WARNING]
-> **Don't update the wrong `modVersion`!** The flake has two `modVersion` entries — one for the **main server** (asean-mt-server, inside `nixosModules.motortown-server` around line 266) and one for the **staging/test server** (amc-peripheral, inside the staging server config around line 800). When deploying to the test server, only update the staging `modVersion`. When promoting to production, only update the main server `modVersion`. Updating the wrong one will deploy an untested mod version to production or leave the test server on a stale version.
+Or use the `deploy-mod` script which handles this automatically:
+
+```bash
+deploy-mod --server test --version server-v0.34.0-rc5   # Updates staging key
+deploy-mod --server main --version server-v0.34.0-rc5   # Updates main key
+```
+
+> [!NOTE]
+> `mod-versions.nix` is read by `flake.nix` via `import ./mod-versions.nix`. Each key maps to one server — `main` for `asean-mt-server`, `staging` for `amc-peripheral`. The `sed` command targets the specific key, so there's no risk of updating the wrong server.
 
 **No hash calculation needed** — the mod is downloaded at runtime via `curl` during service `preStart`.
 
@@ -226,19 +232,26 @@ ssh root@amc-peripheral "\
   rm -f  /var/lib/motortown-server/.mod-cache/MotorTownMods_server-v0.34.0-rc4.zip && \
   rm -rf /var/lib/motortown-server/.mod-cache/extracted-server-v0.34.0-rc4"
 
-# 2. Fix version.dll ownership if it was previously written by root
+# 2. Remove the version marker so preStart does a full re-install
+#    (mods.nix skips extraction if .installed-mod-version matches modVersion)
+ssh root@amc-peripheral "\
+  rm -f /var/lib/motortown-server/MotorTown/Binaries/Win64/ue4ss/.installed-mod-version"
+
+# 3. Fix version.dll ownership if it was previously written by root
 #    (the steam user can't overwrite a root-owned file)
 ssh root@amc-peripheral "\
   chown steam:modders /var/lib/motortown-server/MotorTown/Binaries/Win64/version.dll 2>/dev/null || true"
 
-# 3. Restart the service (this triggers preStart → download → extract → launch)
+# 4. Restart the service (this triggers preStart → download → extract → launch)
 ssh root@amc-peripheral "systemctl restart motortown-server"
 
-# 4. Wait ~20s for the game server to boot, then check UE4SS logs
+# 5. Wait ~20s for the game server to boot, then check UE4SS logs
 ssh root@amc-peripheral "tail -n 50 /var/lib/motortown-server/MotorTown/Binaries/Win64/ue4ss/UE4SS.log | grep MotorTownMods"
 ```
 
-> **Common pitfall:** If you manually `unzip` a mod package into the game directory as root (e.g. during debugging), the `version.dll` file ends up owned by `root:root`. The `steam` user cannot overwrite it during `preStart`, causing repeated `Permission denied` failures. Always fix ownership with step 2 above, or avoid manual extraction.
+> **Important:** `mods.nix` uses a version marker file (`$UE4SS_DIR/.installed-mod-version`) to skip extraction when the version hasn't changed. If you re-package the same `modVersion` (e.g. during RC iteration), you **must** remove this marker (step 2) to force a full re-install. Otherwise `preStart` will print "already installed, skipping" and use the stale files.
+
+> **Common pitfall:** If you manually `unzip` a mod package into the game directory as root (e.g. during debugging), the `version.dll` file ends up owned by `root:root`. The `steam` user cannot overwrite it during `preStart`, causing repeated `Permission denied` failures. Always fix ownership with step 3 above, or avoid manual extraction.
 
 **Success indicators:**
 - `INFO: Webserver listening to host 0.0.0.0 on port XXXXX`
@@ -258,13 +271,14 @@ git push origin server/v0.34.0-rc5
 
 When a test RC is validated and ready for the main server:
 
-1. Update `modVersion` in the main server section of `flake.nix` to match the tested RC version
+1. Update the `main` key in `mod-versions.nix` to match the tested RC version
 2. `deploy root@asean-mt-server`
 3. Purge the old main server cache and restart:
    ```bash
    ssh root@asean-mt-server "\
      rm -f  /var/lib/motortown-server/.mod-cache/MotorTownMods_server-v0.34.0-rc4.zip && \
-     rm -rf /var/lib/motortown-server/.mod-cache/extracted-server-v0.34.0-rc4"
+     rm -rf /var/lib/motortown-server/.mod-cache/extracted-server-v0.34.0-rc4 && \
+     rm -f  /var/lib/motortown-server/MotorTown/Binaries/Win64/ue4ss/.installed-mod-version"
    ssh root@asean-mt-server "systemctl restart motortown-server"
    ```
 4. No new tag needed — the RC tag already tracks the code
@@ -308,8 +322,10 @@ scp MotorTownMods-package.zip root@amc-peripheral:/var/lib/mod-releases/MotorTow
 
 ### 5. Set the version in Nix config (test server only)
 
+Update `mod-versions.nix` (in the repo root) — change the `staging` key:
+
 ```nix
-modVersion = "server-v0.35.0-exp.cargo-rewrite.1";
+staging = "server-v0.35.0-exp.cargo-rewrite.1";
 ```
 
 ### 6. Deploy and restart (test server only)
@@ -340,7 +356,7 @@ git diff --name-only "$PREV_TAG" HEAD | grep -q '^src/' && nix run .#build || ec
 nix run .#package
 
 scp MotorTownMods-package.zip root@amc-peripheral:/var/lib/mod-releases/MotorTownMods_server-v0.35.0-exp.cargo-rewrite.2.zip
-# Update modVersion in flake.nix, deploy, restart
+# Update mod-versions.nix (staging key), deploy, restart
 ```
 
 ### Promoting an experiment to production

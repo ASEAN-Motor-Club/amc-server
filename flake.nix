@@ -262,13 +262,15 @@
             enable = true;
             enableMods = true;
             enableLogStreaming = true;
-            # modVersion = "server-v0.37.5";
-            modVersion = "server-v0.40.0-rc8";
+            restartSchedule = "*-*-* 08:30:00";
+            restartAnnouncementSchedule = "*-*-* 08:15,25,29";
+            #modVersion = "server-v0.40.0-rc8";
+            modVersion = (import ./mod-versions.nix).main;
             enableExternalMods = {
               "MajasDetailWorksV3-7.18_P" = true;
               "MajasMnTrailerworksV6-7.18_P" = true;
               qxZap_CranyUnlocked_P = true;
-              "Schedule_I_v0.3.1_0.7.18+1_P" = true;
+              "Schedule_I_v0.3.2_0.7.18+1_P" = true;
               qxZap_satigt3_MoreAttachments_P = true;
             };
             engineIni = ''
@@ -404,14 +406,6 @@
               lib,
               ...
             }: let
-              # === File-based Restart Bridge ===
-              # Backend writes a trigger file → host systemd .path unit watches → starts the restart service.
-              restartTriggerDir = "/var/lib/motortown-restart-trigger";
-
-              restartScript = pkgs.writeShellScriptBin "restart-motortown" ''
-                echo "restart requested at $(date)" > ${restartTriggerDir}/trigger
-              '';
-
               # === File-based Update Bridge ===
               # Backend writes a trigger file → host systemd .path unit watches → starts the update service.
               updateTriggerDir = "/var/lib/motortown-update-trigger";
@@ -456,7 +450,6 @@
                   EVENT_MOD_SERVER_API_URL = "http://localhost:5011";
                   MOD_MANAGEMENT_API_URL = "http://localhost:5000";
                   EVENT_MOD_MANAGEMENT_API_URL = "http://localhost:5010";
-                  RESTART_MOTORTOWN_SCRIPT = "${restartScript}/bin/restart-motortown";
                   UPDATE_MOTORTOWN_SCRIPT = "${updateScript}/bin/update-motortown";
                   PARTY_BONUS_ENABLED = "1";
                   WEBHOOK_SSE_ENABLED = "1";
@@ -520,33 +513,10 @@
 
               systemd.tmpfiles.rules = [
                 "d /var/lib/amc-postgresql 0750 postgres postgres -"
-                "d ${restartTriggerDir} 0777 root root -"
                 "d ${updateTriggerDir} 0777 root root -"
                 "d /var/lib/amc/error-reports 0755 amc amc -"
                 "e /var/lib/amc/error-reports/*.html - - - 30d"
               ];
-
-              # Host-side: watch for trigger file and start the restart service
-              systemd.paths.motortown-restart-trigger = {
-                description = "Watch for restart trigger from backend";
-                wantedBy = ["multi-user.target"];
-                pathConfig = {
-                  PathChanged = "${restartTriggerDir}/trigger";
-                  Unit = "motortown-restart-triggered.service";
-                };
-              };
-
-              # Triggered by the .path unit — starts the existing motortown-server-restart service
-              systemd.services.motortown-restart-triggered = {
-                description = "Restart motortown-server (triggered from backend)";
-                serviceConfig = {
-                  Type = "oneshot";
-                };
-                script = ''
-                  rm -f ${restartTriggerDir}/trigger
-                  systemctl start motortown-server-restart.service
-                '';
-              };
 
               # === File-based Update Bridge ===
               # Recovery service: restarts the game server if the update service fails
@@ -770,14 +740,14 @@
                 maxFps = 30;
                 restartSchedule = "3000-01-01 00:00:00";
                 betaBranch = "beta";
-                modVersion = "server-v0.40.0-rc8";
+                modVersion = (import ./mod-versions.nix).staging;
                 enableExternalMods = {
                   CarPartsImport_P = false;
                   MoneyRun_P = false;
                   qxZap_CranyUnlocked_P = false;
                   "MajasDetailWorksV3-7.18_P" = false;
                   "MajasMnTrailerworksV6-7.18_P" = false;
-                  "Schedule_I_v0.4.0_0.7.18+1_P" = true;
+                  "Schedule_I_v0.4.6_0.7.18+1_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
@@ -816,6 +786,7 @@
                   MOD_INJECT_DP_LOC_X = "-290000";
                   MOD_INJECT_DP_LOC_Y = "190000";
                   MOD_INJECT_DP_LOC_Z = "-21900";
+                  MOD_INJECT_DP_NAME = "Maize Farm";
                 };
                 credentialsFile = config.age.secrets.steam-game.path;
                 dedicatedServerConfig = {
