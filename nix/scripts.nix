@@ -179,19 +179,19 @@
 
       # ── 3. Mod zip validation ────────────────────────────────────────────
       HOSTNAME=$(echo "$argc_target" | cut -d@ -f2)
-      MODS_ENABLED=$(${pkgs.nix}/bin/nix eval ".#nixosConfigurations.${HOSTNAME}.config.services.motortown-server.enableMods" 2>/dev/null || echo "false")
+      MODS_ENABLED=$(${pkgs.nix}/bin/nix eval ".#nixosConfigurations.''${HOSTNAME}.config.services.motortown-server.enableMods" 2>/dev/null || echo "false")
 
       if [[ "$MODS_ENABLED" == "true" ]]; then
-        MOD_VERSION=$(${pkgs.nix}/bin/nix eval --raw ".#nixosConfigurations.${HOSTNAME}.config.services.motortown-server.modVersion")
+        MOD_VERSION=$(${pkgs.nix}/bin/nix eval --raw ".#nixosConfigurations.''${HOSTNAME}.config.services.motortown-server.modVersion")
         if [[ "$MOD_VERSION" != "dev" ]]; then
-          MOD_URL="https://www.aseanmotorclub.com/releases/MotorTownMods_${MOD_VERSION}.zip"
+          MOD_URL="https://www.aseanmotorclub.com/releases/MotorTownMods_''${MOD_VERSION}.zip"
           if ! ${pkgs.curl}/bin/curl -sfI --max-time 10 "$MOD_URL" > /dev/null 2>&1; then
-            echo "  ❌ Mod zip not found: MotorTownMods_${MOD_VERSION}.zip"
-            echo "     Upload it first: scp MotorTownMods-package.zip root@amc-peripheral:/var/lib/mod-releases/MotorTownMods_${MOD_VERSION}.zip"
+            echo "  ❌ Mod zip not found: MotorTownMods_''${MOD_VERSION}.zip"
+            echo "     Upload it first: scp MotorTownMods-package.zip root@amc-peripheral:/var/lib/mod-releases/MotorTownMods_''${MOD_VERSION}.zip"
             echo "     Or use: deploy-mod --server <target>"
             exit 1
           fi
-          echo "  ✅ Mod zip verified: MotorTownMods_${MOD_VERSION}.zip"
+          echo "  ✅ Mod zip verified: MotorTownMods_''${MOD_VERSION}.zip"
         fi
       fi
 
@@ -374,7 +374,7 @@
           LAST_TAG=$(git tag -l 'server/*' --sort=-v:refname | head -1)
           # Increment RC: server/v0.40.1-rc4 → server/v0.40.1-rc5
           RC_NUM=$(echo "$LAST_TAG" | sed 's/.*rc\([0-9]*\).*/\1/')
-          NEW_VERSION=$(echo "$LAST_TAG" | sed "s/rc${RC_NUM}/rc$((RC_NUM + 1))/")
+          NEW_VERSION=$(echo "$LAST_TAG" | sed "s/rc''${RC_NUM}/rc$((RC_NUM + 1))/")
           echo "Auto-incrementing: $LAST_TAG → $NEW_VERSION"
         fi
 
@@ -395,12 +395,12 @@
         cd ..
 
         # Upload
-        MOD_ZIP_NAME="MotorTownMods_${NEW_VERSION}.zip"
+        MOD_ZIP_NAME="MotorTownMods_''${NEW_VERSION}.zip"
         echo "Uploading $MOD_ZIP_NAME to amc-peripheral..."
-        scp MTDediMod/MotorTownMods-package.zip "root@amc-peripheral:/var/lib/mod-releases/${MOD_ZIP_NAME}"
+        scp MTDediMod/MotorTownMods-package.zip "root@amc-peripheral:/var/lib/mod-releases/''${MOD_ZIP_NAME}"
 
         # Verify
-        MOD_URL="https://www.aseanmotorclub.com/releases/${MOD_ZIP_NAME}"
+        MOD_URL="https://www.aseanmotorclub.com/releases/''${MOD_ZIP_NAME}"
         if ${pkgs.curl}/bin/curl -sfI --max-time 10 "$MOD_URL" > /dev/null 2>&1; then
           echo "✅ Verified: $MOD_URL"
         else
@@ -409,16 +409,16 @@
         fi
 
         if [[ -n "$argc_skip_deploy" ]]; then
-          sed -i '' "s/${VERSION_KEY} = \".*\"/${VERSION_KEY} = \"${NEW_VERSION}\"/" mod-versions.nix
+          sed -i '''''' "s/''${VERSION_KEY} = \".*\"/''${VERSION_KEY} = \"''${NEW_VERSION}\"/" mod-versions.nix
           echo "Upload complete (--skip-deploy)."
-          echo "  Updated mod-versions.nix: ${VERSION_KEY} → $NEW_VERSION"
+          echo "  Updated mod-versions.nix: ''${VERSION_KEY} → ''${NEW_VERSION}"
           echo "  Deploy manually: deploy $TARGET"
           exit 0
         fi
 
         # Update modVersion for the target server in mod-versions.nix
-        sed -i '' "s/${VERSION_KEY} = \".*\"/${VERSION_KEY} = \"${NEW_VERSION}\"/" mod-versions.nix
-        echo "Updated mod-versions.nix: ${VERSION_KEY} → $NEW_VERSION"
+        sed -i '''''' "s/''${VERSION_KEY} = \".*\"/''${VERSION_KEY} = \"''${NEW_VERSION}\"/" mod-versions.nix
+        echo "Updated mod-versions.nix: ''${VERSION_KEY} → ''${NEW_VERSION}"
 
         # Deploy
         echo "Deploying to $TARGET..."
