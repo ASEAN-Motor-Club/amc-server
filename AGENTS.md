@@ -30,6 +30,15 @@ amc-server/                  # NixOS flake monorepo
 
 Both servers are accessed via **Tailscale** SSH.
 
+### SSH users
+
+| User    | Use for                                                        |
+|---------|----------------------------------------------------------------|
+| `root`  | systemctl, journalctl, NixOS deploy, uploading to `/var/lib/mod-releases/` |
+| `steam` | File operations on `/var/lib/motortown-server/` (state directory)          |
+
+Use `steam@` for any `scp`/`ssh` that creates or modifies files in the game server state directory. Files created as `root` can't be overwritten by the `steam`-owned service on restart.
+
 ## Key Subsystems
 
 ### amc-backend (production, on `asean-mt-server`)

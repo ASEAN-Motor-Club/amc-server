@@ -228,30 +228,27 @@ Then purge the old cache and restart:
 
 ```bash
 # 1. Remove cached zip AND extracted directory for the OLD version
-ssh root@amc-peripheral "\
+ssh steam@amc-peripheral "\
   rm -f  /var/lib/motortown-server/.mod-cache/MotorTownMods_server-v0.34.0-rc4.zip && \
   rm -rf /var/lib/motortown-server/.mod-cache/extracted-server-v0.34.0-rc4"
 
 # 2. Remove the version marker so preStart does a full re-install
 #    (mods.nix skips extraction if .installed-mod-version matches modVersion)
-ssh root@amc-peripheral "\
+ssh steam@amc-peripheral "\
   rm -f /var/lib/motortown-server/MotorTown/Binaries/Win64/ue4ss/.installed-mod-version"
 
-# 3. Fix version.dll ownership if it was previously written by root
-#    (the steam user can't overwrite a root-owned file)
-ssh root@amc-peripheral "\
-  chown steam:modders /var/lib/motortown-server/MotorTown/Binaries/Win64/version.dll 2>/dev/null || true"
-
-# 4. Restart the service (this triggers preStart → download → extract → launch)
+# 3. Restart the service (this triggers preStart → download → extract → launch)
+#    The preStart script removes old files before copying, so root-owned files
+#    from manual installs or hot-reload are handled automatically.
 ssh root@amc-peripheral "systemctl restart motortown-server"
 
-# 5. Wait ~20s for the game server to boot, then check UE4SS logs
-ssh root@amc-peripheral "tail -n 50 /var/lib/motortown-server/MotorTown/Binaries/Win64/ue4ss/UE4SS.log | grep MotorTownMods"
+# 4. Wait ~20s for the game server to boot, then check UE4SS logs
+ssh steam@amc-peripheral "tail -n 50 /var/lib/motortown-server/MotorTown/Binaries/Win64/ue4ss/UE4SS.log | grep MotorTownMods"
 ```
 
 > **Important:** `mods.nix` uses a version marker file (`$UE4SS_DIR/.installed-mod-version`) to skip extraction when the version hasn't changed. If you re-package the same `modVersion` (e.g. during RC iteration), you **must** remove this marker (step 2) to force a full re-install. Otherwise `preStart` will print "already installed, skipping" and use the stale files.
 
-> **Common pitfall:** If you manually `unzip` a mod package into the game directory as root (e.g. during debugging), the `version.dll` file ends up owned by `root:root`. The `steam` user cannot overwrite it during `preStart`, causing repeated `Permission denied` failures. Always fix ownership with step 3 above, or avoid manual extraction.
+> **Ownership-safe installs:** The preStart script removes old `ue4ss/`, `version.dll`, `Engine.ini`, and `.pak` files before copying new ones. This means root-owned files from hot-reload debugging, manual `scp`, or `unzip` are automatically cleaned up — no manual `chown` needed.
 
 **Success indicators:**
 - `INFO: Webserver listening to host 0.0.0.0 on port XXXXX`
@@ -275,7 +272,7 @@ When a test RC is validated and ready for the main server:
 2. `deploy root@asean-mt-server`
 3. Purge the old main server cache and restart:
    ```bash
-   ssh root@asean-mt-server "\
+   ssh steam@asean-mt-server "\
      rm -f  /var/lib/motortown-server/.mod-cache/MotorTownMods_server-v0.34.0-rc4.zip && \
      rm -rf /var/lib/motortown-server/.mod-cache/extracted-server-v0.34.0-rc4 && \
      rm -f  /var/lib/motortown-server/MotorTown/Binaries/Win64/ue4ss/.installed-mod-version"
@@ -465,15 +462,19 @@ For Lua-only changes (no C++ DLL rebuild), skip the full deploy cycle. SCP scrip
 
 ```bash
 # 1. SCP changed scripts (test server on amc-peripheral)
+#    Use steam@ to create files with correct ownership — avoids permission issues on restart
 scp MTDediMod/Scripts/*.lua \
-  root@amc-peripheral:/var/lib/motortown-server/MotorTown/Binaries/Win64/ue4ss/Mods/MotorTownMods/Scripts/
+  steam@amc-peripheral:/var/lib/motortown-server/MotorTown/Binaries/Win64/ue4ss/Mods/MotorTownMods/Scripts/
 
 # 2. Hot-reload (connection resets — that's expected, mod restarts in ~5s)
 ssh root@amc-peripheral "curl -s -X POST http://localhost:5001/mods/reload"
 ```
 
 > [!WARNING]
-> For the **main server** on `asean-mt-server`, use `root@asean-mt-server` and `/var/lib/motortown-server/` paths. Never call the main server's mod port directly from your local machine — always SSH to the host first.
+> For the **main server** on `asean-mt-server`, use `steam@asean-mt-server` for file operations and `root@asean-mt-server` for systemctl/curl. Never call the main server's mod port directly from your local machine — always SSH to the host first.
+
+> [!NOTE]
+> Always use `steam@` (not `root@`) for `scp` to the state directory. Files created as `root:root` can't be overwritten by the `steam`-owned service on restart. The preStart script's `rm`-before-`cp` handles stale root-owned files as a safety net, but `steam@` prevents the problem at the source.
 
 Players stay connected. The mod webserver restarts and re-registers all handlers. No service restart, no cache purge, no NixOS deploy needed.
 
@@ -585,9 +586,9 @@ enableExternalMods = {
 The server caches downloaded paks in `$STATE_DIRECTORY/.mod-cache/paks/`. When replacing a pak file on the hosting server, purge the cache and restart:
 
 ```bash
-ssh root@amc-peripheral "rm -rf /var/lib/motortown-server/.mod-cache/paks/"
-ssh root@asean-mt-server "rm -rf /var/lib/motortown-server/.mod-cache/paks/"
-# Then restart the relevant server
+ssh steam@amc-peripheral "rm -rf /var/lib/motortown-server/.mod-cache/paks/"
+ssh steam@asean-mt-server "rm -rf /var/lib/motortown-server/.mod-cache/paks/"
+# Then restart the relevant server (via root@ for systemctl)
 ```
 
 ## Game Server API Reference
