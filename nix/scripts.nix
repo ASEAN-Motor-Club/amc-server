@@ -207,7 +207,8 @@
         switch \
         --override-input amc-backend ./amc-backend \
         --override-input amc-peripheral ./amc-peripheral \
-        --override-input motortown-server ./motortown-server-flake
+        --override-input motortown-server ./motortown-server-flake \
+        --override-input beammp-server ./beammp-server-flake
 
       echo "  ✅ nixos-rebuild complete"
 
@@ -347,83 +348,82 @@
     #   6. Update modVersion in flake.nix
     #   7. Deploy to target server
     # ---------------------------------------------------------------------------
-    deploy-mod =
-      ''
-        # @arg --server!     Target server: 'test' (amc-peripheral) or 'main' (asean-mt-server)
-        # @flag --version    Override version (default: auto-increment from last tag)
-        # @flag --skip-build Skip C++ build
-        # @flag --skip-deploy Stop after upload (don't update mod-versions.nix or deploy)
+    deploy-mod = ''
+      # @arg --server!     Target server: 'test' (amc-peripheral) or 'main' (asean-mt-server)
+      # @flag --version    Override version (default: auto-increment from last tag)
+      # @flag --skip-build Skip C++ build
+      # @flag --skip-deploy Stop after upload (don't update mod-versions.nix or deploy)
 
-        eval "$(${argc}/bin/argc --argc-eval "$0" "$@")"
+      eval "$(${argc}/bin/argc --argc-eval "$0" "$@")"
 
-        set -eo pipefail
-        cd "$(git rev-parse --show-toplevel)"
+      set -eo pipefail
+      cd "$(git rev-parse --show-toplevel)"
 
-        # Map server name to SSH target and mod-versions.nix key
-        case "$argc_server" in
-          test) TARGET="root@amc-peripheral"; VERSION_KEY="staging" ;;
-          main) TARGET="root@asean-mt-server"; VERSION_KEY="main" ;;
-          *) echo "Unknown server: $argc_server"; exit 1 ;;
-        esac
+      # Map server name to SSH target and mod-versions.nix key
+      case "$argc_server" in
+        test) TARGET="root@amc-peripheral"; VERSION_KEY="staging" ;;
+        main) TARGET="root@asean-mt-server"; VERSION_KEY="main" ;;
+        *) echo "Unknown server: $argc_server"; exit 1 ;;
+      esac
 
-        # Determine version
-        cd MTDediMod
-        if [[ -n "$argc_version" ]]; then
-          NEW_VERSION="$argc_version"
+      # Determine version
+      cd MTDediMod
+      if [[ -n "$argc_version" ]]; then
+        NEW_VERSION="$argc_version"
+      else
+        LAST_TAG=$(git tag -l 'server/*' --sort=-v:refname | head -1)
+        # Increment RC: server/v0.40.1-rc4 → server/v0.40.1-rc5
+        RC_NUM=$(echo "$LAST_TAG" | sed 's/.*rc\([0-9]*\).*/\1/')
+        NEW_VERSION=$(echo "$LAST_TAG" | sed "s/rc''${RC_NUM}/rc$((RC_NUM + 1))/")
+        echo "Auto-incrementing: $LAST_TAG → $NEW_VERSION"
+      fi
+
+      # Build C++ if needed
+      if [[ -z "$argc_skip_build" ]]; then
+        PREV_TAG=$(git tag -l 'server/*' --sort=-v:refname | sed -n '2p')
+        if git diff --name-only "$PREV_TAG" HEAD | grep -q '^src/'; then
+          echo "C++ changes detected, building..."
+          nix run .#build
         else
-          LAST_TAG=$(git tag -l 'server/*' --sort=-v:refname | head -1)
-          # Increment RC: server/v0.40.1-rc4 → server/v0.40.1-rc5
-          RC_NUM=$(echo "$LAST_TAG" | sed 's/.*rc\([0-9]*\).*/\1/')
-          NEW_VERSION=$(echo "$LAST_TAG" | sed "s/rc''${RC_NUM}/rc$((RC_NUM + 1))/")
-          echo "Auto-incrementing: $LAST_TAG → $NEW_VERSION"
+          echo "No C++ changes, skipping build"
         fi
+      fi
 
-        # Build C++ if needed
-        if [[ -z "$argc_skip_build" ]]; then
-          PREV_TAG=$(git tag -l 'server/*' --sort=-v:refname | sed -n '2p')
-          if git diff --name-only "$PREV_TAG" HEAD | grep -q '^src/'; then
-            echo "C++ changes detected, building..."
-            nix run .#build
-          else
-            echo "No C++ changes, skipping build"
-          fi
-        fi
+      # Package
+      echo "Packaging mod..."
+      nix run .#package
+      cd ..
 
-        # Package
-        echo "Packaging mod..."
-        nix run .#package
-        cd ..
+      # Upload
+      MOD_ZIP_NAME="MotorTownMods_''${NEW_VERSION}.zip"
+      echo "Uploading $MOD_ZIP_NAME to amc-peripheral..."
+      scp MTDediMod/MotorTownMods-package.zip "root@amc-peripheral:/var/lib/mod-releases/''${MOD_ZIP_NAME}"
 
-        # Upload
-        MOD_ZIP_NAME="MotorTownMods_''${NEW_VERSION}.zip"
-        echo "Uploading $MOD_ZIP_NAME to amc-peripheral..."
-        scp MTDediMod/MotorTownMods-package.zip "root@amc-peripheral:/var/lib/mod-releases/''${MOD_ZIP_NAME}"
+      # Verify
+      MOD_URL="https://www.aseanmotorclub.com/releases/''${MOD_ZIP_NAME}"
+      if ${pkgs.curl}/bin/curl -sfI --max-time 10 "$MOD_URL" > /dev/null 2>&1; then
+        echo "✅ Verified: $MOD_URL"
+      else
+        echo "❌ Upload verification failed: $MOD_URL"
+        exit 1
+      fi
 
-        # Verify
-        MOD_URL="https://www.aseanmotorclub.com/releases/''${MOD_ZIP_NAME}"
-        if ${pkgs.curl}/bin/curl -sfI --max-time 10 "$MOD_URL" > /dev/null 2>&1; then
-          echo "✅ Verified: $MOD_URL"
-        else
-          echo "❌ Upload verification failed: $MOD_URL"
-          exit 1
-        fi
-
-        if [[ -n "$argc_skip_deploy" ]]; then
-          sed -i '''''' "s/''${VERSION_KEY} = \".*\"/''${VERSION_KEY} = \"''${NEW_VERSION}\"/" mod-versions.nix
-          echo "Upload complete (--skip-deploy)."
-          echo "  Updated mod-versions.nix: ''${VERSION_KEY} → ''${NEW_VERSION}"
-          echo "  Deploy manually: deploy $TARGET"
-          exit 0
-        fi
-
-        # Update modVersion for the target server in mod-versions.nix
+      if [[ -n "$argc_skip_deploy" ]]; then
         sed -i '''''' "s/''${VERSION_KEY} = \".*\"/''${VERSION_KEY} = \"''${NEW_VERSION}\"/" mod-versions.nix
-        echo "Updated mod-versions.nix: ''${VERSION_KEY} → ''${NEW_VERSION}"
+        echo "Upload complete (--skip-deploy)."
+        echo "  Updated mod-versions.nix: ''${VERSION_KEY} → ''${NEW_VERSION}"
+        echo "  Deploy manually: deploy $TARGET"
+        exit 0
+      fi
 
-        # Deploy
-        echo "Deploying to $TARGET..."
-        deploy "$TARGET"
-      '';
+      # Update modVersion for the target server in mod-versions.nix
+      sed -i '''''' "s/''${VERSION_KEY} = \".*\"/''${VERSION_KEY} = \"''${NEW_VERSION}\"/" mod-versions.nix
+      echo "Updated mod-versions.nix: ''${VERSION_KEY} → ''${NEW_VERSION}"
+
+      # Deploy
+      echo "Deploying to $TARGET..."
+      deploy "$TARGET"
+    '';
   };
 in
   lib.mapAttrsToList (name: script: pkgs.writeShellScriptBin name script) scripts

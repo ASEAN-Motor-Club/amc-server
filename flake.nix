@@ -17,6 +17,10 @@
       url = "path:./eco-server";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    beammp-server = {
+      url = "path:./beammp-server-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     amc-backend = {
       url = "github:ASEAN-Motor-Club/amc-backend";
@@ -49,6 +53,7 @@
     motortown-server,
     necesse-server,
     eco-server,
+    beammp-server,
     ragenix,
     quadlet-nix,
     mt-pak-extract,
@@ -270,11 +275,11 @@
               "MajasDetailWorksV3-7.18_P" = true;
               "MajasMnTrailerworksV6-7.18_P" = true;
               qxZap_CranyUnlocked_P = true;
-              "Schedule_I_v0.3.2_0.7.18+1_P" = true;
+              "Schedule_I_v0.4.8_0.7.18+1_P" = true;
               qxZap_satigt3_MoreAttachments_P = true;
             };
             engineIni = ''
-              mh.maxCombinedVehicleLength=10000
+              mh.maxCombinedVehicleLength=20000
               mh.fuelPriceByInventoryMax=3
               mh.housingValidateHousingArea=0
               mh.housingMaxBuildingPerHouse=120
@@ -291,6 +296,8 @@
               mh.eventRacingMoneyPerKm=200
               mh.busPaymentMultiplier=5
               mh.garbageCollectRateDecreasePerSeconds=0.00001
+              mk.policeSpikePadDeploySeconds=6
+              mk.policeSpikePadDurationSeconds=60
             '';
             openFirewall = true;
             user = "steam";
@@ -363,6 +370,29 @@
           ];
         };
 
+        nixosModules.beammp-server = {
+          config,
+          pkgs,
+          lib,
+          ...
+        }: {
+          imports = [beammp-server.nixosModules.default];
+          services.beammp-server = {
+            enable = true;
+            openFirewall = true;
+            name = "★★ ASEAN Motor Club ★★ | BeamNG.drive";
+            description = "ASEAN Motor Club BeamMP Server - discord.gg/aseanmotorclub";
+            tags = "Freeroam,Modded,lang:english";
+            maxPlayers = 20;
+            maxCars = 5;
+            map = "/levels/west_coast_usa/info.json";
+            isPrivate = false;
+            restartSchedule = "*-*-* 09:00:00";
+            authKeyFile = config.age.secrets.beammp-auth.path;
+            discordWebhookEnvironmentFile = config.age.secrets.backend.path;
+          };
+        };
+
         nixosConfigurations.asean-mt-server = nixpkgs.lib.nixosSystem {
           modules = [
             ./machines/asean-mt-server/configuration.nix
@@ -396,10 +426,16 @@
                 file = ./secrets/backend.age;
                 mode = "400";
               };
+              age.secrets.beammp-auth = {
+                file = ./secrets/beammp-auth.age;
+                mode = "400";
+                owner = "beammp";
+              };
             })
 
             self.nixosModules.motortown-server
             self.nixosModules.motortown-server-containers
+            self.nixosModules.beammp-server
             ({
               config,
               pkgs,
@@ -747,7 +783,7 @@
                   qxZap_CranyUnlocked_P = false;
                   "MajasDetailWorksV3-7.18_P" = false;
                   "MajasMnTrailerworksV6-7.18_P" = false;
-                  "Schedule_I_v0.4.6_0.7.18+1_P" = true;
+                  "Schedule_I_v0.4.8_0.7.18+1_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''

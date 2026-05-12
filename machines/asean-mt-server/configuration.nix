@@ -28,8 +28,8 @@
   networking.domain = "";
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [22 80 443 8000 8008 7777 27015];
-    allowedUDPPorts = [7777 27015];
+    allowedTCPPorts = [22 80 443 8000 8008 7777 27015 30814];
+    allowedUDPPorts = [7777 27015 30814];
   };
   networking.networkmanager.enable = true;
   services.openssh.enable = true;

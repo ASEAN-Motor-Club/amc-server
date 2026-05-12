@@ -21,4 +21,5 @@ in {
   "oauth2-proxy-peripheral.age".publicKeys = [owner peripheral];
   "coding-agent-app-key.age".publicKeys = [owner asean-mt-server peripheral];
   "dokuwiki-oauth.age".publicKeys = [owner peripheral];
+  "beammp-auth.age".publicKeys = [owner asean-mt-server];
 }
