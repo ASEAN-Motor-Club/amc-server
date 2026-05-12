@@ -22,3 +22,4 @@
 [submodule "beammp-server-flake"]
 	path = beammp-server-flake
 	url = git@github.com:ASEAN-Motor-Club/beammp-server-flake.git
+	branch = main
