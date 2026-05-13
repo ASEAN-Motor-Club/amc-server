@@ -400,7 +400,9 @@
               client = {
                 roadTrafficEnabled = true;
                 roadTrafficAmount = 10;
+                extraTrafficEnabled = true;
                 extraTrafficAmount = 5;
+                parkedTrafficEnabled = true;
                 parkedTrafficAmount = 5;
               };
             };
