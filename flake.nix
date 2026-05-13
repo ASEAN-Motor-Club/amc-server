@@ -384,12 +384,26 @@
             description = "ASEAN Motor Club BeamMP Server - discord.gg/aseanmotorclub";
             tags = "Freeroam,Modded,lang:english";
             maxPlayers = 20;
-            maxCars = 5;
+            maxCars = 100;
             map = "/levels/west_coast_usa/info.json";
             isPrivate = false;
+            allowGuests = true;
             restartSchedule = "*-*-* 09:00:00";
             authKeyFile = config.age.secrets.beammp-auth.path;
             discordWebhookEnvironmentFile = config.age.secrets.backend.path;
+            enableCareerMP = true;
+            careerMPVersion = "v0.0.37";
+            careerMPConfig = {
+              server = {
+                allowTransactions = true;
+              };
+              client = {
+                roadTrafficEnabled = true;
+                roadTrafficAmount = 10;
+                extraTrafficAmount = 5;
+                parkedTrafficAmount = 5;
+              };
+            };
           };
         };
 
@@ -491,6 +505,9 @@
                   WEBHOOK_SSE_ENABLED = "1";
                   DISCORD_CRIMINAL_STATS_CHANNEL_ID = "1486645816042061864";
                   DISCORD_COP_STATS_CHANNEL_ID = "1486645931595272222";
+                  DISCORD_BEAMMP_STATUS_CHANNEL_ID = "1504133800425291930";
+                  BEAMMP_SERVER_HOST = "127.0.0.1";
+                  BEAMMP_SERVER_PORT = "30814";
                 };
               };
 
