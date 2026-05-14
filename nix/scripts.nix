@@ -208,7 +208,9 @@
         --override-input amc-backend ./amc-backend \
         --override-input amc-peripheral ./amc-peripheral \
         --override-input motortown-server ./motortown-server-flake \
-        --override-input beammp-server ./beammp-server-flake
+        --override-input beammp-server ./beammp-server-flake \
+        --override-input eco-server ./eco-server \
+        --override-input mt-pak-extract ./mt-pak-extract
 
       echo "  ✅ nixos-rebuild complete"
 

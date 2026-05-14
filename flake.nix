@@ -2,11 +2,10 @@
   description = "AMC Game Server";
 
   inputs = {
-    self.submodules = false;
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
     flake-parts.url = "github:hercules-ci/flake-parts";
     motortown-server = {
-      url = "path:./motortown-server-flake";
+      url = "git+https://github.com/ASEAN-Motor-Club/motortown-server-flake.git?lfs=1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     necesse-server = {
@@ -14,11 +13,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     eco-server = {
-      url = "path:./eco-server";
+      url = "github:ASEAN-Motor-Club/eco-server";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     beammp-server = {
-      url = "path:./beammp-server-flake";
+      url = "github:ASEAN-Motor-Club/beammp-server-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -37,7 +36,7 @@
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     opencode.url = "github:anomalyco/opencode";
     mt-pak-extract = {
-      url = path:./mt-pak-extract;
+      url = "github:ASEAN-Motor-Club/mt-pak-extract";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

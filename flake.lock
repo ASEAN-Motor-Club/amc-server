@@ -39,11 +39,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1773675236,
-        "narHash": "sha256-kjZ2+WAsUiapRrPdOo3AwVF1/Zk8nzRSdOzxQU+FP4g=",
+        "lastModified": 1778597420,
+        "narHash": "sha256-D2GhgP1sXv1451tabDBOLKidmd1xatv3gISDWWh4Nm0=",
         "owner": "ASEAN-Motor-Club",
         "repo": "amc-backend",
-        "rev": "ca79d6423662f13ce1a84d908a68d7384e632902",
+        "rev": "61eec9787bae4784141e7045fd212d9fa0b85d70",
         "type": "github"
       },
       "original": {
@@ -65,11 +65,11 @@
         "uv2nix": "uv2nix_2"
       },
       "locked": {
-        "lastModified": 1774752268,
-        "narHash": "sha256-QQN4NLPbJP73KB7e1ag6feGS10DIGl/KDjpPRnxx/hc=",
+        "lastModified": 1778224405,
+        "narHash": "sha256-G/9q+RH9RgHX/R0IhJM0S2g/5xZVpR6zXU3neEBp+c4=",
         "owner": "ASEAN-Motor-Club",
         "repo": "amc-peripheral",
-        "rev": "d7526d38177490e9cc8d73667cf900d6304f0fc8",
+        "rev": "f538519e194300f1642704fdbfdf2a86e2f93a9a",
         "type": "github"
       },
       "original": {
@@ -86,14 +86,18 @@
         "systems": "systems_3"
       },
       "locked": {
-        "path": "./beammp-server-flake",
-        "type": "path"
+        "lastModified": 1778742898,
+        "narHash": "sha256-cE/spok3L9ye1F0akFTOYRe2tZf2flEhZgmc6XuF03g=",
+        "owner": "ASEAN-Motor-Club",
+        "repo": "beammp-server-flake",
+        "rev": "efa388e2b9c0802424220ad94e11c2292241a15c",
+        "type": "github"
       },
       "original": {
-        "path": "./beammp-server-flake",
-        "type": "path"
-      },
-      "parent": []
+        "owner": "ASEAN-Motor-Club",
+        "repo": "beammp-server-flake",
+        "type": "github"
+      }
     },
     "crane": {
       "locked": {
@@ -160,14 +164,18 @@
         "systems": "systems_4"
       },
       "locked": {
-        "path": "./eco-server",
-        "type": "path"
+        "lastModified": 1767458978,
+        "narHash": "sha256-78v6geyJjc3bk2z3Yd8MQc0WOJuOp8+1BSemJzv+14o=",
+        "owner": "ASEAN-Motor-Club",
+        "repo": "eco-server",
+        "rev": "ed58e529628ea5e1615c859cbb116443c676fca4",
+        "type": "github"
       },
       "original": {
-        "path": "./eco-server",
-        "type": "path"
-      },
-      "parent": []
+        "owner": "ASEAN-Motor-Club",
+        "repo": "eco-server",
+        "type": "github"
+      }
     },
     "flake-compat": {
       "flake": false,
@@ -242,11 +250,11 @@
         "nixpkgs-lib": "nixpkgs-lib_3"
       },
       "locked": {
-        "lastModified": 1738453229,
-        "narHash": "sha256-7H9XgNiGLKN1G1CgRh0vUL4AheZSYzPm+zmZ7vxbJdo=",
+        "lastModified": 1778716662,
+        "narHash": "sha256-m1Yf0wZ8j1OHjTc2UwHwyQRSnNeSgLJOd7q5Y45hzi4=",
         "owner": "hercules-ci",
         "repo": "flake-parts",
-        "rev": "32ea77a06711b758da0ad9bd6a844c5740a87abd",
+        "rev": "f7c1a2d347e4c52d5fb8d10cb4d94b5884e546fb",
         "type": "github"
       },
       "original": {
@@ -462,14 +470,21 @@
         "systems": "systems_5"
       },
       "locked": {
-        "path": "./motortown-server-flake",
-        "type": "path"
+        "lastModified": 1778040725,
+        "lfs": true,
+        "narHash": "sha256-hHQ+DfMwERmiw3hvFy++u0jFiFGVNkhK/wTInq5Q8hk=",
+        "ref": "refs/heads/master",
+        "rev": "57918ed38113f59a281d4c157abf253633bcddb5",
+        "revCount": 178,
+        "submodules": true,
+        "type": "git",
+        "url": "https://github.com/ASEAN-Motor-Club/motortown-server-flake.git"
       },
       "original": {
-        "path": "./motortown-server-flake",
-        "type": "path"
-      },
-      "parent": []
+        "lfs": true,
+        "type": "git",
+        "url": "https://github.com/ASEAN-Motor-Club/motortown-server-flake.git"
+      }
     },
     "mt-pak-extract": {
       "inputs": {
@@ -480,14 +495,18 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "path": "./mt-pak-extract",
-        "type": "path"
+        "lastModified": 1778050683,
+        "narHash": "sha256-ssdwBqNoz/jAms4GCb86girWNyreWQ5dxm4L+d9wMK8=",
+        "owner": "ASEAN-Motor-Club",
+        "repo": "mt-pak-extract",
+        "rev": "8bba42f08bc054d6b4a89547dc557dbc62d26db8",
+        "type": "github"
       },
       "original": {
-        "path": "./mt-pak-extract",
-        "type": "path"
-      },
-      "parent": []
+        "owner": "ASEAN-Motor-Club",
+        "repo": "mt-pak-extract",
+        "type": "github"
+      }
     },
     "necesse-server": {
       "inputs": {
@@ -497,11 +516,11 @@
         "systems": "systems_7"
       },
       "locked": {
-        "lastModified": 1766893264,
-        "narHash": "sha256-ze4iKBIYZichr4hJS3wKeoCRw8AKf2X7xoWr/Vbbre0=",
+        "lastModified": 1776487915,
+        "narHash": "sha256-oGjg/DOW0mTiBjHSXcrWFvpoLcHkwXOpyHbkhUnIoUA=",
         "owner": "ASEAN-Motor-Club",
         "repo": "necesse-server",
-        "rev": "c6ec2ad2ffdd01ec219ed876c5bf1a5b507af144",
+        "rev": "9619f71ec1ede869388fc13adac162c66d6cce2a",
         "type": "github"
       },
       "original": {
@@ -558,23 +577,26 @@
     },
     "nixpkgs-lib_3": {
       "locked": {
-        "lastModified": 1738452942,
-        "narHash": "sha256-vJzFZGaCpnmo7I6i416HaBLpC+hvcURh/BQwROcGIp8=",
-        "type": "tarball",
-        "url": "https://github.com/NixOS/nixpkgs/archive/072a6db25e947df2f31aab9eccd0ab75d5b2da11.tar.gz"
+        "lastModified": 1777168982,
+        "narHash": "sha256-GOkGPcboWE9BmGCRMLX3worL4EMnsnG8MyKmXNeYuhQ=",
+        "owner": "nix-community",
+        "repo": "nixpkgs.lib",
+        "rev": "f5901329dade4a6ea039af1433fb087bd9c1fe14",
+        "type": "github"
       },
       "original": {
-        "type": "tarball",
-        "url": "https://github.com/NixOS/nixpkgs/archive/072a6db25e947df2f31aab9eccd0ab75d5b2da11.tar.gz"
+        "owner": "nix-community",
+        "repo": "nixpkgs.lib",
+        "type": "github"
       }
     },
     "nixpkgs-unstable": {
       "locked": {
-        "lastModified": 1766651565,
-        "narHash": "sha256-QEhk0eXgyIqTpJ/ehZKg9IKS7EtlWxF3N7DXy42zPfU=",
+        "lastModified": 1778443072,
+        "narHash": "sha256-zi7/fsqM/kFdNuED//4WOCUtezGtKKqRNORjMvfwjnA=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "3e2499d5539c16d0d173ba53552a4ff8547f4539",
+        "rev": "da5ad661ba4e5ef59ba743f0d112cbc30e474f32",
         "type": "github"
       },
       "original": {
@@ -618,11 +640,11 @@
     },
     "nixpkgs_4": {
       "locked": {
-        "lastModified": 1773909469,
-        "narHash": "sha256-vglVrLfHjFIzIdV9A27Ugul6rh3I1qHbbitGW7dk420=",
+        "lastModified": 1776683584,
+        "narHash": "sha256-NuTLMrr10Tng72hurYG8jYQ4XKK8wnpJmOGcPiis96g=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "7149c06513f335be57f26fcbbbe34afda923882b",
+        "rev": "9dd5558b06dbdacbf635a3dd36dce1b1a7ee3a89",
         "type": "github"
       },
       "original": {
@@ -637,11 +659,11 @@
         "nixpkgs": "nixpkgs_4"
       },
       "locked": {
-        "lastModified": 1776491377,
-        "narHash": "sha256-eAkIs71A3TbEVq/ahk5iQ/PSmu0bTHelGSId8gG1FJ4=",
+        "lastModified": 1778754362,
+        "narHash": "sha256-BcW1z/5v5xGDiHh0V1f5oUOr1KLmELceU0pPI/n1EKM=",
         "owner": "anomalyco",
         "repo": "opencode",
-        "rev": "95edbc0ae68a5e4f9a24a5d0249391ef18b168f5",
+        "rev": "8c1ce0b80ce42c193f3a48183c618d45c51743ab",
         "type": "github"
       },
       "original": {
@@ -752,11 +774,11 @@
     },
     "quadlet-nix": {
       "locked": {
-        "lastModified": 1758631655,
-        "narHash": "sha256-EGeZ963L7xsNAY7snvP1JHQe7LWLVCM6f49+PzWjhEE=",
+        "lastModified": 1778430078,
+        "narHash": "sha256-IKv4iqSoZaOthKfXOEYK0IPU/tvybn1GqvUtuDd0SNc=",
         "owner": "SEIAROTg",
         "repo": "quadlet-nix",
-        "rev": "2ebe01b175e2e1e6de3f172d23f0c3b88713eec9",
+        "rev": "5c325f2c9165aefb82a9da5b0352a66e0e1f5287",
         "type": "github"
       },
       "original": {
@@ -814,11 +836,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1767236000,
-        "narHash": "sha256-l4ftzyoD7XX0biEoTEwhOkFhvHhmggkVQyl2jEES0so=",
+        "lastModified": 1774235565,
+        "narHash": "sha256-D8OOwvq3zDDCtIhMcNueb9tGSZaZUanKpWDleRgQ80U=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "2be15c4abeba7ade2cf9bc4c17ab310441e533b9",
+        "rev": "dc00324a2438762582b49954373112b8eab29cab",
         "type": "github"
       },
       "original": {
