@@ -393,6 +393,10 @@
             discordWebhookEnvironmentFile = config.age.secrets.backend.path;
             enableCareerMP = true;
             careerMPVersion = "v0.0.37";
+            enableRLS = true;
+            rlsCompatPatchVersion = "v1.0.0-beta.16";
+            memoryMax = "1024M";
+            memoryHigh = "768M";
             careerMPConfig = {
               server = {
                 allowTransactions = true;
