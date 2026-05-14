@@ -396,8 +396,8 @@
             enableRLS = true;
             enableRiverHighway = true;
             rlsCompatPatchVersion = "v1.0.0-beta.16";
-            memoryMax = "1024M";
-            memoryHigh = "768M";
+            memoryMax = "4096M";
+            memoryHigh = "3072M";
             careerMPConfig = {
               server = {
                 allowTransactions = true;
