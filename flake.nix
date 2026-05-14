@@ -385,7 +385,7 @@
             tags = "Freeroam,Modded,lang:english";
             maxPlayers = 20;
             maxCars = 100;
-            map = "/levels/west_coast_usa/info.json";
+            map = "/levels/river_highway/info.json";
             isPrivate = false;
             allowGuests = true;
             restartSchedule = "*-*-* 09:00:00";
@@ -394,6 +394,7 @@
             enableCareerMP = true;
             careerMPVersion = "v0.0.37";
             enableRLS = true;
+            enableRiverHighway = true;
             rlsCompatPatchVersion = "v1.0.0-beta.16";
             memoryMax = "1024M";
             memoryHigh = "768M";
