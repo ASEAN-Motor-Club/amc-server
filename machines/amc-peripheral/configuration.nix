@@ -815,6 +815,28 @@ in {
       ```
       Do NOT suggest creating or regenerating a PAT — the GitHub App handles everything.
 
+      ## Production Database Access
+
+      You have **read-only** access to the production database on `asean-mt-server`
+      via Tailscale. Use `psql` with the `BACKEND_DB_URL` environment variable:
+
+      ```bash
+      # Query production DB (always use the full connection string)
+      psql "$BACKEND_DB_URL" -c "SELECT name, balance FROM amc_player LIMIT 10"
+      psql "$BACKEND_DB_URL" -c "\d amc_player"
+
+      # Expanded output for wide rows
+      psql "$BACKEND_DB_URL" -c "\\x" -c "SELECT * FROM amc_player WHERE id = 1"
+      ```
+
+      > **IMPORTANT**: Always use `psql "$BACKEND_DB_URL"` — never bare `psql`.
+      > The `PGHOST`/`PGUSER` env vars point to the LOCAL staging database,
+      > not production. Using bare `psql` would connect to the wrong database.
+
+      **Security**: The `amc_bot_reader` user is SELECT-only. Finance tables
+      (`amc_finance_account`, `amc_finance_ledgerentry`, `amc_finance_journalentry`)
+      are blocked by Row-Level Security. Any write attempt will fail.
+
       ## Architecture Notes
 
       - This server does **NOT** run the game server or Django backend
@@ -828,9 +850,9 @@ in {
       Python, pytest, ruff, and other tools are **NOT** installed globally —
       they are only available inside nix devShells.
 
-      A **PostgreSQL** instance with PostGIS is running at `/run/postgresql`
-      (shared with the staging backend). The `PGHOST` and `PGUSER` env vars
-      are pre-configured, so Django and psql connect automatically.
+      A **staging PostgreSQL** instance with PostGIS is running at `/run/postgresql`.
+      The `PGHOST` and `PGUSER` env vars point to this local staging database.
+      This is SEPARATE from the production database on `asean-mt-server` (see below).
 
       ### Running tests
 
@@ -912,7 +934,7 @@ in {
       GDAL_LIBRARY_PATH = "${pkgs.gdal}/lib/libgdal.so";
     };
 
-    path = with pkgs; [opencode bun bash git openssh gh coreutils nodejs unzip which nix direnv];
+    path = with pkgs; [opencode bun bash git openssh gh coreutils nodejs unzip which nix direnv postgresql];
 
     script = ''
       set -euo pipefail
