@@ -384,7 +384,7 @@
             tags = "Freeroam,Modded,lang:english";
             maxPlayers = 20;
             maxCars = 100;
-            map = "/levels/river_highway/info.json";
+            map = "/levels/west_coast_usa/info.json";
             isPrivate = false;
             allowGuests = true;
             restartSchedule = "*-*-* 09:00:00";
@@ -392,8 +392,8 @@
             discordWebhookEnvironmentFile = config.age.secrets.backend.path;
             enableCareerMP = true;
             careerMPVersion = "v0.0.37";
-            enableRLS = true;
-            enableRiverHighway = true;
+            enableRLS = false;
+            enableRiverHighway = false;
             rlsCompatPatchVersion = "v1.0.0-beta.16";
             memoryMax = "4096M";
             memoryHigh = "3072M";
@@ -402,6 +402,11 @@
                 allowTransactions = true;
               };
               client = {
+                # Use a fixed save name so progression survives BeamMP account system outages.
+                # With serverSaveNameEnabled = true, CareerMP loads `serverSaveName` for every
+                # player instead of keying on (unstable) BeamMP nicknames.
+                serverSaveName = "BeamMP";
+                serverSaveNameEnabled = true;
                 roadTrafficEnabled = true;
                 roadTrafficAmount = 10;
                 extraTrafficEnabled = true;
