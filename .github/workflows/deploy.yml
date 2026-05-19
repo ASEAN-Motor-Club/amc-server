@@ -110,6 +110,10 @@ jobs:
               echo "Restarting eco-server.service"
               ssh root@127.0.0.1 systemctl restart eco-server.service
               ;;
+            *assetto-server*)
+              echo "Restarting assetto-server.service"
+              ssh root@127.0.0.1 systemctl restart assetto-server.service
+              ;;
             *)
               echo "No specific service restart defined for $SUB"
               ;;

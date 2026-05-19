@@ -20,6 +20,10 @@
       url = "github:ASEAN-Motor-Club/beammp-server-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    assetto-server = {
+      url = "github:ASEAN-Motor-Club/assetto-server-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     amc-backend = {
       url = "github:ASEAN-Motor-Club/amc-backend";
@@ -53,6 +57,7 @@
     necesse-server,
     eco-server,
     beammp-server,
+    assetto-server,
     ragenix,
     quadlet-nix,
     mt-pak-extract,
@@ -418,6 +423,30 @@
           };
         };
 
+        nixosModules.assetto-server = {
+          config,
+          pkgs,
+          lib,
+          ...
+        }: {
+          imports = [assetto-server.nixosModules.default];
+          services.assetto-server = {
+            enable = true;
+            openFirewall = true;
+            serverName = "★★ ASEAN Motor Club ★★ | Assetto Corsa Freeroam";
+            track = "shuto_revival_project_beta";
+            maxPlayers = 30;
+            enableAi = true;
+            aiTrafficSlots = 170;
+            password = "";
+            isPrivate = false;
+            contentHostPath = "/var/lib/ac-content";
+            cpuAffinity = "6 7";
+            memoryMax = "1G";
+            restartSchedule = "*-*-* 09:30:00";
+          };
+        };
+
         nixosConfigurations.asean-mt-server = nixpkgs.lib.nixosSystem {
           modules = [
             ./machines/asean-mt-server/configuration.nix
@@ -461,6 +490,7 @@
             self.nixosModules.motortown-server
             self.nixosModules.motortown-server-containers
             self.nixosModules.beammp-server
+            self.nixosModules.assetto-server
             ({
               config,
               pkgs,

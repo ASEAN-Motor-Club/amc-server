@@ -23,3 +23,6 @@
 	path = beammp-server-flake
 	url = git@github.com:ASEAN-Motor-Club/beammp-server-flake.git
 	branch = main
+[submodule "assetto-server-flake"]
+	path = assetto-server-flake
+	url = git@github.com:ASEAN-Motor-Club/assetto-server-flake.git
