@@ -490,7 +490,7 @@
             self.nixosModules.motortown-server
             self.nixosModules.motortown-server-containers
             self.nixosModules.beammp-server
-            self.nixosModules.assetto-server
+            # self.nixosModules.assetto-server  # disabled for now
             ({
               config,
               pkgs,
