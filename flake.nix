@@ -350,11 +350,11 @@
               bAllowAdminToRemoveAdmin = true;
               bAllowCompanyAIDriver = true;
               bAllowCorporation = false;
-              MaxHousingPlotRentalPerPlayer = 1;
+              MaxHousingPlotRentalPerPlayer = 20;
               MaxHousingPlotRentalDays = 15;
-              HousingPlotRentalPriceRatio = 5.0;
+              HousingPlotRentalPriceRatio = 1.0;
               bAllowModdedVehicle = true;
-              NPCVehicleDensity = 0.3;
+              NPCVehicleDensity = 0.5;
               NPCPoliceDensity = 0.0;
               bEnableHostWebAPIServer = true;
               HostWebAPIServerPassword = "";

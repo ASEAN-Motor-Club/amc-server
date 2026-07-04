@@ -98,6 +98,37 @@ in {
   systemd.coredump.extraConfig = ''
     Storage=none
   '';
+  # Rotate rsyslog's /var/log/messages — crash-looping services (e.g. staging
+  # amc-worker when DB is down) can fill the disk in hours without rotation.
+  services.logrotate = {
+    enable = true;
+    settings = {
+      "/var/log/messages" = {
+        frequency = "daily";
+        rotate = 3;
+        compress = true;
+        size = "100M";
+        postrotate = "systemctl kill -s HUP syslog 2>/dev/null || true";
+      };
+      "/var/log/warn" = {
+        frequency = "weekly";
+        rotate = 2;
+        compress = true;
+      };
+    };
+  };
+  # Suppress verbose amc-worker cron timing logs (every cron tick = ~10 lines/sec)
+  # from flooding /var/log/messages. These are arq's built-in cron logging.
+  # The filter MUST come before the catch-all (*.* -/var/log/messages) rule.
+  services.rsyslogd.defaultConfig = ''
+    if $programname == 'amc-worker-start' and ($msg contains ' cron:' or $msg contains 'arq') then stop
+
+    local1.*                     -/var/log/dhcpd
+    mail.*                       -/var/log/mail
+    *.=warning;*.=err            -/var/log/warn
+    *.crit                        /var/log/warn
+    *.*;mail.none;local1.none    -/var/log/messages
+  '';
 
   # ── Nix GitHub App token refresh ────────────────────────────────────
   # GitHub App installation tokens expire after 1 hour.
@@ -700,7 +731,7 @@ in {
         "provider": {
           "openrouter": {}
         },
-        "model": "xiaomi/mimo-v2.5-pro",
+        "model": "openrouter/xiaomi/mimo-v2.5",
         "command": {
           "pr": {
             "description": "commit, push, and create a PR from current changes",
@@ -917,7 +948,7 @@ in {
       Type = "simple";
       User = "opencode";
       Group = "opencode";
-      WorkingDirectory = "/var/lib/opencode/workspace";
+      WorkingDirectory = "/var/lib/opencode/workspace/amc-server";
       EnvironmentFile = [
         config.age.secrets.peripheral-bots.path
         config.age.secrets.opencode-peripheral.path
