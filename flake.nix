@@ -491,6 +491,7 @@
             self.nixosModules.motortown-server-containers
             self.nixosModules.beammp-server
             # self.nixosModules.assetto-server  # disabled for now
+            ./machines/asean-mt-server/hermes.nix
             ({
               config,
               pkgs,

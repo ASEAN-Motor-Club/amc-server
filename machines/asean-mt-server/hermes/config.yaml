@@ -1,0 +1,44 @@
+model:
+  provider: openrouter
+  model: xiaomi/mimo-v2.5
+
+gateway:
+  platforms:
+    - discord
+  discord:
+    enabled: true
+
+tools:
+  terminal:
+    timeout: 120
+  web:
+    search: true
+    extract: true
+    browser: true
+  file:
+    enabled: true
+  image:
+    enabled: false
+
+cron:
+  enabled: true
+
+browser:
+  cloud_provider: local
+  auto_local_for_private_urls: true
+  cdp_url: http://localhost:9222
+
+skills:
+  sync_bundled: true
+
+memory:
+  enabled: true
+  auto_persist: true
+
+auxiliary:
+  vision:
+    provider: openrouter
+    model: google/gemini-2.5-flash
+  compression:
+    provider: openrouter
+    model: google/gemini-2.5-flash
