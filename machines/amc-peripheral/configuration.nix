@@ -206,8 +206,11 @@ in {
         "/" = {
           root = "/var/www/www.aseanmotorclub.com";
           tryFiles = "$uri $uri.html $uri/index.html /fallback.html";
+        };
+        "~* \\.html$" = {
+          root = "/var/www/www.aseanmotorclub.com";
           extraConfig = ''
-            # Never cache anything outside of _app/immutable and map_tiles
+            # Never cache HTML files
             add_header Cache-Control "no-cache, no-store, max-age=0, must-revalidate";
           '';
         };
