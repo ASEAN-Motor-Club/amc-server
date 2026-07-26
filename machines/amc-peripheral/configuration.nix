@@ -156,6 +156,48 @@ in {
     };
   };
 
+  # ── GitHub runner token refresh via GitHub App ──────────────────
+  # The NixOS github-runner module only supports tokenFile (PAT/registration token).
+  # We bridge this by generating a GitHub App installation token, then exchanging it
+  # for a runner registration token (which the module's --token option expects).
+  # Registration tokens expire after 1 hour; the timer refreshes every 30 min.
+  systemd.services.github-runner-token-refresh = {
+    description = "Refresh GitHub App token for GitHub Actions runner";
+    after = ["network-online.target"];
+    wants = ["network-online.target"];
+    serviceConfig.Type = "oneshot";
+    path = [gh-token] ++ (with pkgs; [curl jq]);
+    script = ''
+      set -euo pipefail
+      INSTALL_TOKEN=$(gh-token)
+      REGISTRATION_TOKEN=$(curl -sf -X POST \
+        -H "Authorization: token $INSTALL_TOKEN" \
+        -H "Accept: application/vnd.github+json" \
+        "https://api.github.com/repos/ASEAN-Motor-Club/amc-server/actions/runners/registration-token" \
+        | jq -r '.token')
+      RUNNER_TOKEN_DIR="/var/lib/github-runner-token"
+      mkdir -p "$RUNNER_TOKEN_DIR"
+      echo -n "$REGISTRATION_TOKEN" > "$RUNNER_TOKEN_DIR/token"
+      chmod 400 "$RUNNER_TOKEN_DIR/token"
+    '';
+  };
+  systemd.timers.github-runner-token-refresh = {
+    wantedBy = ["timers.target"];
+    timerConfig = {
+      OnBootSec = "30s";
+      OnUnitActiveSec = "30min";
+    };
+  };
+  # Ensure the runner waits for a fresh token before starting
+  systemd.services.github-runner-amc-peripheral-deploy = {
+    after = ["github-runner-token-refresh.service"];
+    wants = ["github-runner-token-refresh.service"];
+    # Prevent nixos-rebuild switch from stopping the runner when its unit
+    # definition changes. Without this, the deploy job running ON the runner
+    # would be killed mid-deploy (exit 130 SIGINT).
+    stopIfChanged = false;
+  };
+
   # ── Data volume bind mounts ────────────────────────────────────────
   # The 99GB volume is mounted at /var/lib/data (hardware-configuration.nix).
   # Bind-mount subdirectories to their expected paths so services work
@@ -213,6 +255,8 @@ in {
     libopus
     nodejs
     steamcmd
+    gh-token
+    git-credential-github-app
   ];
 
   # Many Node.js packages (kimaki, etc.) hardcode /bin/bash
@@ -1099,6 +1143,8 @@ in {
     description = "Self-deploy – nixos-rebuild from latest main";
     after = ["network-online.target"];
     wants = ["network-online.target"];
+    # Prevent switch-to-configuration from restarting this service mid-deploy.
+    restartIfChanged = false;
 
     serviceConfig = {
       Type = "oneshot";

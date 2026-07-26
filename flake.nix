@@ -734,23 +734,16 @@
                 };
               };
 
-              age.secrets.github-runner-token = {
-                file = ./secrets/github-runner-token-peripheral.age;
-                mode = "400";
-              };
-              age.secrets.github-runner-ssh = {
-                file = ./secrets/github-runner-ssh.age;
-                mode = "400";
-              };
-
               services.github-runners."amc-peripheral-deploy" = {
-                enable = false;
-                replace = true; # Automatically replace existing runner with same name
-                url = "https://github.com/ASEAN-Motor-Club";
-                tokenFile = config.age.secrets.github-runner-token.path;
+                enable = true;
+                replace = true;
+                url = "https://github.com/ASEAN-Motor-Club/amc-server";
+                name = "amc-peripheral";
+                tokenFile = "/var/lib/github-runner-token/token";
+                user = "root";
                 package = nixpkgs-unstable.legacyPackages.${pkgs.system}.github-runner;
                 extraLabels = ["deploy-peripheral" "nix"];
-                extraPackages = with pkgs; [nix git openssh nixos-rebuild];
+                extraPackages = with pkgs; [nix git openssh nixos-rebuild gh];
                 serviceOverrides = {
                   ProtectHome = "none";
                 };

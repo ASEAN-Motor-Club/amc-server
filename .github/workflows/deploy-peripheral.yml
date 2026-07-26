@@ -1,81 +1,56 @@
 name: Deploy Peripheral
 
 on:
-  repository_dispatch:
-    types: [peripheral-update]
-  workflow_dispatch:
-    inputs:
-      submodule:
-        description: 'Submodule name (e.g., amc-peripheral)'
-        required: false
+  push:
+    branches: [master]
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-peripheral
+  cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: [self-hosted, deploy-peripheral]
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
-          # Let Nix handle submodule fetching via access-tokens
           submodules: false
           persist-credentials: false
 
-      - name: Configure Git Auth
+      - name: Configure Git Auth & Prepare Submodules
+        env:
+          # Write .gitconfig to the workspace (writable) instead of $HOME
+          # which may be read-only under systemd ProtectSystem=strict.
+          HOME: ${{ github.workspace }}
         run: |
-          mkdir -p $HOME/.ssh
-          chmod 700 $HOME/.ssh
-          
-          # SSH key for server deployment (nixos-rebuild)
-          # Reusing the shared SSH key secret, assuming it's valid for localhost access
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > $HOME/.ssh/id_ed25519
-          chmod 600 $HOME/.ssh/id_ed25519
-          
-          # SSH config for server access during nixos-rebuild
-          cat > $HOME/.ssh/config << EOF
-          Host 127.0.0.1
-            IdentityFile $HOME/.ssh/id_ed25519
-            StrictHostKeyChecking no
-            UserKnownHostsFile /dev/null
-          EOF
-          chmod 600 $HOME/.ssh/config
-          
-          # Configure git to use PAT for submodules Fetching
-          # Using relative paths in .gitmodules, combined with the PAT rewrite, 
-          # ensures we don't need SSH keys for any repository access.
-          TOKEN="${{ secrets.AMC_SERVER_DISPATCH_TOKEN }}"
-          git config --global url."https://x-access-token:$TOKEN@github.com/".insteadOf "git@github.com:"
-          git config --global url."https://x-access-token:$TOKEN@github.com/".insteadOf "ssh://git@github.com/"
+          TOKEN=$(/run/current-system/sw/bin/gh-token)
+          # Rewrite both HTTPS and SSH GitHub URLs to include the token.
+          # Handles relative URLs in .gitmodules (resolved to github.com) and
+          # the two absolute SSH URLs (beammp-server-flake, assetto-server-flake).
           git config --global url."https://x-access-token:$TOKEN@github.com/".insteadOf "https://github.com/"
-          
-          echo "GIT_SSH_COMMAND=ssh -F $HOME/.ssh/config" >> $GITHUB_ENV
-          echo "NIX_SSHOPTS=-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $HOME/.ssh/id_ed25519" >> $GITHUB_ENV
-      - name: Prepare Submodules
-        run: |
-          # Sync handles cached URLs on self-hosted runners; git config handles auth
+          git config --global url."https://x-access-token:$TOKEN@github.com/".insteadOf "git@github.com:"
           git submodule sync --recursive
           git submodule update --init --recursive --force
 
-
-
       - name: Deploy
         run: |
-          nixos-rebuild switch \
-            --target-host root@127.0.0.1 \
+          ACCESS_TOKEN=$(/run/current-system/sw/bin/gh-token)
+          sudo env HOME=/root nixos-rebuild switch \
             --flake .#amc-peripheral \
-            --option access-tokens "github.com=${{ secrets.AMC_SERVER_DISPATCH_TOKEN }}" \
-            --fast
+            --fast \
+            --option access-tokens "github.com=$ACCESS_TOKEN"
 
-      - name: Restart affected services
+      - name: Health check
         run: |
-          SUB="${{ github.event.client_payload.submodule || inputs.submodule }}"
-          echo "Processing restart for submodule: $SUB"
-          
-          # For amc-peripheral, we primarily only have the bot service
-          case "$SUB" in
-            *amc-peripheral*)
-              echo "Restarting amc-radio.service and amc-bot.service"
-              ssh root@127.0.0.1 systemctl restart amc-radio.service amc-bot.service || echo "Services not found or failed to restart"
-              ;;
-            *)
-              echo "No specific service restart defined for $SUB"
-              ;;
-          esac
+          echo "Checking services..."
+          for svc in amc-radio amc-bot nginx; do
+            if systemctl is-active --quiet "$svc" 2>/dev/null; then
+              echo "  $svc: active"
+            else
+              echo "  $svc: not running"
+              exit 1
+            fi
+          done
+          echo "All services healthy"
