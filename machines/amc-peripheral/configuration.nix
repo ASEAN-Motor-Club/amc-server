@@ -1198,11 +1198,13 @@ in {
 
       # ── Step 1: Sync workspace ──
       log_step "Syncing workspace to latest main"
-      export GIT_CONFIG_COUNT=2
+      export GIT_CONFIG_COUNT=3
       export GIT_CONFIG_KEY_0=safe.directory
       export GIT_CONFIG_VALUE_0="$REPO_DIR"
       export GIT_CONFIG_KEY_1="url.https://x-access-token:$GH_TOKEN@github.com/.insteadOf"
       export GIT_CONFIG_VALUE_1="https://github.com/"
+      export GIT_CONFIG_KEY_2="url.https://x-access-token:$GH_TOKEN@github.com/.insteadOf"
+      export GIT_CONFIG_VALUE_2="git@github.com:"
 
       runuser -u opencode -- git -C "$REPO_DIR" fetch origin master
       runuser -u opencode -- git -C "$REPO_DIR" checkout master
