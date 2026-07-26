@@ -24,7 +24,6 @@ jobs:
           # Trigger the root-owned self-deploy service (runs without
           # systemd namespace restrictions) and wait for it to complete.
           systemctl start amc-peripheral-deploy
-          cat /var/lib/opencode/deploy-result.json
 
       - name: Health check
         run: |
