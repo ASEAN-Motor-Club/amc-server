@@ -1219,14 +1219,16 @@ in {
       COMMIT_MSG=$(git -C "$REPO_DIR" log -1 --format=%s)
 
       # ── Step 2: NixOS rebuild ──
+      # Build first (fails on actual build errors), then switch
+      # (tolerates service activation failures like amc-bot SIGSEGV).
       log_step "Building NixOS configuration"
-      BEFORE=$(readlink /run/current-system)
-      HOME=/root /run/current-system/sw/bin/nixos-rebuild switch --flake "$REPO_DIR#amc-peripheral" 2>&1 || true
-      AFTER=$(readlink /run/current-system)
-      if [ "$BEFORE" = "$AFTER" ]; then
-        echo "{\"status\": \"failed\", \"step\": \"nixos-rebuild\", \"error\": \"system generation did not change\"}" > "$RESULT_FILE"
+      HOME=/root /run/current-system/sw/bin/nixos-rebuild build --flake "$REPO_DIR#amc-peripheral" 2>&1 || {
+        echo "{\"status\": \"failed\", \"step\": \"nixos-rebuild\", \"error\": \"build failed\"}" > "$RESULT_FILE"
         exit 1
-      fi
+      }
+
+      log_step "Switching to new configuration"
+      HOME=/root /run/current-system/sw/bin/nixos-rebuild switch --flake "$REPO_DIR#amc-peripheral" 2>&1 || true
 
       echo "{\"status\": \"success\", \"commit\": \"$COMMIT_SHA\", \"commit_msg\": \"$COMMIT_MSG\"}" > "$RESULT_FILE"
       echo "✅ Deploy complete: $COMMIT_SHA ($COMMIT_MSG)"
