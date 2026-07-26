@@ -1210,17 +1210,23 @@ in {
       runuser -u opencode -- git -C "$REPO_DIR" checkout master
       runuser -u opencode -- git -C "$REPO_DIR" reset --hard origin/master
       runuser -u opencode -- git -C "$REPO_DIR" clean -fd
-      runuser -u opencode -- git -C "$REPO_DIR" submodule update --init --recursive
+      # Initialize top-level submodules only (not recursive) — nested
+      # submodules may have unpushed commits. nixos-rebuild uses flake.lock
+      # for inputs, not git submodules.
+      runuser -u opencode -- git -C "$REPO_DIR" submodule update --init
 
       COMMIT_SHA=$(git -C "$REPO_DIR" rev-parse --short HEAD)
       COMMIT_MSG=$(git -C "$REPO_DIR" log -1 --format=%s)
 
       # ── Step 2: NixOS rebuild ──
       log_step "Building NixOS configuration"
-      HOME=/root /run/current-system/sw/bin/nixos-rebuild switch --flake "$REPO_DIR#amc-peripheral" 2>&1 || {
-        echo "{\"status\": \"failed\", \"step\": \"nixos-rebuild\", \"error\": \"nixos-rebuild switch failed\"}" > "$RESULT_FILE"
+      BEFORE=$(readlink /run/current-system)
+      HOME=/root /run/current-system/sw/bin/nixos-rebuild switch --flake "$REPO_DIR#amc-peripheral" 2>&1 || true
+      AFTER=$(readlink /run/current-system)
+      if [ "$BEFORE" = "$AFTER" ]; then
+        echo "{\"status\": \"failed\", \"step\": \"nixos-rebuild\", \"error\": \"system generation did not change\"}" > "$RESULT_FILE"
         exit 1
-      }
+      fi
 
       echo "{\"status\": \"success\", \"commit\": \"$COMMIT_SHA\", \"commit_msg\": \"$COMMIT_MSG\"}" > "$RESULT_FILE"
       echo "✅ Deploy complete: $COMMIT_SHA ($COMMIT_MSG)"
