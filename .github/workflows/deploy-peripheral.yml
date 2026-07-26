@@ -22,7 +22,7 @@ jobs:
       - name: Deploy
         run: |
           ACCESS_TOKEN=$(/run/current-system/sw/bin/gh-token)
-          sudo env HOME=/root nixos-rebuild switch \
+          env HOME=/root nixos-rebuild switch \
             --flake .#amc-peripheral \
             --fast \
             --option access-tokens "github.com=$ACCESS_TOKEN"
