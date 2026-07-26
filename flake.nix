@@ -747,6 +747,7 @@
                 extraPackages = with pkgs; [nix git openssh nixos-rebuild gh];
                 serviceOverrides = {
                   ProtectHome = "none";
+                  ProtectSystem = "false";
                 };
               };
             })
