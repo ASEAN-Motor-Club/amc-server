@@ -19,21 +19,6 @@ jobs:
           submodules: false
           persist-credentials: false
 
-      - name: Configure Git Auth & Prepare Submodules
-        env:
-          # Write .gitconfig to the workspace (writable) instead of $HOME
-          # which may be read-only under systemd ProtectSystem=strict.
-          HOME: ${{ github.workspace }}
-        run: |
-          TOKEN=$(/run/current-system/sw/bin/gh-token)
-          # Rewrite both HTTPS and SSH GitHub URLs to include the token.
-          # Handles relative URLs in .gitmodules (resolved to github.com) and
-          # the two absolute SSH URLs (beammp-server-flake, assetto-server-flake).
-          git config --global url."https://x-access-token:$TOKEN@github.com/".insteadOf "https://github.com/"
-          git config --global url."https://x-access-token:$TOKEN@github.com/".insteadOf "git@github.com:"
-          git submodule sync --recursive
-          git submodule update --init --recursive --force
-
       - name: Deploy
         run: |
           ACCESS_TOKEN=$(/run/current-system/sw/bin/gh-token)

@@ -708,7 +708,8 @@
               age.secrets.coding-agent-app-key = {
                 file = ./secrets/coding-agent-app-key.age;
                 owner = "opencode";
-                mode = "400";
+                group = "root";
+                mode = "440";
               };
 
               # Allow Nix daemon to fetch GitHub repos (rate limit avoidance + private repos).
