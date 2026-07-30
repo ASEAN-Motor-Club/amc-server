@@ -86,34 +86,54 @@ ssh steam@asean-mt-server "rm -rf /var/lib/motortown-server/.mod-cache/paks/"
 
 ### 7. Run the game update (atomic)
 ```bash
-ssh root@asean-mt-server "systemctl start motortown-server-update.service"
-ssh root@asean-mt-server "journalctl -u motortown-server-update.service -f"
+# The update trigger is the motortown-server preStart gate: it runs steamcmd
+# `app_update ... validate` only when DedicatedServerConfig.json is ABSENT.
+# Remove it, then restart — preStart does steamcmd update + (new) pak install + boot.
+ssh root@asean-mt-server "rm -f /var/lib/motortown-server/DedicatedServerConfig.json"
+ssh root@asean-mt-server "systemctl restart --no-block motortown-server.service"
+ssh root@asean-mt-server "journalctl -u motortown-server -f"
 ```
-Stops server → steamcmd `app_update ... validate` → starts server (new preStart installs new
-paks; `mods.nix` deletes all non-base paks first). Success: `Success! App '2223650' fully installed`.
+The restart re-runs preStart: steamcmd `app_update 2223650 -beta beta ... validate`, then
+`mods.nix` deletes all non-base paks and installs the enabled ones, then the game boots.
+Success marker in the journal: `Success! App '2223650' fully installed`.
+
+> [!WARNING]
+> Do **not** use `systemctl start motortown-server-update.service` — that unit runs as
+> `User=steam` but calls `systemctl stop/start motortown-server`, which fails with
+> "Interactive authentication required" (steam lacks those privileges). The preStart-gate
+> method above is the working update path.
 
 ### 8. Verify
 ```bash
+# game build advanced
 ssh root@asean-mt-server "grep -i '\"buildid\"' /var/lib/motortown-server/steamapps/appmanifest_2223650.acf | head -1"
+# server active
 ssh root@asean-mt-server "systemctl is-active motortown-server"
+# paks load cleanly (expect NO mismatch/cooked/failed lines)
 ssh root@asean-mt-server "journalctl -u motortown-server --since '5 min ago' --no-pager | grep -iE 'pak|mismatch|cooked|failed to load'"
+# installed paks == enableExternalMods (disabled mods are auto-removed from Content/Paks)
 ssh root@asean-mt-server "ls /var/lib/motortown-server/MotorTown/Content/Paks/ | grep -i '_P.pak'"
-ssh root@asean-mt-server "tail -n 50 /var/lib/motortown-server/MotorTown/Binaries/Win64/ue4ss/UE4SS.log | grep -iE 'MotorTownMods|Mod loaded|ERROR|FATAL'"
-ssh root@asean-mt-server "curl -s -o /dev/null -w '%{http_code}\n' http://localhost:5001/; curl -s 'http://localhost:8080/player/list?password=' | head -c 120"
+# MTDediMod server mod loaded + serving (probe a real route; 200 + JSON == healthy)
+ssh root@asean-mt-server "curl -s http://localhost:5001/players | head -c 120"
+ssh root@asean-mt-server "tail -n 80 /var/lib/motortown-server/MotorTown/Binaries/Win64/ue4ss/UE4SS.log | grep -iE 'MotorTownMods|LuaHttpServer|ERROR|FATAL' | tail -5"
+# native game API
+ssh root@asean-mt-server "curl -s 'http://localhost:8080/player/list?password=' | head -c 120"
 ```
 
 ## Quick game-only update (no pak changes)
-Rare (paks usually break too). The service always stops + starts the server even if the build
-is current, so pick a low-player window:
+Rare (paks usually break too). Same preStart-gate trigger — removing the config forces a
+steamcmd `app_update validate` on the next restart even if no paks changed. Pick a low-player
+window (the restart still drops players):
 ```bash
-ssh root@asean-mt-server "systemctl start motortown-server-update.service"
+ssh root@asean-mt-server "rm -f /var/lib/motortown-server/DedicatedServerConfig.json && systemctl restart motortown-server.service"
 ```
 
 ## Failure modes
 - **MTDediMod server mod breaks**: not reinstalled on a game update (version marker matches), so
   old C++ hooks run on the new game. If `UE4SS.log` shows load errors → rebuild via `mtdedimod-deploy`.
-- **steamcmd Steam Guard / login failure**: update unit errors; `motortown-update-recovery`
-  restarts the game (old build). Check `/run/agenix/steam` + the update-service journal.
+- **steamcmd Steam Guard / login failure**: preStart's steamcmd errors → `motortown-server`
+  fails to activate (systemd `Restart=always` retries, but it'll keep failing). Check
+  `/run/agenix/steam` + `journalctl -u motortown-server` for the steamcmd login error.
 - **Daily restart timer race**: `motortown-server-restart.service` fires `*-*-* 08:30` — avoid
   running the update near then.
 - **No game-binary rollback**: game files aren't NixOS-generation versioned. Repair via
