@@ -129,6 +129,14 @@ ssh root@asean-mt-server "rm -f /var/lib/motortown-server/DedicatedServerConfig.
 ```
 
 ## Failure modes
+- **"Version-agnostic" paks can still crash a new build**: do NOT assume a pak with no game
+  version in its name (e.g. `qxZap_CranyUnlocked_P`) is compatible. On the 7.19 update its old
+  pak crashed the server on boot — `motortown-server` entered a crash loop (`Failed with result
+  'exit-code'`, restarting every ~10s via `Restart=always`). After enabling ANY pak, confirm the
+  service **stays** `active` for >1 min and the mod endpoint responds (`curl :5001/players`) — a
+  brief `active` reading during boot can mask a crash loop. Recovery: disable the pak in
+  `enableExternalMods`, redeploy, then `systemctl reset-failed motortown-server && systemctl
+  restart motortown-server` (the start-rate-limit otherwise blocks recovery).
 - **MTDediMod server mod breaks**: not reinstalled on a game update (version marker matches), so
   old C++ hooks run on the new game. If `UE4SS.log` shows load errors → rebuild via `mtdedimod-deploy`.
 - **steamcmd Steam Guard / login failure**: preStart's steamcmd errors → `motortown-server`
