@@ -276,10 +276,11 @@
             #modVersion = "server-v0.40.0-rc8";
             modVersion = (import ./mod-versions.nix).main;
             enableExternalMods = {
-              # 7.19 mods (game update). 3 mods without 7.19 paks disabled until versions exist:
-              #   qxZap_CranyUnlocked_P, Schedule_I_v0.4.8_0.7.18+1_P, qxZap_satigt3_MoreAttachments_P
+              # 7.19 mods. qxZap_CranyUnlocked_P is version-agnostic (re-enabled).
+              # Still disabled pending 7.19 paks: Schedule_I_v0.4.8_0.7.18+1_P, qxZap_satigt3_MoreAttachments_P
               "MajasDetailWorksV3.3-7.19-SERVER_P" = true;
               "MajasMnTrailerworksV7-7.19_P" = true;
+              qxZap_CranyUnlocked_P = true;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
