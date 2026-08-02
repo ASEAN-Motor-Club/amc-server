@@ -197,8 +197,11 @@ in {
       HOME = "/opt/data";
       TERMINAL_ENV = "local";
       GATEWAY_ALLOW_ALL_USERS = "true";
-      # PostgreSQL: use localhost IPv4. Container has --network=host so 127.0.0.1 works.
-      PGHOST = "127.0.0.1";
+      # PostgreSQL: use IPv6 loopback. The container has --network=host so ::1
+      # works, and the amc-backend pg_hba trusts ::1/128 (but not 127.0.0.1/32).
+      # The /run/postgresql Unix socket is shadowed by Podman's tmpfs on /run,
+      # so it is unreachable from inside the container.
+      PGHOST = "::1";
       PGPORT = "5432";
       PGUSER = "amc";
       PGDATABASE = "amc";

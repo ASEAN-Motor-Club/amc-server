@@ -22,6 +22,6 @@ in {
   "coding-agent-app-key.age".publicKeys = [owner asean-mt-server peripheral];
   "dokuwiki-oauth.age".publicKeys = [owner peripheral];
   "beammp-auth.age".publicKeys = [owner asean-mt-server];
-  "hermes-env.age".publicKeys = [owner asean-mt-server];
-  "hermes-deploy-key.age".publicKeys = [owner asean-mt-server];
+  "hermes-env.age".publicKeys = [owner peripheral];
+  "hermes-deploy-key.age".publicKeys = [owner peripheral];
 }
