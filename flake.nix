@@ -16,6 +16,10 @@
       url = "github:ASEAN-Motor-Club/eco-server";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    zomboid-server = {
+      url = "github:ASEAN-Motor-Club/zomboid-server";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     beammp-server = {
       url = "github:ASEAN-Motor-Club/beammp-server-flake";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -56,6 +60,7 @@
     motortown-server,
     necesse-server,
     eco-server,
+    zomboid-server,
     beammp-server,
     assetto-server,
     ragenix,
@@ -251,6 +256,7 @@
             motortown-server.nixosModules.default
             necesse-server.nixosModules.default
             eco-server.nixosModules.amc
+            zomboid-server.nixosModules.default
             self.nixosModules.gameSyslog
           ];
 
@@ -266,6 +272,13 @@
             enableLogStreaming = false;
             credentialsFile = config.age.secrets.ecoUserToken.path;
             discordlinkSecretFile = config.age.secrets.discordlinkBotToken.path;
+          };
+          services.zomboid-server = {
+            enable = false; # flip to true after a smoke test
+            openFirewall = true;
+            enableLogStreaming = true;
+            serverName = "amc";
+            adminPasswordFile = config.age.secrets.pzAdminPassword.path;
           };
           services.motortown-server = {
             enable = true;
@@ -483,6 +496,11 @@
                 file = ./secrets/beammp-auth.age;
                 mode = "400";
                 owner = "beammp";
+              };
+              age.secrets.pzAdminPassword = {
+                file = ./secrets/pz-admin-password.age;
+                mode = "400";
+                owner = "steam";
               };
             })
 
