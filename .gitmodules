@@ -26,3 +26,6 @@
 [submodule "assetto-server-flake"]
 	path = assetto-server-flake
 	url = git@github.com:ASEAN-Motor-Club/assetto-server-flake.git
+[submodule "zomboid-server"]
+	path = zomboid-server
+	url = git@github.com:ASEAN-Motor-Club/zomboid-server.git
