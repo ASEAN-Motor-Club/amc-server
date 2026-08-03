@@ -270,7 +270,12 @@ in {
       HERMES_HOME = "/opt/data";
       HOME = "/opt/data";
       TERMINAL_ENV = "local";
-      GATEWAY_ALLOW_ALL_USERS = "true";
+      # Restrict interaction to members of a specific Discord role.
+      # GATEWAY_ALLOW_ALL_USERS MUST be false, or it overrides the allowlist
+      # and lets everyone in. DISCORD_ALLOWED_ROLES auto-enables the Server
+      # Members Intent (must also be toggled on in the Discord Developer Portal).
+      GATEWAY_ALLOW_ALL_USERS = "false";
+      DISCORD_ALLOWED_ROLES = "1485586308901634079";
       # PostgreSQL: use IPv6 loopback. The container has --network=host so ::1
       # works, and the amc-backend pg_hba trusts ::1/128 (but not 127.0.0.1/32).
       # The /run/postgresql Unix socket is shadowed by Podman's tmpfs on /run,
