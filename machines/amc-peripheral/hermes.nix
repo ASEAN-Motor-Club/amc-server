@@ -337,7 +337,7 @@ in {
             # ── Seed config files on first boot ──────────────────────────────────────
             HERMES_DIR="${./hermes}"
             if [ -d "$HERMES_DIR" ]; then
-              for file in config.yaml SOUL.md; do
+              for file in config.yaml SOUL.md AGENTS.md; do
                 src="$HERMES_DIR/$file"
                 dst="/var/lib/hermes-agent/$file"
                 if [ -f "$src" ] && [ ! -f "$dst" ]; then
