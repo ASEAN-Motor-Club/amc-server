@@ -7,6 +7,72 @@
   # Update this string and re-deploy to build a new Hermes image.
   # Use a branch name (e.g. "main") or a commit hash.
   hermesRev = "v2026.6.5";
+
+  # ── GitHub App (asean-coding-agent[bot]) ────────────────────────────
+  # Reused from the opencode agent. Gives Hermes push access + `gh` (PRs,
+  # Actions) with auto-refreshing 1h installation tokens. The App key is
+  # mounted into the container at /opt/data/.github-app-key; the helpers
+  # below generate JWTs signed with it and exchange them for tokens.
+  githubAppId = "2922326";
+  githubInstallationId = "111712229";
+
+  git-credential-github-app = pkgs.writeShellScriptBin "git-credential-github-app" ''
+    set -euo pipefail
+    [[ "''${1:-}" == "get" ]] || exit 0
+    while IFS='=' read -r key value; do
+      case "$key" in host) HOST="$value" ;; esac
+    done
+    [[ "''${HOST:-}" == "github.com" ]] || exit 0
+    b64url() { ${pkgs.openssl}/bin/openssl base64 -e -A | ${pkgs.coreutils}/bin/tr '+/' '-_' | ${pkgs.coreutils}/bin/tr -d '='; }
+    NOW=$(${pkgs.coreutils}/bin/date +%s)
+    IAT=$((NOW - 60))
+    EXP=$((NOW + 600))
+    HEADER=$(echo -n '{"alg":"RS256","typ":"JWT"}' | b64url)
+    PAYLOAD=$(echo -n "{\"iat\":$IAT,\"exp\":$EXP,\"iss\":\"${githubAppId}\"}" | b64url)
+    SIGNATURE=$(echo -n "$HEADER.$PAYLOAD" | ${pkgs.openssl}/bin/openssl dgst -sha256 -sign /opt/data/.github-app-key | b64url)
+    JWT="$HEADER.$PAYLOAD.$SIGNATURE"
+    RESPONSE=$(${pkgs.curl}/bin/curl -sf -X POST \
+      -H "Authorization: Bearer $JWT" \
+      -H "Accept: application/vnd.github+json" \
+      "https://api.github.com/app/installations/${githubInstallationId}/access_tokens" 2>&1) || {
+      echo "ERROR: GitHub API request failed: $RESPONSE" >&2
+      exit 1
+    }
+    TOKEN=$(echo "$RESPONSE" | ${pkgs.jq}/bin/jq -r '.token')
+    if [[ "$TOKEN" == "null" || -z "$TOKEN" ]]; then
+      echo "ERROR: Failed to extract token from response: $RESPONSE" >&2
+      exit 1
+    fi
+    echo "protocol=https"
+    echo "host=github.com"
+    echo "username=x-access-token"
+    echo "password=$TOKEN"
+  '';
+
+  gh-token = pkgs.writeShellScriptBin "gh-token" ''
+    set -euo pipefail
+    b64url() { ${pkgs.openssl}/bin/openssl base64 -e -A | ${pkgs.coreutils}/bin/tr '+/' '-_' | ${pkgs.coreutils}/bin/tr -d '='; }
+    NOW=$(${pkgs.coreutils}/bin/date +%s)
+    IAT=$((NOW - 60))
+    EXP=$((NOW + 600))
+    HEADER=$(echo -n '{"alg":"RS256","typ":"JWT"}' | b64url)
+    PAYLOAD=$(echo -n "{\"iat\":$IAT,\"exp\":$EXP,\"iss\":\"${githubAppId}\"}" | b64url)
+    SIGNATURE=$(echo -n "$HEADER.$PAYLOAD" | ${pkgs.openssl}/bin/openssl dgst -sha256 -sign /opt/data/.github-app-key | b64url)
+    JWT="$HEADER.$PAYLOAD.$SIGNATURE"
+    RESPONSE=$(${pkgs.curl}/bin/curl -sf -X POST \
+      -H "Authorization: Bearer $JWT" \
+      -H "Accept: application/vnd.github+json" \
+      "https://api.github.com/app/installations/${githubInstallationId}/access_tokens" 2>&1) || {
+      echo "ERROR: GitHub API request failed: $RESPONSE" >&2
+      exit 1
+    }
+    TOKEN=$(echo "$RESPONSE" | ${pkgs.jq}/bin/jq -r '.token')
+    if [[ "$TOKEN" == "null" || -z "$TOKEN" ]]; then
+      echo "ERROR: Failed to extract token from response: $RESPONSE" >&2
+      exit 1
+    fi
+    echo "$TOKEN"
+  '';
 in {
   # ── Podman (OCI runtime) ─────────────────────────────────────────────
   virtualisation.podman = {
@@ -62,6 +128,14 @@ in {
     mode = "400";
     owner = "root"; # read by ExecStartPre (runs as root)
     group = "root";
+  };
+  # GitHub App private key (asean-coding-agent[bot]) — same .age as the
+  # opencode agent's coding-agent-app-key, decrypted to a hermes-owned path.
+  age.secrets.hermes-github-app-key = {
+    file = ../../secrets/coding-agent-app-key.age;
+    mode = "440";
+    owner = "hermes";
+    group = "hermes";
   };
 
   # ── Image build service ──────────────────────────────────────────────
@@ -395,6 +469,44 @@ in {
             chown -h "$CONTAINER_UID:$CONTAINER_GID" "$NIX_STATE_BASE"/bin/nix* 2>/dev/null || true
 
             echo "hermes-git-setup: done"
+    '')
+    # ── GitHub App (asean-coding-agent[bot]) setup ───────────────────────
+    # Runs after hermes-git-setup: exposes gh + the credential helper, mounts
+    # the App key, and configures git to use HTTPS + the App token so Hermes
+    # can push and use `gh` for PRs / Actions.
+    (pkgs.writeShellScript "hermes-github-app-setup" ''
+      set -euo pipefail
+      CONTAINER_UID=10000
+      CONTAINER_GID=10000
+      NIX_STATE_BASE="/var/lib/hermes-agent/nix-state"
+
+      # App private key → volume (container: /opt/data/.github-app-key)
+      install -m 600 -o "$CONTAINER_UID" -g "$CONTAINER_GID" \
+        "${config.age.secrets.hermes-github-app-key.path}" \
+        "/var/lib/hermes-agent/.github-app-key"
+
+      # Expose gh + credential helper + gh-token on the container PATH
+      mkdir -p "$NIX_STATE_BASE/bin"
+      ln -sf ${pkgs.gh}/bin/gh "$NIX_STATE_BASE/bin/gh"
+      ln -sf ${git-credential-github-app}/bin/git-credential-github-app "$NIX_STATE_BASE/bin/git-credential-github-app"
+      ln -sf ${gh-token}/bin/gh-token "$NIX_STATE_BASE/bin/gh-token"
+      chown -h "$CONTAINER_UID:$CONTAINER_GID" "$NIX_STATE_BASE/bin/gh" "$NIX_STATE_BASE/bin/git-credential-github-app" "$NIX_STATE_BASE/bin/gh-token"
+
+      # Configure git: HTTPS + App credential helper, bot commit identity.
+      # url.*.insteadOf rewrites the existing SSH remote to HTTPS, so the App
+      # token (not the deploy key) is used for all fetch/push going forward.
+      GITCONFIG="/var/lib/hermes-agent/.gitconfig"
+      ${pkgs.git}/bin/git config -f "$GITCONFIG" user.name "AMC Coding Agent[bot]"
+      ${pkgs.git}/bin/git config -f "$GITCONFIG" user.email "2922326+amc-coding-agent[bot]@users.noreply.github.com"
+      ${pkgs.git}/bin/git config -f "$GITCONFIG" credential.helper "/opt/data/nix-state/bin/git-credential-github-app"
+      ${pkgs.git}/bin/git config -f "$GITCONFIG" "url.https://github.com/.insteadOf" "git@github.com:"
+      chown "$CONTAINER_UID:$CONTAINER_GID" "$GITCONFIG"
+      chmod 644 "$GITCONFIG"
+      cp "$GITCONFIG" "/var/lib/hermes-agent/.gitconfig_root"
+      chmod 644 "/var/lib/hermes-agent/.gitconfig_root"
+      chown root:root "/var/lib/hermes-agent/.gitconfig_root"
+
+      echo "hermes-github-app-setup: done"
     '')
   ];
 

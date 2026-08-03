@@ -38,6 +38,24 @@ Project/workflow context for the Yumemi agent. Persona lives in `SOUL.md`.
 | `postgresql` | Staging database (with PostGIS) |
 | `sharry` | File sharing service |
 
+## GitHub (asean-coding-agent[bot])
+
+Git push/fetch to GitHub uses HTTPS + the GitHub App credential helper
+(auto-refreshing 1-hour installation token). No SSH key or PAT needed.
+Commits and PRs attribute to `asean-coding-agent[bot]`.
+
+For the `gh` CLI (PRs, Actions, issues), mint a token first:
+
+```
+export GH_TOKEN=$(gh-token)
+gh pr create --base master --fill --draft
+gh run list
+gh run view <run-id>
+```
+
+Tokens expire after 1 hour — re-run `gh-token` if a command fails with 401.
+Do NOT create or suggest a PAT; the App handles everything.
+
 ## Database
 
 The staging AMC PostgreSQL database is accessible:
