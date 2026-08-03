@@ -229,6 +229,11 @@ in {
   users.users.root.openssh.authorizedKeys.keys = [
     ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJcMiNGgqQtOeACMso3CgZz2J3X8Ne8RxsZrQcsnoewU fmnxl-m2''
     ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO75UM3IHNzJKUxgABH6OHa/hxfQIoxTs+nGUtSU1TID''
+    # Hermes Agent deploy key — lets the podman-hermes-agent container SSH
+    # into this host (root@host.docker.internal) for privileged operations.
+    # Added in the container-migration commit but never authorized on this host,
+    # which silently broke host SSH. See amc-peripheral/hermes.nix.
+    ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP6GMtDsVpqvPnzu4FR8Wr6lHm/Usu/eYqNpOcXKxopG hermes@amc-server''
   ];
   users.users.freeman = {
     isNormalUser = true;
