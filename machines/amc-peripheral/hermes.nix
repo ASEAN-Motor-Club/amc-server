@@ -276,6 +276,11 @@ in {
       # Members Intent (must also be toggled on in the Discord Developer Portal).
       GATEWAY_ALLOW_ALL_USERS = "false";
       DISCORD_ALLOWED_ROLES = "1485586308901634079";
+      # User-ID allowlist (OR with the role). Role-based auth needs the
+      # member cache, which doesn't populate reliably under host load; the
+      # user-ID check is deterministic and needs no cache. Add operator IDs
+      # here so they're never locked out by a stale/empty member cache.
+      DISCORD_ALLOWED_USERS = "1155069673512120341";
       # PostgreSQL: use IPv6 loopback. The container has --network=host so ::1
       # works, and the amc-backend pg_hba trusts ::1/128 (but not 127.0.0.1/32).
       # The /run/postgresql Unix socket is shadowed by Podman's tmpfs on /run,
