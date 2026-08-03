@@ -240,6 +240,19 @@ in {
   system.stateVersion = "23.11";
   nix.settings.experimental-features = ["nix-command" "flakes"];
 
+  # ── Automatic garbage collection ───────────────────────────────────
+  # The peripheral host deploys on every push to master, accumulating NixOS
+  # generations that previously filled the 52G root disk (98%), which crashed
+  # PostgreSQL mid-deploy. Daily GC keeps the last 7 days of generations
+  # (enough for rollback) and reclaims the rest. Store optimisation hardlink
+  # -dedupes the store for further space savings.
+  nix.gc = {
+    automatic = true;
+    dates = "daily";
+    options = "--delete-older-than 7d";
+  };
+  nix.optimise.automatic = true;
+
   nixpkgs.config.allowUnfreePredicate = pkg:
     builtins.elem (lib.getName pkg) [
       "steam"
