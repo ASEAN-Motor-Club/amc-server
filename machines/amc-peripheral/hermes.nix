@@ -385,7 +385,7 @@ in {
 
       Host asean-mt-server
         User root
-        ProxyCommand /opt/data/nix-state/bin/tailscale ssh --proxy %h:%p
+        ProxyCommand /opt/data/nix-state/bin/tailscale nc %h %p
         StrictHostKeyChecking yes
         UserKnownHostsFile /opt/data/.ssh/known_hosts
       EOF
@@ -428,6 +428,7 @@ in {
             if [ -d "$AMC_DIR/.git" ]; then
               if [ ! -f "$AMC_DIR/amc-backend/flake.nix" ]; then
                 echo "hermes-git-setup: initialising submodules..."
+                GIT_SSH_COMMAND="${pkgs.openssh}/bin/ssh -i $SSH_DIR/id_ed25519 -o UserKnownHostsFile=$SSH_DIR/known_hosts -o StrictHostKeyChecking=yes -o IdentitiesOnly=yes" \
                 HOME="/var/lib/hermes-agent" \
                   ${pkgs.git}/bin/git -C "$AMC_DIR" submodule update --init --recursive || \
                   echo "hermes-git-setup: WARNING: submodule init failed"
