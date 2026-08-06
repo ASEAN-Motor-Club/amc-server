@@ -360,12 +360,12 @@ in {
               "${config.age.secrets.hermes-deploy-key.path}" \
               "$SSH_DIR/id_ed25519"
 
-            # Seed known_hosts (only needs refresh if missing)
-            if [ ! -s "$SSH_DIR/known_hosts" ]; then
-              ${pkgs.openssh}/bin/ssh-keyscan -H github.com > "$SSH_DIR/known_hosts" 2>/dev/null
-              ${pkgs.openssh}/bin/ssh-keyscan -H asean-mt-server >> "$SSH_DIR/known_hosts" 2>/dev/null
-              chown "$CONTAINER_UID:$CONTAINER_GID" "$SSH_DIR/known_hosts"
-            fi
+            # Seed known_hosts — always ensure both keys are present (the
+            # file persists across restarts, so only add missing entries).
+            ${pkgs.openssh}/bin/ssh-keyscan -H github.com >> "$SSH_DIR/known_hosts" 2>/dev/null
+            ${pkgs.openssh}/bin/ssh-keyscan -H asean-mt-server >> "$SSH_DIR/known_hosts" 2>/dev/null
+            sort -u -o "$SSH_DIR/known_hosts" "$SSH_DIR/known_hosts"
+            chown "$CONTAINER_UID:$CONTAINER_GID" "$SSH_DIR/known_hosts"
 
             # SSH config
             cat > "$SSH_DIR/config" << 'EOF'
@@ -423,16 +423,6 @@ in {
               GIT_SSH_COMMAND="${pkgs.openssh}/bin/ssh -i $SSH_DIR/id_ed25519 -o UserKnownHostsFile=$SSH_DIR/known_hosts -o StrictHostKeyChecking=yes -o IdentitiesOnly=yes" \
               HOME="/var/lib/hermes-agent" \
                 ${pkgs.git}/bin/git -C "$AMC_DIR" fetch --quiet || true
-            fi
-            # Initialise submodules (needed by the deploy script's --override-input paths)
-            if [ -d "$AMC_DIR/.git" ]; then
-              if [ ! -f "$AMC_DIR/amc-backend/flake.nix" ]; then
-                echo "hermes-git-setup: initialising submodules..."
-                GIT_SSH_COMMAND="${pkgs.openssh}/bin/ssh -i $SSH_DIR/id_ed25519 -o UserKnownHostsFile=$SSH_DIR/known_hosts -o StrictHostKeyChecking=yes -o IdentitiesOnly=yes" \
-                HOME="/var/lib/hermes-agent" \
-                  ${pkgs.git}/bin/git -C "$AMC_DIR" submodule update --init --recursive || \
-                  echo "hermes-git-setup: WARNING: submodule init failed"
-              fi
             fi
             chown -R "$CONTAINER_UID:$CONTAINER_GID" "$AMC_DIR"
 
@@ -537,6 +527,18 @@ in {
       cp "$GITCONFIG" "/var/lib/hermes-agent/.gitconfig_root"
       chmod 644 "/var/lib/hermes-agent/.gitconfig_root"
       chown root:root "/var/lib/hermes-agent/.gitconfig_root"
+
+      # Initialise submodules — runs AFTER the credential helper is configured
+      # so submodule clones use HTTPS + App token (has access to all org repos,
+      # unlike the deploy key which only has access to amc-server).
+      AMC_DIR="/var/lib/hermes-agent/workspace/amc-server"
+      if [ -d "$AMC_DIR/.git" ] && [ ! -f "$AMC_DIR/amc-backend/flake.nix" ]; then
+        echo "hermes-github-app-setup: initialising submodules..."
+        HOME="/var/lib/hermes-agent" \
+          ${pkgs.git}/bin/git -C "$AMC_DIR" submodule update --init --recursive 2>&1 | tail -5 || \
+          echo "hermes-github-app-setup: WARNING: submodule init failed"
+        chown -R "$CONTAINER_UID:$CONTAINER_GID" "$AMC_DIR"
+      fi
 
       echo "hermes-github-app-setup: done"
     '')
