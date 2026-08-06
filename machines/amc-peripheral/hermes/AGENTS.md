@@ -84,10 +84,25 @@ Or trigger the self-deploy service:
 sudo systemctl start amc-peripheral-deploy
 ```
 
-Deploy to the main server:
+Deploy to the main server (via Tailscale SSH — socket mounted, ProxyCommand configured):
 
 ```
-nix develop --command deploy root@asean-mt-server
+cd /opt/data/workspace/amc-server
+nix develop --command deploy root@asean-mt-server --skip-checks
+```
+
+The build happens on `asean-mt-server` (`--build-host`). Use `--skip-checks`
+to bypass pre-deploy validation (alejandra, pytest) inside the container.
+Submodules are initialised at startup — the `--override-input` paths resolve.
+
+For rollbacks:
+```
+nix develop --command rollback root@asean-mt-server
+```
+
+After a deploy to asean-mt-server, run the health check:
+```
+nix develop --command health-check root@asean-mt-server
 ```
 
 ## Logs
