@@ -258,6 +258,7 @@ in {
       # System sockets (no host permission impact)
       "/run/podman/podman.sock:/run/podman.sock:ro"
       "/run/postgresql:/run/postgresql"
+      "/var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock:ro"
       "/nix:/nix:ro"
       "/opt/nanobot/shared-skills:/opt/nanobot/shared-skills:ro"
       # Nix state: nix.conf, tool wrappers,
@@ -362,6 +363,7 @@ in {
             # Seed known_hosts (only needs refresh if missing)
             if [ ! -s "$SSH_DIR/known_hosts" ]; then
               ${pkgs.openssh}/bin/ssh-keyscan -H github.com > "$SSH_DIR/known_hosts" 2>/dev/null
+              ${pkgs.openssh}/bin/ssh-keyscan -H asean-mt-server >> "$SSH_DIR/known_hosts" 2>/dev/null
               chown "$CONTAINER_UID:$CONTAINER_GID" "$SSH_DIR/known_hosts"
             fi
 
@@ -379,6 +381,12 @@ in {
         User root
         IdentityFile /opt/data/.ssh/id_ed25519
         StrictHostKeyChecking accept-new
+        UserKnownHostsFile /opt/data/.ssh/known_hosts
+
+      Host asean-mt-server
+        User root
+        ProxyCommand /opt/data/nix-state/bin/tailscale ssh --proxy %h:%p
+        StrictHostKeyChecking yes
         UserKnownHostsFile /opt/data/.ssh/known_hosts
       EOF
             chmod 600 "$SSH_DIR/config"
@@ -415,6 +423,15 @@ in {
               GIT_SSH_COMMAND="${pkgs.openssh}/bin/ssh -i $SSH_DIR/id_ed25519 -o UserKnownHostsFile=$SSH_DIR/known_hosts -o StrictHostKeyChecking=yes -o IdentitiesOnly=yes" \
               HOME="/var/lib/hermes-agent" \
                 ${pkgs.git}/bin/git -C "$AMC_DIR" fetch --quiet || true
+            fi
+            # Initialise submodules (needed by the deploy script's --override-input paths)
+            if [ -d "$AMC_DIR/.git" ]; then
+              if [ ! -f "$AMC_DIR/amc-backend/flake.nix" ]; then
+                echo "hermes-git-setup: initialising submodules..."
+                HOME="/var/lib/hermes-agent" \
+                  ${pkgs.git}/bin/git -C "$AMC_DIR" submodule update --init --recursive || \
+                  echo "hermes-git-setup: WARNING: submodule init failed"
+              fi
             fi
             chown -R "$CONTAINER_UID:$CONTAINER_GID" "$AMC_DIR"
 
@@ -477,6 +494,10 @@ in {
               echo "hermes-git-setup: WARNING: nix binary not found in /nix/store"
             fi
             chown -h "$CONTAINER_UID:$CONTAINER_GID" "$NIX_STATE_BASE"/bin/nix* 2>/dev/null || true
+
+            # Tailscale CLI — needed for Tailscale SSH ProxyCommand to asean-mt-server.
+            ln -sf ${pkgs.tailscale}/bin/tailscale "$NIX_STATE_BASE/bin/tailscale"
+            chown -h "$CONTAINER_UID:$CONTAINER_GID" "$NIX_STATE_BASE/bin/tailscale"
 
             echo "hermes-git-setup: done"
     '')
