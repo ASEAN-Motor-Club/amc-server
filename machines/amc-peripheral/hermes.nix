@@ -294,7 +294,7 @@ in {
       # under host load; the user-ID check is deterministic and needs no cache.
       # Keep operator IDs here so they're never locked out by a stale/empty
       # member cache.
-      DISCORD_ALLOWED_USERS = "1155069673512120341";
+      DISCORD_ALLOWED_USERS = "1155069673512120341,461537532383985665,97909704864309248";
       # PostgreSQL: use IPv6 loopback. The container has --network=host so ::1
       # works, and the amc-backend pg_hba trusts ::1/128 (but not 127.0.0.1/32).
       # The /run/postgresql Unix socket is shadowed by Podman's tmpfs on /run,
