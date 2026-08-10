@@ -258,6 +258,46 @@ in {
   };
   nix.optimise.automatic = true;
 
+  # ── Podman image GC ──────────────────────────────────────────────
+  # The daily nix.gc never touches the podman store, which accumulated
+  # ~6.5G of unused images (old hermes builds + dangling layers). Weekly
+  # prune removes all images not referenced by a running container; the
+  # --filter until=72h guards against racing a just-rebuilt image.
+  systemd.timers.podman-image-prune = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "weekly";
+      Persistent = true;
+    };
+  };
+  systemd.services.podman-image-prune = {
+    path = with pkgs; [ podman ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.podman}/bin/podman image prune -af --filter until=72h";
+    };
+  };
+
+  # ── Hermes agent data GC ─────────────────────────────────────────
+  # Package-manager caches under /var/lib/hermes-agent (uv/pnpm/nix/node)
+  # regrow to several GB. Weekly removal of files untouched for 7 days keeps
+  # them bounded without racing a cache in active use. Never touches
+  # workspace/, sessions/, memories/, config, or .env.
+  systemd.timers.hermes-cache-prune = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "weekly";
+      Persistent = true;
+    };
+  };
+  systemd.services.hermes-cache-prune = {
+    path = with pkgs; [ coreutils findutils ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.findutils}/bin/find /var/lib/hermes-agent/.cache /var/lib/hermes-agent/.local/share/pnpm /var/lib/hermes-agent/.local/share/uv -type f -mtime +7 -delete";
+    };
+  };
+
   nixpkgs.config.allowUnfreePredicate = pkg:
     builtins.elem (lib.getName pkg) [
       "steam"
