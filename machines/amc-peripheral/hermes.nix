@@ -272,15 +272,28 @@ in {
       HOME = "/opt/data";
       TERMINAL_ENV = "local";
       # Restrict interaction to members of a specific Discord role.
-      # GATEWAY_ALLOW_ALL_USERS MUST be false, or it overrides the allowlist
-      # and lets everyone in. DISCORD_ALLOWED_ROLES auto-enables the Server
-      # Members Intent (must also be toggled on in the Discord Developer Portal).
+      # The Hermes gateway has TWO auth gates, and only one is role-aware:
+      #   - Adapter on_message gate -> _is_allowed_user: honors roles (OR with
+      #     the user-ID list). Role members pass HERE.
+      #   - Gateway _is_user_authorized gate: role-BLIND, only reads
+      #     DISCORD_ALLOWED_USERS. A message must pass BOTH gates, so role
+      #     members are let through by the adapter and then denied at the
+      #     gateway's user-ID check ("Unauthorized user" in the logs).
+      # DISCORD_ALLOW_ALL_USERS=true makes the gateway's per-platform allow-all
+      # (gateway/run.py:7162) trust the adapter's role-aware gate. The adapter
+      # then enforces roles + the operator user-ID below; everyone else is
+      # dropped at ingest. GATEWAY_ALLOW_ALL_USERS stays false and is anyway
+      # not reached (its branch only fires when NO env allowlists are set).
+      # DISCORD_ALLOWED_ROLES auto-enables the Server Members Intent (must also
+      # be toggled on in the Discord Developer Portal).
       GATEWAY_ALLOW_ALL_USERS = "false";
+      DISCORD_ALLOW_ALL_USERS = "true";
       DISCORD_ALLOWED_ROLES = "1485586308901634079";
-      # User-ID allowlist (OR with the role). Role-based auth needs the
-      # member cache, which doesn't populate reliably under host load; the
-      # user-ID check is deterministic and needs no cache. Add operator IDs
-      # here so they're never locked out by a stale/empty member cache.
+      # Operator user-ID allowlist (OR with the role at the adapter gate).
+      # Role-based auth needs the member cache, which doesn't populate reliably
+      # under host load; the user-ID check is deterministic and needs no cache.
+      # Keep operator IDs here so they're never locked out by a stale/empty
+      # member cache.
       DISCORD_ALLOWED_USERS = "1155069673512120341";
       # PostgreSQL: use IPv6 loopback. The container has --network=host so ::1
       # works, and the amc-backend pg_hba trusts ::1/128 (but not 127.0.0.1/32).
