@@ -339,6 +339,10 @@ in {
         "/" = {
           root = "/var/www/www.aseanmotorclub.com";
           tryFiles = "$uri $uri.html $uri/index.html /fallback.html";
+          extraConfig = ''
+            # Never cache anything outside of _app/immutable and map_tiles
+            add_header Cache-Control "no-cache, no-store, max-age=0, must-revalidate";
+          '';
         };
         "/_app/immutable/" = {
           root = "/var/www/www.aseanmotorclub.com";
