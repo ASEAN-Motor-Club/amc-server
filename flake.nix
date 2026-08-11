@@ -274,7 +274,7 @@
             discordlinkSecretFile = config.age.secrets.discordlinkBotToken.path;
           };
           services.zomboid-server = {
-            enable = false; # flip to true after a smoke test
+            enable = true;
             openFirewall = true;
             enableLogStreaming = true;
             serverName = "amc";
