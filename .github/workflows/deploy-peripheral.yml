@@ -28,7 +28,8 @@ jobs:
       - name: Health check
         run: |
           echo "Checking services..."
-          for svc in amc-radio nginx; do
+          # Core services must be active immediately after a deploy.
+          for svc in amc-radio nginx postgresql; do
             if systemctl is-active --quiet "$svc" 2>/dev/null; then
               echo "  $svc: active"
             else
@@ -36,4 +37,12 @@ jobs:
               exit 1
             fi
           done
+          # podman-hermes-agent may be "activating" during a first-boot image
+          # build, so only fail on a hard "failed" state (e.g. crash loop).
+          hs=$(systemctl is-active podman-hermes-agent 2>/dev/null || true)
+          if [ "$hs" = "failed" ]; then
+            echo "  podman-hermes-agent: failed"
+            exit 1
+          fi
+          echo "  podman-hermes-agent: $hs"
           echo "All services healthy"

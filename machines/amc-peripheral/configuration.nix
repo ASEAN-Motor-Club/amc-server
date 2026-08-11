@@ -229,6 +229,11 @@ in {
   users.users.root.openssh.authorizedKeys.keys = [
     ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJcMiNGgqQtOeACMso3CgZz2J3X8Ne8RxsZrQcsnoewU fmnxl-m2''
     ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO75UM3IHNzJKUxgABH6OHa/hxfQIoxTs+nGUtSU1TID''
+    # Hermes Agent deploy key — lets the podman-hermes-agent container SSH
+    # into this host (root@host.docker.internal) for privileged operations.
+    # Added in the container-migration commit but never authorized on this host,
+    # which silently broke host SSH. See amc-peripheral/hermes.nix.
+    ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP6GMtDsVpqvPnzu4FR8Wr6lHm/Usu/eYqNpOcXKxopG hermes@amc-server''
   ];
   users.users.freeman = {
     isNormalUser = true;
@@ -239,6 +244,59 @@ in {
   };
   system.stateVersion = "23.11";
   nix.settings.experimental-features = ["nix-command" "flakes"];
+
+  # ── Automatic garbage collection ───────────────────────────────────
+  # The peripheral host deploys on every push to master, accumulating NixOS
+  # generations that previously filled the 52G root disk (98%), which crashed
+  # PostgreSQL mid-deploy. Daily GC keeps the last 7 days of generations
+  # (enough for rollback) and reclaims the rest. Store optimisation hardlink
+  # -dedupes the store for further space savings.
+  nix.gc = {
+    automatic = true;
+    dates = "daily";
+    options = "--delete-older-than 7d";
+  };
+  nix.optimise.automatic = true;
+
+  # ── Podman image GC ──────────────────────────────────────────────
+  # The daily nix.gc never touches the podman store, which accumulated
+  # ~6.5G of unused images (old hermes builds + dangling layers). Weekly
+  # prune removes all images not referenced by a running container; the
+  # --filter until=72h guards against racing a just-rebuilt image.
+  systemd.timers.podman-image-prune = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "weekly";
+      Persistent = true;
+    };
+  };
+  systemd.services.podman-image-prune = {
+    path = with pkgs; [ podman ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.podman}/bin/podman image prune -af --filter until=72h";
+    };
+  };
+
+  # ── Hermes agent data GC ─────────────────────────────────────────
+  # Package-manager caches under /var/lib/hermes-agent (uv/pnpm/nix/node)
+  # regrow to several GB. Weekly removal of files untouched for 7 days keeps
+  # them bounded without racing a cache in active use. Never touches
+  # workspace/, sessions/, memories/, config, or .env.
+  systemd.timers.hermes-cache-prune = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "weekly";
+      Persistent = true;
+    };
+  };
+  systemd.services.hermes-cache-prune = {
+    path = with pkgs; [ coreutils findutils ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.findutils}/bin/find /var/lib/hermes-agent/.cache /var/lib/hermes-agent/.local/share/pnpm /var/lib/hermes-agent/.local/share/uv -type f -mtime +7 -delete";
+    };
+  };
 
   nixpkgs.config.allowUnfreePredicate = pkg:
     builtins.elem (lib.getName pkg) [

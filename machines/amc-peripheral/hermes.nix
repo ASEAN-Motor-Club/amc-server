@@ -7,6 +7,72 @@
   # Update this string and re-deploy to build a new Hermes image.
   # Use a branch name (e.g. "main") or a commit hash.
   hermesRev = "v2026.6.5";
+
+  # ── GitHub App (asean-coding-agent[bot]) ────────────────────────────
+  # Reused from the opencode agent. Gives Hermes push access + `gh` (PRs,
+  # Actions) with auto-refreshing 1h installation tokens. The App key is
+  # mounted into the container at /opt/data/.github-app-key; the helpers
+  # below generate JWTs signed with it and exchange them for tokens.
+  githubAppId = "2922326";
+  githubInstallationId = "111712229";
+
+  git-credential-github-app = pkgs.writeShellScriptBin "git-credential-github-app" ''
+    set -euo pipefail
+    [[ "''${1:-}" == "get" ]] || exit 0
+    while IFS='=' read -r key value; do
+      case "$key" in host) HOST="$value" ;; esac
+    done
+    [[ "''${HOST:-}" == "github.com" ]] || exit 0
+    b64url() { ${pkgs.openssl}/bin/openssl base64 -e -A | ${pkgs.coreutils}/bin/tr '+/' '-_' | ${pkgs.coreutils}/bin/tr -d '='; }
+    NOW=$(${pkgs.coreutils}/bin/date +%s)
+    IAT=$((NOW - 60))
+    EXP=$((NOW + 600))
+    HEADER=$(echo -n '{"alg":"RS256","typ":"JWT"}' | b64url)
+    PAYLOAD=$(echo -n "{\"iat\":$IAT,\"exp\":$EXP,\"iss\":\"${githubAppId}\"}" | b64url)
+    SIGNATURE=$(echo -n "$HEADER.$PAYLOAD" | ${pkgs.openssl}/bin/openssl dgst -sha256 -sign /opt/data/.github-app-key | b64url)
+    JWT="$HEADER.$PAYLOAD.$SIGNATURE"
+    RESPONSE=$(${pkgs.curl}/bin/curl -sf -X POST \
+      -H "Authorization: Bearer $JWT" \
+      -H "Accept: application/vnd.github+json" \
+      "https://api.github.com/app/installations/${githubInstallationId}/access_tokens" 2>&1) || {
+      echo "ERROR: GitHub API request failed: $RESPONSE" >&2
+      exit 1
+    }
+    TOKEN=$(echo "$RESPONSE" | ${pkgs.jq}/bin/jq -r '.token')
+    if [[ "$TOKEN" == "null" || -z "$TOKEN" ]]; then
+      echo "ERROR: Failed to extract token from response: $RESPONSE" >&2
+      exit 1
+    fi
+    echo "protocol=https"
+    echo "host=github.com"
+    echo "username=x-access-token"
+    echo "password=$TOKEN"
+  '';
+
+  gh-token = pkgs.writeShellScriptBin "gh-token" ''
+    set -euo pipefail
+    b64url() { ${pkgs.openssl}/bin/openssl base64 -e -A | ${pkgs.coreutils}/bin/tr '+/' '-_' | ${pkgs.coreutils}/bin/tr -d '='; }
+    NOW=$(${pkgs.coreutils}/bin/date +%s)
+    IAT=$((NOW - 60))
+    EXP=$((NOW + 600))
+    HEADER=$(echo -n '{"alg":"RS256","typ":"JWT"}' | b64url)
+    PAYLOAD=$(echo -n "{\"iat\":$IAT,\"exp\":$EXP,\"iss\":\"${githubAppId}\"}" | b64url)
+    SIGNATURE=$(echo -n "$HEADER.$PAYLOAD" | ${pkgs.openssl}/bin/openssl dgst -sha256 -sign /opt/data/.github-app-key | b64url)
+    JWT="$HEADER.$PAYLOAD.$SIGNATURE"
+    RESPONSE=$(${pkgs.curl}/bin/curl -sf -X POST \
+      -H "Authorization: Bearer $JWT" \
+      -H "Accept: application/vnd.github+json" \
+      "https://api.github.com/app/installations/${githubInstallationId}/access_tokens" 2>&1) || {
+      echo "ERROR: GitHub API request failed: $RESPONSE" >&2
+      exit 1
+    }
+    TOKEN=$(echo "$RESPONSE" | ${pkgs.jq}/bin/jq -r '.token')
+    if [[ "$TOKEN" == "null" || -z "$TOKEN" ]]; then
+      echo "ERROR: Failed to extract token from response: $RESPONSE" >&2
+      exit 1
+    fi
+    echo "$TOKEN"
+  '';
 in {
   # ── Podman (OCI runtime) ─────────────────────────────────────────────
   virtualisation.podman = {
@@ -62,6 +128,14 @@ in {
     mode = "400";
     owner = "root"; # read by ExecStartPre (runs as root)
     group = "root";
+  };
+  # GitHub App private key (asean-coding-agent[bot]) — same .age as the
+  # opencode agent's coding-agent-app-key, decrypted to a hermes-owned path.
+  age.secrets.hermes-github-app-key = {
+    file = ../../secrets/coding-agent-app-key.age;
+    mode = "440";
+    owner = "hermes";
+    group = "hermes";
   };
 
   # ── Image build service ──────────────────────────────────────────────
@@ -184,6 +258,7 @@ in {
       # System sockets (no host permission impact)
       "/run/podman/podman.sock:/run/podman.sock:ro"
       "/run/postgresql:/run/postgresql"
+      "/var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock:ro"
       "/nix:/nix:ro"
       "/opt/nanobot/shared-skills:/opt/nanobot/shared-skills:ro"
       # Nix state: nix.conf, tool wrappers,
@@ -196,9 +271,35 @@ in {
       HERMES_HOME = "/opt/data";
       HOME = "/opt/data";
       TERMINAL_ENV = "local";
-      GATEWAY_ALLOW_ALL_USERS = "true";
-      # PostgreSQL: use localhost IPv4. Container has --network=host so 127.0.0.1 works.
-      PGHOST = "127.0.0.1";
+      # Restrict interaction to members of a specific Discord role.
+      # The Hermes gateway has TWO auth gates, and only one is role-aware:
+      #   - Adapter on_message gate -> _is_allowed_user: honors roles (OR with
+      #     the user-ID list). Role members pass HERE.
+      #   - Gateway _is_user_authorized gate: role-BLIND, only reads
+      #     DISCORD_ALLOWED_USERS. A message must pass BOTH gates, so role
+      #     members are let through by the adapter and then denied at the
+      #     gateway's user-ID check ("Unauthorized user" in the logs).
+      # DISCORD_ALLOW_ALL_USERS=true makes the gateway's per-platform allow-all
+      # (gateway/run.py:7162) trust the adapter's role-aware gate. The adapter
+      # then enforces roles + the operator user-ID below; everyone else is
+      # dropped at ingest. GATEWAY_ALLOW_ALL_USERS stays false and is anyway
+      # not reached (its branch only fires when NO env allowlists are set).
+      # DISCORD_ALLOWED_ROLES auto-enables the Server Members Intent (must also
+      # be toggled on in the Discord Developer Portal).
+      GATEWAY_ALLOW_ALL_USERS = "false";
+      DISCORD_ALLOW_ALL_USERS = "true";
+      DISCORD_ALLOWED_ROLES = "1485586308901634079";
+      # Operator user-ID allowlist (OR with the role at the adapter gate).
+      # Role-based auth needs the member cache, which doesn't populate reliably
+      # under host load; the user-ID check is deterministic and needs no cache.
+      # Keep operator IDs here so they're never locked out by a stale/empty
+      # member cache.
+      DISCORD_ALLOWED_USERS = "1155069673512120341,461537532383985665,97909704864309248";
+      # PostgreSQL: use IPv6 loopback. The container has --network=host so ::1
+      # works, and the amc-backend pg_hba trusts ::1/128 (but not 127.0.0.1/32).
+      # The /run/postgresql Unix socket is shadowed by Podman's tmpfs on /run,
+      # so it is unreachable from inside the container.
+      PGHOST = "::1";
       PGPORT = "5432";
       PGUSER = "amc";
       PGDATABASE = "amc";
@@ -272,11 +373,12 @@ in {
               "${config.age.secrets.hermes-deploy-key.path}" \
               "$SSH_DIR/id_ed25519"
 
-            # Seed known_hosts (only needs refresh if missing)
-            if [ ! -s "$SSH_DIR/known_hosts" ]; then
-              ${pkgs.openssh}/bin/ssh-keyscan -H github.com > "$SSH_DIR/known_hosts" 2>/dev/null
-              chown "$CONTAINER_UID:$CONTAINER_GID" "$SSH_DIR/known_hosts"
-            fi
+            # Seed known_hosts — always ensure both keys are present (the
+            # file persists across restarts, so only add missing entries).
+            ${pkgs.openssh}/bin/ssh-keyscan -H github.com >> "$SSH_DIR/known_hosts" 2>/dev/null
+            ${pkgs.openssh}/bin/ssh-keyscan -H asean-mt-server >> "$SSH_DIR/known_hosts" 2>/dev/null
+            sort -u -o "$SSH_DIR/known_hosts" "$SSH_DIR/known_hosts"
+            chown "$CONTAINER_UID:$CONTAINER_GID" "$SSH_DIR/known_hosts"
 
             # SSH config
             cat > "$SSH_DIR/config" << 'EOF'
@@ -292,6 +394,12 @@ in {
         User root
         IdentityFile /opt/data/.ssh/id_ed25519
         StrictHostKeyChecking accept-new
+        UserKnownHostsFile /opt/data/.ssh/known_hosts
+
+      Host asean-mt-server
+        User root
+        ProxyCommand /opt/data/nix-state/bin/tailscale nc %h %p
+        StrictHostKeyChecking yes
         UserKnownHostsFile /opt/data/.ssh/known_hosts
       EOF
             chmod 600 "$SSH_DIR/config"
@@ -334,7 +442,7 @@ in {
             # ── Seed config files on first boot ──────────────────────────────────────
             HERMES_DIR="${./hermes}"
             if [ -d "$HERMES_DIR" ]; then
-              for file in config.yaml SOUL.md; do
+              for file in config.yaml SOUL.md AGENTS.md; do
                 src="$HERMES_DIR/$file"
                 dst="/var/lib/hermes-agent/$file"
                 if [ -f "$src" ] && [ ! -f "$dst" ]; then
@@ -391,7 +499,61 @@ in {
             fi
             chown -h "$CONTAINER_UID:$CONTAINER_GID" "$NIX_STATE_BASE"/bin/nix* 2>/dev/null || true
 
+            # Tailscale CLI — needed for Tailscale SSH ProxyCommand to asean-mt-server.
+            ln -sf ${pkgs.tailscale}/bin/tailscale "$NIX_STATE_BASE/bin/tailscale"
+            chown -h "$CONTAINER_UID:$CONTAINER_GID" "$NIX_STATE_BASE/bin/tailscale"
+
             echo "hermes-git-setup: done"
+    '')
+    # ── GitHub App (asean-coding-agent[bot]) setup ───────────────────────
+    # Runs after hermes-git-setup: exposes gh + the credential helper, mounts
+    # the App key, and configures git to use HTTPS + the App token so Hermes
+    # can push and use `gh` for PRs / Actions.
+    (pkgs.writeShellScript "hermes-github-app-setup" ''
+      set -euo pipefail
+      CONTAINER_UID=10000
+      CONTAINER_GID=10000
+      NIX_STATE_BASE="/var/lib/hermes-agent/nix-state"
+
+      # App private key → volume (container: /opt/data/.github-app-key)
+      install -m 600 -o "$CONTAINER_UID" -g "$CONTAINER_GID" \
+        "${config.age.secrets.hermes-github-app-key.path}" \
+        "/var/lib/hermes-agent/.github-app-key"
+
+      # Expose gh + credential helper + gh-token on the container PATH
+      mkdir -p "$NIX_STATE_BASE/bin"
+      ln -sf ${pkgs.gh}/bin/gh "$NIX_STATE_BASE/bin/gh"
+      ln -sf ${git-credential-github-app}/bin/git-credential-github-app "$NIX_STATE_BASE/bin/git-credential-github-app"
+      ln -sf ${gh-token}/bin/gh-token "$NIX_STATE_BASE/bin/gh-token"
+      chown -h "$CONTAINER_UID:$CONTAINER_GID" "$NIX_STATE_BASE/bin/gh" "$NIX_STATE_BASE/bin/git-credential-github-app" "$NIX_STATE_BASE/bin/gh-token"
+
+      # Configure git: HTTPS + App credential helper, bot commit identity.
+      # url.*.insteadOf rewrites the existing SSH remote to HTTPS, so the App
+      # token (not the deploy key) is used for all fetch/push going forward.
+      GITCONFIG="/var/lib/hermes-agent/.gitconfig"
+      ${pkgs.git}/bin/git config -f "$GITCONFIG" user.name "AMC Coding Agent[bot]"
+      ${pkgs.git}/bin/git config -f "$GITCONFIG" user.email "2922326+amc-coding-agent[bot]@users.noreply.github.com"
+      ${pkgs.git}/bin/git config -f "$GITCONFIG" credential.helper "/opt/data/nix-state/bin/git-credential-github-app"
+      ${pkgs.git}/bin/git config -f "$GITCONFIG" "url.https://github.com/.insteadOf" "git@github.com:"
+      chown "$CONTAINER_UID:$CONTAINER_GID" "$GITCONFIG"
+      chmod 644 "$GITCONFIG"
+      cp "$GITCONFIG" "/var/lib/hermes-agent/.gitconfig_root"
+      chmod 644 "/var/lib/hermes-agent/.gitconfig_root"
+      chown root:root "/var/lib/hermes-agent/.gitconfig_root"
+
+      # Initialise submodules — runs AFTER the credential helper is configured
+      # so submodule clones use HTTPS + App token (has access to all org repos,
+      # unlike the deploy key which only has access to amc-server).
+      AMC_DIR="/var/lib/hermes-agent/workspace/amc-server"
+      if [ -d "$AMC_DIR/.git" ] && [ ! -f "$AMC_DIR/amc-backend/flake.nix" ]; then
+        echo "hermes-github-app-setup: initialising submodules..."
+        HOME="/var/lib/hermes-agent" \
+          ${pkgs.git}/bin/git -C "$AMC_DIR" submodule update --init --recursive 2>&1 | tail -5 || \
+          echo "hermes-github-app-setup: WARNING: submodule init failed"
+        chown -R "$CONTAINER_UID:$CONTAINER_GID" "$AMC_DIR"
+      fi
+
+      echo "hermes-github-app-setup: done"
     '')
   ];
 
