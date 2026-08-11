@@ -465,7 +465,7 @@
             ./machines/asean-mt-server/configuration.nix
             ragenix.nixosModules.default
 
-            ({...}: {
+            ({config, lib, ...}: {
               imports = [
                 ragenix.nixosModules.default
               ];
@@ -496,7 +496,10 @@
               age.secrets.beammp-auth = {
                 file = ./secrets/beammp-auth.age;
                 mode = "400";
-                owner = "beammp";
+                # owner only exists when the beammp module is enabled and creates
+                # the 'beammp' user; omit the owner (falls back to root) when
+                # beammp is disabled so agenix chown doesn't fail on a missing user.
+                owner = lib.mkIf config.services.beammp-server.enable "beammp";
               };
               age.secrets.pzAdminPassword = {
                 file = ./secrets/pz-admin-password.age;
