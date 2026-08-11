@@ -395,7 +395,7 @@
         }: {
           imports = [beammp-server.nixosModules.default];
           services.beammp-server = {
-            enable = true;
+            enable = false; # disabled during Project Zomboid burn-in
             openFirewall = true;
             name = "★★ ASEAN Motor Club ★★ | BeamNG.drive";
             description = "ASEAN Motor Club BeamMP Server - discord.gg/aseanmotorclub";
