@@ -289,10 +289,11 @@
             #modVersion = "server-v0.40.0-rc8";
             modVersion = (import ./mod-versions.nix).main;
             enableExternalMods = {
-              # 7.19 mods. 3 mods without 7.19-compatible paks disabled:
-              #   qxZap_CranyUnlocked_P (old pak crashes 7.19), Schedule_I_v0.4.8_0.7.18+1_P, qxZap_satigt3_MoreAttachments_P
+              # 7.19 mods. 2 mods without 7.19-compatible paks disabled:
+              #   qxZap_CranyUnlocked_P (old pak crashes 7.19), Schedule_I_v0.4.8_0.7.18+1_P
               "MajasDetailWorksV3.3-7.19-SERVER_P" = true;
               "MajasMnTrailerworksV7-7.19_P" = true;
+              "qxZap_satigt3_MoreAttachments_P" = true;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
@@ -394,7 +395,7 @@
         }: {
           imports = [beammp-server.nixosModules.default];
           services.beammp-server = {
-            enable = true;
+            enable = false; # disabled during Project Zomboid burn-in
             openFirewall = true;
             name = "★★ ASEAN Motor Club ★★ | BeamNG.drive";
             description = "ASEAN Motor Club BeamMP Server - discord.gg/aseanmotorclub";
@@ -508,7 +509,6 @@
             self.nixosModules.motortown-server-containers
             self.nixosModules.beammp-server
             # self.nixosModules.assetto-server  # disabled for now
-            ./machines/asean-mt-server/hermes.nix
             ({
               config,
               pkgs,
@@ -677,6 +677,7 @@
             ./machines/amc-peripheral/configuration.nix
             ragenix.nixosModules.default
             amc-peripheral.nixosModules.default
+            ./machines/amc-peripheral/hermes.nix
 
             # Make mt-pak-extract flake available to modules
             {_module.args.mt-pak-extract = mt-pak-extract;}
