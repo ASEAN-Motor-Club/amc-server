@@ -211,6 +211,7 @@
         --override-input beammp-server ./beammp-server-flake \
         --override-input assetto-server ./assetto-server-flake \
         --override-input eco-server ./eco-server \
+        --override-input zomboid-server ./zomboid-server \
         --override-input mt-pak-extract ./mt-pak-extract
 
       echo "  ✅ nixos-rebuild complete"

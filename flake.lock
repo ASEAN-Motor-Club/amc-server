@@ -847,7 +847,8 @@
         "nixpkgs-unstable": "nixpkgs-unstable",
         "opencode": "opencode",
         "quadlet-nix": "quadlet-nix",
-        "ragenix": "ragenix"
+        "ragenix": "ragenix",
+        "zomboid-server": "zomboid-server"
       }
     },
     "rust-overlay": {
@@ -951,6 +952,21 @@
       }
     },
     "systems_10": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    },
+    "systems_11": {
       "locked": {
         "lastModified": 1681028828,
         "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
@@ -1132,6 +1148,27 @@
       "original": {
         "owner": "pyproject-nix",
         "repo": "uv2nix",
+        "type": "github"
+      }
+    },
+    "zomboid-server": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "systems": "systems_11"
+      },
+      "locked": {
+        "lastModified": 1786373669,
+        "narHash": "sha256-BeIStUZEnbCL6/vN7ZNmCg+wSvQYoOGJrHwWRtfUO7c=",
+        "owner": "ASEAN-Motor-Club",
+        "repo": "zomboid-server",
+        "rev": "35b031523b2dcfefa2f3f58547db955033465550",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ASEAN-Motor-Club",
+        "repo": "zomboid-server",
         "type": "github"
       }
     }
