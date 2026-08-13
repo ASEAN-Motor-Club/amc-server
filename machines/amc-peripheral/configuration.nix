@@ -833,7 +833,7 @@ in {
         "provider": {
           "openrouter": {}
         },
-        "model": "openrouter/xiaomi/mimo-v2.5",
+        "model": "openrouter/deepseek/deepseek-v4-flash-0731",
         "command": {
           "pr": {
             "description": "commit, push, and create a PR from current changes",
