@@ -279,6 +279,15 @@
             enableLogStreaming = true;
             serverName = "amc";
             adminPasswordFile = config.age.secrets.pzAdminPassword.path;
+            # Native PZ Discord integration. Channels match the live config;
+            # the bot token is a secret from agenix (never committed).
+            discord = {
+              enable = true;
+              chatChannel = "pz-game-chat";
+              logChannel = "pz-logs";
+              commandChannel = "pz-commands";
+            };
+            discordTokenFile = config.age.secrets.pzDiscordToken.path;
           };
           services.motortown-server = {
             enable = true;
@@ -503,6 +512,13 @@
               };
               age.secrets.pzAdminPassword = {
                 file = ./secrets/pz-admin-password.age;
+                mode = "400";
+                owner = "steam";
+              };
+              # PZ Discord bot token. Only present once PR #39 (the secret) is
+              # merged; the .age file is committed, the plaintext never is.
+              age.secrets.pzDiscordToken = {
+                file = ./secrets/pz-discord-token.age;
                 mode = "400";
                 owner = "steam";
               };
