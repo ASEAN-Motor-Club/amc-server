@@ -281,6 +281,10 @@
             adminPasswordFile = config.age.secrets.pzAdminPassword.path;
             # Native PZ Discord integration. Channels match the live config;
             # the bot token is a secret from agenix (never committed).
+            # PZ restart bursts were throttling the MT server. MT is pinned to
+            # cores 0-3 (motortown-server-flake), so keep PZ on everything else
+            # -- a PZ map-load/restart burst can't steal MT's physical cores.
+            cpuAffinity = "4 5 6 7 8 9 10 11";
             discord = {
               enable = true;
               chatChannel = "pz-game-chat";
