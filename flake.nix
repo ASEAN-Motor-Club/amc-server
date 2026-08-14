@@ -465,7 +465,11 @@
             ./machines/asean-mt-server/configuration.nix
             ragenix.nixosModules.default
 
-            ({config, lib, ...}: {
+            ({
+              config,
+              lib,
+              ...
+            }: {
               imports = [
                 ragenix.nixosModules.default
               ];
