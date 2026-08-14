@@ -264,14 +264,14 @@ in {
   # prune removes all images not referenced by a running container; the
   # --filter until=72h guards against racing a just-rebuilt image.
   systemd.timers.podman-image-prune = {
-    wantedBy = [ "timers.target" ];
+    wantedBy = ["timers.target"];
     timerConfig = {
       OnCalendar = "weekly";
       Persistent = true;
     };
   };
   systemd.services.podman-image-prune = {
-    path = with pkgs; [ podman ];
+    path = with pkgs; [podman];
     serviceConfig = {
       Type = "oneshot";
       ExecStart = "${pkgs.podman}/bin/podman image prune -af --filter until=72h";
@@ -284,14 +284,14 @@ in {
   # them bounded without racing a cache in active use. Never touches
   # workspace/, sessions/, memories/, config, or .env.
   systemd.timers.hermes-cache-prune = {
-    wantedBy = [ "timers.target" ];
+    wantedBy = ["timers.target"];
     timerConfig = {
       OnCalendar = "weekly";
       Persistent = true;
     };
   };
   systemd.services.hermes-cache-prune = {
-    path = with pkgs; [ coreutils findutils ];
+    path = with pkgs; [coreutils findutils];
     serviceConfig = {
       Type = "oneshot";
       ExecStart = "${pkgs.findutils}/bin/find /var/lib/hermes-agent/.cache /var/lib/hermes-agent/.local/share/pnpm /var/lib/hermes-agent/.local/share/uv -type f -mtime +7 -delete";
