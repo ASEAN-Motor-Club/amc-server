@@ -292,6 +292,10 @@
               commandChannel = "pz-commands";
             };
             discordTokenFile = config.age.secrets.pzDiscordToken.path;
+            updateNotifier = {
+              enable = true;
+              webhookFile = config.age.secrets.pzUpdateWebhook.path;
+            };
           };
           services.motortown-server = {
             enable = true;
@@ -529,6 +533,10 @@
                 file = ./secrets/pz-discord-token.age;
                 mode = "400";
                 owner = "steam";
+              };
+              age.secrets.pzUpdateWebhook = {
+                file = ./secrets/pz-update-webhook.age;
+                mode = "400";
               };
             })
 
