@@ -219,7 +219,7 @@ in {
   networking.domain = "";
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [22 80 443 8000 8008 1935 1936];
+    allowedTCPPorts = [22 80 443 8000 8008 8443 1935 1936];
     allowedUDPPorts = [1935];
     # Icecast admin UI accessible only over Tailscale
     interfaces."tailscale0".allowedTCPPorts = [8000];
