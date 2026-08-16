@@ -602,6 +602,13 @@
                   DISCORD_BEAMMP_STATUS_CHANNEL_ID = "1504133800425291930";
                   BEAMMP_SERVER_HOST = "127.0.0.1";
                   BEAMMP_SERVER_PORT = "30814";
+                  # --- Automated player-name moderation (auto-rename) ---
+                  # Key (OPENAI_API_KEY_OPENROUTER) is injected via the backend age secret.
+                  NAMER_ENABLED = "1";
+                  NAMER_LLM_MODEL = "openai/gpt-4o-mini";
+                  NAMER_AUTO_CONFIDENCE_THRESHOLD = "0.9";
+                  NAMER_REVIEW_CHANNEL_ID = "1366478091131551834";
+                  NAMER_ANNOUNCE = "1";
                 };
               };
 
