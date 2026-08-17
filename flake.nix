@@ -287,8 +287,11 @@
             cpuAffinity = "4 5 6 7 8 9 10 11";
             discord = {
               enable = true;
-              chatChannel = "pz-game-chat";
-              logChannel = "pz-logs";
+              # Channel names must match Discord EXACTLY (PZ's native filter is
+              # name-string based). The real channels carry emoji prefixes, so
+              # the names below include them; a bare "pz-logs" never resolves.
+              chatChannel = "🎮pz-game-chat";
+              logChannel = "📝pz-logs";
               commandChannel = "pz-commands";
             };
             discordTokenFile = config.age.secrets.pzDiscordToken.path;
