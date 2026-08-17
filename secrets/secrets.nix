@@ -25,6 +25,7 @@ in {
   "pz-admin-password.age".publicKeys = [owner asean-mt-server];
   "pz-discord-token.age".publicKeys = [owner asean-mt-server];
   "pz-update-webhook.age".publicKeys = [owner asean-mt-server];
+  "pz-status-webhook.age".publicKeys = [owner asean-mt-server];
   "hermes-env.age".publicKeys = [owner peripheral];
   "hermes-deploy-key.age".publicKeys = [owner peripheral];
 }
