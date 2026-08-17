@@ -296,6 +296,10 @@
               enable = true;
               webhookFile = config.age.secrets.pzUpdateWebhook.path;
             };
+            statusNotifier = {
+              enable = true;
+              webhookFile = config.age.secrets.pzStatusWebhook.path;
+            };
           };
           services.motortown-server = {
             enable = true;
@@ -536,6 +540,10 @@
               };
               age.secrets.pzUpdateWebhook = {
                 file = ./secrets/pz-update-webhook.age;
+                mode = "400";
+              };
+              age.secrets.pzStatusWebhook = {
+                file = ./secrets/pz-status-webhook.age;
                 mode = "400";
               };
             })
