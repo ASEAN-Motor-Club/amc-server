@@ -605,7 +605,7 @@
                   # --- Automated player-name moderation (auto-rename) ---
                   # Key (OPENAI_API_KEY_OPENROUTER) is injected via the backend age secret.
                   NAMER_ENABLED = "1";
-                  NAMER_LLM_MODEL = "openai/gpt-4o-mini";
+                  NAMER_LLM_MODEL = "openai/gpt-5.6-luna";
                   NAMER_AUTO_CONFIDENCE_THRESHOLD = "0.9";
                   NAMER_REVIEW_CHANNEL_ID = "1366478091131551834";
                   NAMER_ANNOUNCE = "1";
