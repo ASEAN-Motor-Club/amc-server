@@ -381,7 +381,7 @@
                 Indonesia, Philippines, Vietnam, Thailand, Myanmar, Malaysia, Cambodia, Laos, Singapore, Brunei Darussalam.
               '';
               Password = "";
-              MaxPlayers = 25;
+              MaxPlayers = 30;
               MaxVehiclePerPlayer = 16;
               bAllowPlayerToJoinWithCompanyVehicles = true;
               bAllowAdminToRemoveAdmin = true;
