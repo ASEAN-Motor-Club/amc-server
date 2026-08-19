@@ -303,6 +303,12 @@
               enable = true;
               webhookFile = config.age.secrets.pzStatusWebhook.path;
             };
+            # Mod/config changelog → Discord. Posts readable entries for mod
+            # additions/removals and config changes (vanilla + mod sandbox).
+            changelogNotifier = {
+              enable = true;
+              webhookFile = config.age.secrets.pzChangelogWebhook.path;
+            };
           };
           services.motortown-server = {
             enable = true;
@@ -547,6 +553,10 @@
               };
               age.secrets.pzStatusWebhook = {
                 file = ./secrets/pz-status-webhook.age;
+                mode = "400";
+              };
+              age.secrets.pzChangelogWebhook = {
+                file = ./secrets/pz-changelog-webhook.age;
                 mode = "400";
               };
             })
