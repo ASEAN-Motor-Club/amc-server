@@ -550,6 +550,15 @@ in {
         sourceRoot = ".";
         installPhase = "mkdir -p $out; cp -R source/* $out/;";
       };
+      dokuwiki-plugin-include = pkgs.stdenv.mkDerivation {
+        name = "include";
+        src = pkgs.fetchzip {
+          url = "https://github.com/dokufreaks/plugin-include/archive/7cc855fb1857.zip";
+          sha256 = "sha256-GmcK+btsxqqMhFsZsAekmRatonhDmM6gaIiLfune5Vo=";
+        };
+        sourceRoot = ".";
+        installPhase = "mkdir -p $out; cp -R source/* $out/;";
+      };
       dokuwiki-plugin-imagebox = pkgs.stdenv.mkDerivation {
         name = "imagebox";
         src = fetchTarball {
@@ -581,6 +590,7 @@ in {
       "wiki.aseanmotorclub.com" = {
         plugins = [
           dokuwiki-plugin-infobox
+          dokuwiki-plugin-include
           dokuwiki-plugin-imagebox
           dokuwiki-plugin-oauth
           dokuwiki-plugin-oauthgeneric
