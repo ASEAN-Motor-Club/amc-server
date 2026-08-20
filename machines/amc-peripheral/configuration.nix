@@ -541,6 +541,24 @@ in {
   services.dokuwiki = {
     webserver = "nginx";
     sites = let
+      # DokuWiki 2026-07-14b "Mort" — the first stable release with NATIVE
+      # Markdown support (PR #4636, $conf['syntax'] = dw+md). Bumping the
+      # version is enough; the pinned nixpkgs's dokuwiki package.nix is just
+      # `version + src`. PHP must be >= 8.2 (composer platform_check), so the
+      # site's phpPackage is overridden to php83 (available in the same pin).
+      dokuwiki2026 = pkgs.dokuwiki.overrideAttrs (old: {
+        version = "2026-07-14b";
+        src = pkgs.fetchFromGitHub {
+          owner = "dokuwiki";
+          repo = "dokuwiki";
+          rev = "release-2026-07-14b";
+          sha256 = "sha256-w/uVk60gdr4PhUMOHHYl+X87Hx9pojYqJo5sZXLUX6o=";
+        };
+        # The pinned nixpkgs dokuwiki carries a `backport-xss-fix-in-search.patch`,
+        # but that XSS fix is ALREADY in 2026-07-14b (the patch reverses and the
+        # build fails). Clear it — the fix ships with the release now.
+        patches = [];
+      });
       dokuwiki-plugin-infobox = pkgs.stdenv.mkDerivation {
         name = "infobox";
         src = pkgs.fetchzip {
@@ -588,6 +606,8 @@ in {
       };
     in {
       "wiki.aseanmotorclub.com" = {
+        package = dokuwiki2026;
+        phpPackage = pkgs.php83;
         plugins = [
           dokuwiki-plugin-infobox
           dokuwiki-plugin-include
@@ -601,6 +621,10 @@ in {
           useacl = false;
           userewrite = true;
           updatecheck = false;
+          # Native GFM markdown (DokuWiki 2026+). dw+md = DokuWiki-preferred,
+          # markdown fallback — keeps existing core .txt pages rendering while
+          # also rendering the new markdown memory/ pages.
+          syntax = "dw+md";
 
           authtype = "oauth";
           plugin____oauth____registerOnAuth = true;
