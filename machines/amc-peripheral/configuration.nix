@@ -698,25 +698,11 @@ in {
       mkdir -p /var/lib/motortown
       ln -sf "$SRC/motortown.db" /var/lib/motortown/gamedata.db
 
-      echo "=== Step 4: Syncing to DokuWiki ==="
-      nix develop "$SRC#default" --command \
-        python3 "$SRC/scripts/wiki_sync.py" \
-          --db "$SRC/motortown.db" \
-          --wiki-dir /var/lib/dokuwiki/wiki.aseanmotorclub.com/data/pages
-
+      echo "=== Step 4: DokuWiki — skipped (hand-generated from beam41/mt-map-extract/wiki) ==="
+      echo "  wiki_sync.py is decommissioned; the wiki page store is generated with the beam41"
+      echo "  wiki pipeline (https://github.com/beam41/mt-map-extract/wiki) and published by hand."
+      echo "  Do NOT re-run wiki_sync.py here — it would clobber the hand-authored pages."
       chown -R dokuwiki:nginx /var/lib/dokuwiki/wiki.aseanmotorclub.com/data/pages/
-
-      echo "=== Step 5: Syncing to Annie's Wiki ==="
-      ANNIE_WIKI_DB="/var/lib/amc-bot/annie_wiki.db"
-      if [ -f "$ANNIE_WIKI_DB" ]; then
-        nix develop "$SRC#default" --command \
-          python3 "$SRC/scripts/wiki_sync.py" \
-            --db "$SRC/motortown.db" \
-            --target annie-wiki \
-            --annie-wiki-db "$ANNIE_WIKI_DB"
-      else
-        echo "  Annie wiki DB not found at $ANNIE_WIKI_DB, skipping"
-      fi
 
       echo "=== Pipeline complete ==="
     '';
