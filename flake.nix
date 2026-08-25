@@ -305,9 +305,16 @@
             };
             # Mod/config changelog → Discord. Posts readable entries for mod
             # additions/removals and config changes (vanilla + mod sandbox).
+            # Event-driven: the deploy script fires this immediately after a
+            # deploy ships a mod/config change, so it reports the moment the
+            # change lands. The timer below is only a SLOW fallback safety net
+            # (catches changes merged to zomboid-server master but not shipped
+            # through our deploy flow, e.g. a direct push) — kept slow to stay
+            # well under the unauthenticated GitHub API limit (60 req/hr).
             changelogNotifier = {
               enable = true;
               webhookFile = config.age.secrets.pzChangelogWebhook.path;
+              interval = "*:0/60";   # hourly fallback only; deploy is the primary trigger
             };
           };
           services.motortown-server = {
