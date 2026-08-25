@@ -314,7 +314,7 @@
             changelogNotifier = {
               enable = true;
               webhookFile = config.age.secrets.pzChangelogWebhook.path;
-              interval = "*:0/60";   # hourly fallback only; deploy is the primary trigger
+              interval = "*:0";   # hourly fallback only; deploy is the primary trigger
             };
           };
           services.motortown-server = {
