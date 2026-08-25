@@ -231,6 +231,19 @@
         echo "  ✅ Services restarted"
       fi
 
+      # ── 5b. Event-driven PZ changelog notifier ─────────────────────────────
+      # Fire the changelog relay RIGHT AFTER a deploy so a shipped mod/config
+      # change reports to Discord the moment it lands (the timer is only a slow
+      # hourly fallback). Idempotent: only posts if there are actually new
+      # master commits since the last-seen SHA; a no-op deploy posts nothing.
+      if ssh "$argc_target" -- systemctl cat zomboid-changelog-notify.service >/dev/null 2>&1; then
+        echo ""
+        echo "🔔 Firing zomboid changelog notifier (event-driven, post-deploy)..."
+        ssh "$argc_target" -- systemctl start zomboid-changelog-notify.service || \
+          echo "  ⚠️  zomboid-changelog-notify start failed (non-fatal)"
+        echo "  ✅ Changelog notifier fired"
+      fi
+
       # ── 6. Health check ───────────────────────────────────────────────────
       if [[ -z $argc_no_health_check ]]; then
         echo ""
