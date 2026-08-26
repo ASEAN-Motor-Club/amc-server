@@ -331,6 +331,11 @@ in {
     recommendedGzipSettings = true;
     # Only allow PFS-enabled ciphers with AES256
     sslCiphers = "AES256+EECDH:AES256+EDH:!aNULL";
+    # Add the ngx_brotli module so precompressed .br static files can be
+    # served (brotli_static) alongside gzip_static.
+    package = pkgs.nginxStable.override {
+      modules = [ pkgs.nginxModules.brotli ];
+    };
 
     virtualHosts."www.aseanmotorclub.com" = {
       enableACME = true;
@@ -357,6 +362,11 @@ in {
             # 1. CORS Headers
             add_header 'Access-Control-Allow-Origin' '*';
             add_header 'Access-Control-Allow-Methods' 'GET, OPTIONS';
+
+            # Serve precompressed .br twins (added by the ngx_brotli module)
+            # when the client accepts brotli; gzip_static already handles .gz.
+            brotli_static on;
+            brotli_types application/octet-stream;
 
             # 2. Cache Headers (REPEATED)
             # We must repeat these because 'add_header' above clears parent headers
