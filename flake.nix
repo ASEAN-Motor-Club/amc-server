@@ -306,7 +306,7 @@
             workshopWatcher = {
               enable = true;
               webhookFile = config.age.secrets.pzUpdateWebhook.path;
-              interval = "*:0/10";
+              interval = "*:0/5";
               gracePeriodMinutes = 5;
             };
             statusNotifier = {
