@@ -295,9 +295,19 @@
               commandChannel = "pz-commands";
             };
             discordTokenFile = config.age.secrets.pzDiscordToken.path;
-            updateNotifier = {
+            # Host-side SAFE workshop-update watcher (replaces the removed
+            # auto-restart mod 3659447892 / ServerWorkshopModAutoRestartB42,
+            # whose getCore():quit() never saved the world first -> silent
+            # rollback every bounce; incident Aug 26-27). On a Steam revision
+            # change it announces (Discord pzUpdateWebhook + in-game
+            # servermsg), waits out the grace period, then runs fifo SAVE
+            # FIRST and only then quit, so Restart=always bounces onto the
+            # refreshed mods with zero world rollback.
+            workshopWatcher = {
               enable = true;
               webhookFile = config.age.secrets.pzUpdateWebhook.path;
+              interval = "*:0/10";
+              gracePeriodMinutes = 5;
             };
             statusNotifier = {
               enable = true;
