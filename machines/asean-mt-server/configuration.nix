@@ -201,6 +201,29 @@
     };
   };
 
+  # Rotate syslog's /var/log/messages and /var/log/warn. On this host they were
+  # never rotated — /var/log/messages reached 26G since Jul 2025 and syslog spam
+  # from a retry-looping service was actively growing it during the Aug 2026
+  # storage incident. Same block as amc-peripheral; the HUP makes the daemon
+  # reopen the file. logrotate itself is already enabled here via nginx.
+  services.logrotate = {
+    enable = true;
+    settings = {
+      "/var/log/messages" = {
+        frequency = "daily";
+        rotate = 3;
+        compress = true;
+        size = "100M";
+        postrotate = "systemctl kill -s HUP syslog 2>/dev/null || true";
+      };
+      "/var/log/warn" = {
+        frequency = "weekly";
+        rotate = 2;
+        compress = true;
+      };
+    };
+  };
+
   security.acme.defaults.email = "contact@fmnxl.xyz";
   security.acme.acceptTerms = true;
 
