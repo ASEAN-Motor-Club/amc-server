@@ -935,7 +935,14 @@
                   qxZap_CranyUnlocked_P = false;
                   "MajasDetailWorksV3-7.18_P" = false;
                   "MajasMnTrailerworksV6-7.18_P" = false;
-                  "Schedule_I_v0.4.8_0.7.18+1_P" = true;
+                  # 0.7.18-era pak crashes the 0.7.19 server at boot with
+                  # status=3/NOTIMPLEMENTED (UE5 asset mismatch during engine
+                  # init). Disabled 2026-08-15 (restart loop, 14 restarts on
+                  # 2026-08-30 attempt); a 0.7.19-compatible rebuild
+                  # (Schedule_I_v0.4.6_0.7.19_P.pak) exists in
+                  # mt-pak-extract-wt-0719/mods/schedule-i/builds/ but is not
+                  # yet uploaded/configured. Re-enable only with that pak.
+                  "Schedule_I_v0.4.8_0.7.18+1_P" = false;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
