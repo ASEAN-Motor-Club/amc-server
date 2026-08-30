@@ -1323,13 +1323,17 @@ in {
     '';
   };
 
-  # ── Sudoers: opencode can deploy via nixos-rebuild ─────────────────
+  # ── Sudoers: opencode can deploy via nixos-rebuild and restart services ──
   security.sudo.extraRules = [
     {
       users = ["opencode"];
       commands = [
         {
           command = "/run/current-system/sw/bin/nixos-rebuild switch *";
+          options = ["NOPASSWD"];
+        }
+        {
+          command = "/run/current-system/sw/bin/systemctl restart amc-radio amc-bot kimaki";
           options = ["NOPASSWD"];
         }
       ];
