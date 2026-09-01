@@ -1,0 +1,29 @@
+name: Pin drift guard
+
+# Fails when a submodule gitlink and its flake.lock pin disagree.
+# Self-deploys consume flake.lock; manual deploys consume the gitlink —
+# a mismatch means the two deploy paths build DIFFERENT code.
+# Covers every gitlink that has a flake.lock entry (joins on repo name,
+# so input-name != path pairs like motortown-server are covered too).
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: pin-drift-guard-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    runs-on: [self-hosted, deploy-peripheral]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Check gitlink vs flake.lock
+        run: python3 .github/scripts/check-pin-drift.py
