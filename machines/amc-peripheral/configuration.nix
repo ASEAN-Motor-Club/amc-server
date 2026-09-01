@@ -1323,6 +1323,182 @@ in {
     '';
   };
 
+  # ── Submodule pin bump ─────────────────────────────────────────────
+  # Bumps the SERVICE-CODE pins (amc-peripheral, amc-backend — gitlink +
+  # flake.lock TOGETHER, see .github/scripts/check-pin-drift.py) and
+  # opens/updates one PR. Merging the bump PR triggers deploy-peripheral
+  # on master (~2 min later) — the PR + merge is the review gate.
+  #
+  # Runs as a root-side service (like amc-peripheral-deploy) because the
+  # GitHub runner is intentionally sandboxed (empty capability bounding
+  # set + PrivateUsers) and cannot hold or reach the GitHub App key.
+  # Triggered by the weekly timer below or the update-pins workflow
+  # (workflow_dispatch), which just starts this unit.
+  #
+  # Game-server pins (motortown, zomboid, necesse, eco, beammp, assetto,
+  # MTDediMod) stay manual: they are coordinated with mod-versions.nix,
+  # restart windows and world state. To change the auto-bump scope, edit
+  # the PINS environment below.
+  systemd.services.github-pin-bump = {
+    description = "Bump service submodule pins (gitlink + flake.lock) and open PR";
+    after = ["network-online.target"];
+    wants = ["network-online.target"];
+    restartIfChanged = false;
+
+    serviceConfig = {
+      Type = "oneshot";
+      TimeoutStartSec = "15min";
+    };
+
+    environment = {
+      HOME = "/var/lib/github-pin-bump";
+      GITHUB_APP_ID = "2922326";
+      GITHUB_INSTALLATION_ID = "111712229";
+      ORG = "ASEAN-Motor-Club";
+      REPO = "amc-server";
+      BRANCH = "chore/pin-bump";
+      PINS = "amc-peripheral amc-backend";
+    };
+
+    path = with pkgs; [git nix coreutils jq curl util-linux openssl python3];
+
+    script = ''
+      set -euo pipefail
+      umask 077
+
+      BASE_DIR="/var/lib/github-pin-bump"
+      REPO_DIR="$BASE_DIR/repo"
+      RESULT_FILE="$BASE_DIR/result.json"
+      mkdir -p "$BASE_DIR"
+      echo '{"status": "running", "step": "starting"}' > "$RESULT_FILE"
+
+      log_step() {
+        echo "$1"
+        echo "{\"status\": \"running\", \"step\": \"$1\"}" > "$RESULT_FILE"
+      }
+
+      # --- GitHub App installation token (same mint as amc-peripheral-deploy) ---
+      APP_KEY="${config.age.secrets.coding-agent-app-key.path}"
+      NOW=$(date +%s)
+      IAT=$((NOW - 60))
+      EXP=$((NOW + 600))
+
+      b64url() { openssl base64 -e -A | tr '+/' '-_' | tr -d '='; }
+      HEADER=$(echo -n '{"alg":"RS256","typ":"JWT"}' | b64url)
+      PAYLOAD=$(echo -n "{\"iat\":$IAT,\"exp\":$EXP,\"iss\":\"$GITHUB_APP_ID\"}" | b64url)
+      SIGNATURE=$(echo -n "$HEADER.$PAYLOAD" | openssl dgst -sha256 -sign "$APP_KEY" | b64url)
+      JWT="$HEADER.$PAYLOAD.$SIGNATURE"
+
+      INSTALL_TOKEN=$(curl -sf -X POST \
+        --oauth2-bearer "$JWT" \
+        -H "Accept: application/vnd.github+json" \
+        "https://api.github.com/app/installations/$GITHUB_INSTALLATION_ID/access_tokens" \
+        | jq -r '.token')
+      if [ "$INSTALL_TOKEN" = "null" ] || [ -z "$INSTALL_TOKEN" ]; then
+        echo '{"status": "failed", "step": "github-auth"}' > "$RESULT_FILE"
+        exit 1
+      fi
+
+      # --- Sync the bump checkout to latest master ---
+      log_step "syncing checkout"
+      if [ ! -d "$REPO_DIR/.git" ]; then
+        git init -q "$REPO_DIR"
+        git -C "$REPO_DIR" remote add origin "https://github.com/$ORG/$REPO.git"
+      fi
+      git -C "$REPO_DIR" fetch -q origin "https://x-access-token:$INSTALL_TOKEN@github.com/$ORG/$REPO.git" master
+      git -C "$REPO_DIR" checkout -q -B "$BRANCH" FETCH_HEAD
+
+      # --- Bump pins: gitlink via index, flake.lock via nix ---
+      log_step "bumping pins: $PINS"
+      : > "$BASE_DIR/old-pins.txt"
+      for path in $PINS; do
+        old=$(git -C "$REPO_DIR" ls-tree HEAD -- "$path" | awk '{print $3}')
+        new=$(curl -sf --oauth2-bearer "$INSTALL_TOKEN" \
+          "https://api.github.com/repos/$ORG/$path/commits/HEAD" \
+          | jq -r '.sha')
+        git -C "$REPO_DIR" update-index --cacheinfo 160000,"$new","$path"
+        echo "$old $path" >> "$BASE_DIR/old-pins.txt"
+      done
+
+      log_step "nix flake update"
+      (
+        cd "$REPO_DIR"
+        NIX_CONFIG="access-tokens github.com=$INSTALL_TOKEN" \
+          nix --extra-experimental-features "nix-command flakes" \
+          flake update $PINS
+      )
+
+      # --- Drift guard: gitlink must equal flake.lock rev ---
+      log_step "drift check"
+      (cd "$REPO_DIR" && python3 .github/scripts/check-pin-drift.py --index)
+
+      # --- Nothing moved? ---
+      if git -C "$REPO_DIR" diff --cached --quiet; then
+        echo '{"status": "success", "changed": false}' > "$RESULT_FILE"
+        echo "No pin changes; nothing to do."
+        exit 0
+      fi
+      git -C "$REPO_DIR" add flake.lock
+
+      # --- Commit + push ---
+      log_step "committing + pushing $BRANCH"
+      git -C "$REPO_DIR" -c user.name="amc-pin-bot" -c user.email="bot@aseanmotorclub.com" \
+        commit -q -m "chore: bump service pins (gitlink + flake.lock)"
+      git -C "$REPO_DIR" push -qf origin "$BRANCH"
+
+      # --- Changelog ---
+      {
+        echo "Automated pin bump. **Merging triggers deploy-peripheral on master (~2 min after merge).**"
+        echo
+        while read -r old path; do
+          new=$(git -C "$REPO_DIR" ls-files -s -- "$path" | awk '{print $2}')
+          echo "### $path"
+          echo
+          echo '`'"$old"'` → `'"$new"'`'
+          echo
+          curl -sf --oauth2-bearer "$INSTALL_TOKEN" \
+            "https://api.github.com/repos/$ORG/$path/compare/$old...$new" \
+            | jq -r '.commits[].commit.message | split("\n")[0] | "- " + .'
+          echo
+        done < "$BASE_DIR/old-pins.txt"
+      } > "$BASE_DIR/changelog.md"
+
+      # --- Open or update the PR (fixed branch = update in place) ---
+      log_step "opening PR"
+      TITLE="chore: weekly pin bump (amc-peripheral, amc-backend)"
+      PR_NUMBER=$(curl -sf --oauth2-bearer "$INSTALL_TOKEN" \
+        "https://api.github.com/repos/$ORG/$REPO/pulls?head=$ORG:$BRANCH&state=open" \
+        | jq '.[0].number // empty')
+      BODY_JSON=$(jq -n --arg title "$TITLE" --arg body "$(cat "$BASE_DIR/changelog.md")" \
+        '{title: $title, body: $body, head: ($ENV.ORG + ":" + $ENV.BRANCH), base: "master"}')
+      if [ -n "$PR_NUMBER" ]; then
+        PR_URL=$(curl -sfL -X PATCH --oauth2-bearer "$INSTALL_TOKEN" \
+          -H "Accept: application/vnd.github+json" \
+          -d "$BODY_JSON" \
+          "https://api.github.com/repos/$ORG/$REPO/pulls/$PR_NUMBER" | jq -r '.html_url')
+      else
+        PR_URL=$(curl -sfL -X POST --oauth2-bearer "$INSTALL_TOKEN" \
+          -H "Accept: application/vnd.github+json" \
+          -d "$BODY_JSON" \
+          "https://api.github.com/repos/$ORG/$REPO/pulls" | jq -r '.html_url')
+      fi
+
+      echo "{\"status\": \"success\", \"changed\": true, \"pr\": \"$PR_URL\"}" > "$RESULT_FILE"
+      chmod 644 "$RESULT_FILE"
+      echo "✅ Pin bump PR: $PR_URL"
+    '';
+  };
+
+  systemd.timers.github-pin-bump = {
+    description = "Weekly submodule pin bump";
+    wantedBy = ["timers.target"];
+    timerConfig = {
+      OnCalendar = "Sun *-*-* 21:00:00 UTC";
+      Persistent = true;
+      Unit = "github-pin-bump.service";
+    };
+  };
+
   # ── Sudoers: opencode can deploy via nixos-rebuild ─────────────────
   security.sudo.extraRules = [
     {
