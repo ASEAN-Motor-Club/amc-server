@@ -7,6 +7,12 @@ name: Update submodule pins
 # deploy-peripheral on master (~2 min later): the PR + merge is the gate.
 #
 # To add/remove auto-bumped inputs, edit the PINS env below.
+#
+# Auth: mints a short-lived GitHub App installation token via the credential
+# helper that already lives on this runner host (same app/key the self-deploy
+# service uses). No GitHub secrets. Because the key is host-local, this job
+# must only ever run trusted workflows (schedule/workflow_dispatch, never
+# pull_request).
 
 on:
   schedule:
@@ -29,14 +35,17 @@ jobs:
     runs-on: [self-hosted, deploy-peripheral]
     timeout-minutes: 15
     steps:
-      - name: Mint GitHub App token
+      - name: Mint installation token (host credential helper)
         id: app
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: "2922326"
-          private-key: ${{ secrets.BUMP_APP_PRIVATE_KEY }}
-          owner: ASEAN-Motor-Club
-          repositories: amc-server,amc-backend,amc-peripheral
+        run: |
+          set -euo pipefail
+          export PATH="/run/current-system/sw/bin:$PATH"
+          printf "protocol=https\nhost=github.com\n\n" \
+            | /var/lib/hermes-agent/nix-state/bin/git-credential-github-app get \
+            | grep "^password=" | cut -d= -f2- > "$RUNNER_TEMP/gh-token"
+          chmod 600 "$RUNNER_TEMP/gh-token"
+          read -r tok < "$RUNNER_TEMP/gh-token"
+          printf "token=%s\n" "$tok" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v4
         with:

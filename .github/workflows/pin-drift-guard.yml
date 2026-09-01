@@ -5,6 +5,10 @@ name: Pin drift guard
 # a mismatch means the two deploy paths build DIFFERENT code.
 # Covers every gitlink that has a flake.lock entry (joins on repo name,
 # so input-name != path pairs like motortown-server are covered too).
+#
+# NOTE: intentionally runs on a GitHub-hosted runner, NOT the self-hosted
+# deploy-peripheral runner — pull_request-triggered code must never execute
+# on the host that holds the deploy key (update-pins.yml depends on it).
 
 on:
   pull_request:
@@ -18,7 +22,7 @@ concurrency:
 
 jobs:
   guard:
-    runs-on: [self-hosted, deploy-peripheral]
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
