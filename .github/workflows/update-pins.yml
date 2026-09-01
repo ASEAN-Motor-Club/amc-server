@@ -57,13 +57,13 @@ jobs:
           NIX_CONFIG: access-tokens github.com=${{ steps.app.outputs.token }}
         run: |
           set -euo pipefail
-          export PATH="/run/current-system/sw/bin:$PATH"
+          export PATH="/root/.nix-profile/bin:/run/current-system/sw/bin:$PATH"
           : > "$RUNNER_TEMP/old-pins.txt"
           for path in $PINS; do
             old=$(git ls-tree HEAD -- "$path" | awk '{print $3}')
             new=$(curl -sf --oauth2-bearer "$APP_TOKEN" \
               "https://api.github.com/repos/ASEAN-Motor-Club/$path/commits/HEAD" \
-              | jq -r .sha)
+              | python3 -c "import json,sys; print(json.load(sys.stdin)['sha'])")
             git update-index --cacheinfo 160000,"$new","$path"
             echo "$old $path" >> "$RUNNER_TEMP/old-pins.txt"
           done
@@ -80,7 +80,7 @@ jobs:
           APP_TOKEN: ${{ steps.app.outputs.token }}
         run: |
           set -euo pipefail
-          export PATH="/run/current-system/sw/bin:$PATH"
+          export PATH="/root/.nix-profile/bin:/run/current-system/sw/bin:$PATH"
           {
             echo "Automated pin bump. **Merging triggers deploy-peripheral on master (~2 min after merge).**"
             echo
@@ -92,7 +92,7 @@ jobs:
               echo
               curl -sf --oauth2-bearer "$APP_TOKEN" \
                 "https://api.github.com/repos/ASEAN-Motor-Club/$path/compare/$old...$new" \
-                | jq -r '.commits[].commit.message | split("\n")[0] | "- " + .'
+                | python3 -c "import json,sys; [print('- ' + c['commit']['message'].split('\n')[0]) for c in json.load(sys.stdin).get('commits', [])]"
               echo
             done < "$RUNNER_TEMP/old-pins.txt"
           } > "$RUNNER_TEMP/changelog.md"
