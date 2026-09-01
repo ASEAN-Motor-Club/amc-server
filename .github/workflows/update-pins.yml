@@ -1,114 +1,26 @@
 name: Update submodule pins
 
-# Weekly auto-bump of the SERVICE-CODE pins (gitlink + flake.lock together,
-# in ONE PR). Game-server pins (motortown, zomboid, necesse, eco, beammp,
-# assetto, MTDediMod) stay manual: they are coordinated with mod-versions.nix,
-# restart windows and world state. Merging the bump PR triggers
-# deploy-peripheral on master (~2 min later): the PR + merge is the gate.
-#
-# To add/remove auto-bumped inputs, edit the PINS env below.
-#
-# Auth: mints a short-lived GitHub App installation token via the credential
-# helper that already lives on this runner host (same app/key the self-deploy
-# service uses). No GitHub secrets. Because the key is host-local, this job
-# must only ever run trusted workflows (schedule/workflow_dispatch, never
-# pull_request).
+# Manual trigger for the root-side github-pin-bump.service on
+# amc-peripheral (the weekly schedule lives in the systemd timer:
+# Sun 21:00 UTC / Mon 04:00 +07). The GitHub runner is intentionally
+# sandboxed (no capabilities, PrivateUsers) and cannot hold the GitHub
+# App key — so it only starts the unit and prints the result, exactly
+# like deploy-peripheral does for amc-peripheral-deploy.
 
 on:
-  schedule:
-    - cron: "0 21 * * 0" # Sun 21:00 UTC = Mon 04:00 +07
   workflow_dispatch:
-
-concurrency:
-  group: update-pins
-  cancel-in-progress: false
-
-permissions:
-  contents: write
-  pull-requests: write
-
-env:
-  PINS: amc-peripheral amc-backend
 
 jobs:
   bump:
     runs-on: [self-hosted, deploy-peripheral]
     timeout-minutes: 15
     steps:
-      - name: Mint installation token (host credential helper)
-        id: app
-        run: |
-          set -euo pipefail
-          export PATH="/run/current-system/sw/bin:$PATH"
-          printf "protocol=https\nhost=github.com\n\n" \
-            | /var/lib/hermes-agent/nix-state/bin/git-credential-github-app get \
-            | grep "^password=" | cut -d= -f2- > "$RUNNER_TEMP/gh-token"
-          chmod 600 "$RUNNER_TEMP/gh-token"
-          read -r tok < "$RUNNER_TEMP/gh-token"
-          printf "token=%s\n" "$tok" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: Bump gitlinks (index) and flake.lock (nix)
-        env:
-          APP_TOKEN: ${{ steps.app.outputs.token }}
-          NIX_CONFIG: access-tokens github.com=${{ steps.app.outputs.token }}
-        run: |
-          set -euo pipefail
-          export PATH="/root/.nix-profile/bin:/run/current-system/sw/bin:$PATH"
-          : > "$RUNNER_TEMP/old-pins.txt"
-          for path in $PINS; do
-            old=$(git ls-tree HEAD -- "$path" | awk '{print $3}')
-            new=$(curl -sf --oauth2-bearer "$APP_TOKEN" \
-              "https://api.github.com/repos/ASEAN-Motor-Club/$path/commits/HEAD" \
-              | python3 -c "import json,sys; print(json.load(sys.stdin)['sha'])")
-            git update-index --cacheinfo 160000,"$new","$path"
-            echo "$old $path" >> "$RUNNER_TEMP/old-pins.txt"
-          done
-          nix --extra-experimental-features "nix-command flakes" \
-            flake update $PINS
-
-      - name: Drift check (gitlink must equal flake.lock rev)
+      - name: Trigger pin bump service
         run: |
           export PATH="/run/current-system/sw/bin:$PATH"
-          python3 .github/scripts/check-pin-drift.py --index
+          systemctl start --no-pager github-pin-bump.service
 
-      - name: Build changelog
-        env:
-          APP_TOKEN: ${{ steps.app.outputs.token }}
+      - name: Result
         run: |
-          set -euo pipefail
-          export PATH="/root/.nix-profile/bin:/run/current-system/sw/bin:$PATH"
-          {
-            echo "Automated pin bump. **Merging triggers deploy-peripheral on master (~2 min after merge).**"
-            echo
-            while read -r old path; do
-              new=$(git ls-files -s -- "$path" | awk '{print $2}')
-              echo "### $path"
-              echo
-              echo '`'"$old"'` → `'"$new"'`'
-              echo
-              curl -sf --oauth2-bearer "$APP_TOKEN" \
-                "https://api.github.com/repos/ASEAN-Motor-Club/$path/compare/$old...$new" \
-                | python3 -c "import json,sys; [print('- ' + c['commit']['message'].split('\n')[0]) for c in json.load(sys.stdin).get('commits', [])]"
-              echo
-            done < "$RUNNER_TEMP/old-pins.txt"
-          } > "$RUNNER_TEMP/changelog.md"
-          cat "$RUNNER_TEMP/changelog.md"
-
-      - name: Open PR
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ steps.app.outputs.token }}
-          branch: chore/pin-bump
-          branch-suffix: timestamp
-          delete-branch: true
-          title: "chore: weekly pin bump (amc-peripheral, amc-backend)"
-          body-path: ${{ runner.temp }}/changelog.md
-          commit-message: "chore: bump service pins (gitlink + flake.lock)"
-          add-paths: |
-            flake.lock
-            amc-peripheral
-            amc-backend
+          export PATH="/run/current-system/sw/bin:$PATH"
+          cat /var/lib/github-pin-bump/result.json
