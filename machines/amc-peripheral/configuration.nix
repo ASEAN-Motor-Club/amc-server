@@ -234,6 +234,10 @@ in {
     # Added in the container-migration commit but never authorized on this host,
     # which silently broke host SSH. See amc-peripheral/hermes.nix.
     ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP6GMtDsVpqvPnzu4FR8Wr6lHm/Usu/eYqNpOcXKxopG hermes@amc-server''
+    # Meehoi — club ops access, approved by freeman 2026-09-02.
+    ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII4ESBOMCHDOASmvdRTVtYEh6HFaTwgKs47ZyFCWtkW2 meehoi@mhpc''
+    # Wick / Yuuka (GitHub: WickedHaze) — club ops access, approved by freeman 2026-09-02.
+    ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFl8y61GeINkDm2TF3FAqoGWU9GtF1+YnO5JBZjxRn3g yuuka-wickedhaze''
   ];
   users.users.freeman = {
     isNormalUser = true;
