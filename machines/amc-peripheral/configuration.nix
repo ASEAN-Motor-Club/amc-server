@@ -234,6 +234,8 @@ in {
     # Added in the container-migration commit but never authorized on this host,
     # which silently broke host SSH. See amc-peripheral/hermes.nix.
     ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP6GMtDsVpqvPnzu4FR8Wr6lHm/Usu/eYqNpOcXKxopG hermes@amc-server''
+    # Meehoi (GitHub: beam41) — club ops access, approved by freeman 2026-09-02.
+    ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINwI6kmAwHMV72WFXQiML14Y7dgC+Y6VreMksDbA1eCT meehoi-beam41''
   ];
   users.users.freeman = {
     isNormalUser = true;
