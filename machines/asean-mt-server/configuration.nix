@@ -40,6 +40,10 @@
     ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP6GMtDsVpqvPnzu4FR8Wr6lHm/Usu/eYqNpOcXKxopG hermes@amc-server''
     # Meehoi — club ops access, approved by freeman 2026-09-02 ("free to poke anything").
     ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII4ESBOMCHDOASmvdRTVtYEh6HFaTwgKs47ZyFCWtkW2 meehoi@mhpc''
+    # freeman 2026-09-03: Meehoi & Yuuka may add personal keys here without
+    # per-key approval — still via PR with his squash-merge go.
+    # Meehoi — 2nd key (github.com/beam41.keys), approved by freeman 2026-09-03.
+    ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPBcT8VwrC38HA+mb2yvaYp4YDCSmmlSsc6H5Ys0IexR meehoi@beam41-keys2''
     # Wick / Yuuka (GitHub: WickedHaze) — club ops access, approved by freeman 2026-09-02.
     ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFl8y61GeINkDm2TF3FAqoGWU9GtF1+YnO5JBZjxRn3g yuuka-wickedhaze''
   ];
