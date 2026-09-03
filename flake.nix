@@ -638,6 +638,9 @@
                   DISCORD_CRIMINAL_STATS_CHANNEL_ID = "1486645816042061864";
                   DISCORD_COP_STATS_CHANNEL_ID = "1486645931595272222";
                   DISCORD_BEAMMP_STATUS_CHANNEL_ID = "1504133800425291930";
+                  # Role gate for the event-admin Discord commands (join/kick to event).
+                  # Read by amc-backend PR #79 (DISCORD_EVENT_ADMIN_ROLE_ID).
+                  DISCORD_EVENT_ADMIN_ROLE_ID = "1395460420189421713";
                   BEAMMP_SERVER_HOST = "127.0.0.1";
                   BEAMMP_SERVER_PORT = "30814";
                   # --- Automated player-name moderation (auto-rename) ---
