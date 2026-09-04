@@ -940,11 +940,17 @@
                   "MajasMnTrailerworksV6-7.18_P" = false;
                   # Schedule_I 0.7.18-era pak crashes the 0.7.19 server at boot
                   # (status=3/NOTIMPLEMENTED, UE5 asset mismatch during engine
-                  # init). Enabled 2026-09-04 with the 0.7.19-compatible
-                  # rebuild Schedule_I_v0.4.6_0.7.19_P (mod v0.4.6, same pak
-                  # verified on staging 2026-08-13, PR #35; md5
-                  # 39d3535c33b304da93b6892ab9ea04bd).
-                  "Schedule_I_v0.4.6_0.7.19_P" = true;
+                  # init). 2026-09-04: v0.4.6_0.7.19 kept every CargoRow
+                  # ActorClass pointing at the template's
+                  # Transformer_50MVA_60t_C (0.7.19 switched ActorClass from
+                  # import-ref to soft-path class string; the build's
+                  # set_import_ref silently no-oped) — all cargos spawned as
+                  # the 60t transformer. v0.4.7 wrote bare class names with a
+                  # wrong/empty package — everything fell back to a default
+                  # cube. v0.4.8 writes full FSoftObjectPath values matching
+                  # vanilla 0.7.19 (package=/Game/Objects/Mission/Delivery/<Row>,
+                  # asset=<Row>_C, verified by re-parsing the packed pak).
+                  "Schedule_I_v0.4.8_0.7.19_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
