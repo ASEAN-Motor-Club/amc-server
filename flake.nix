@@ -404,7 +404,7 @@
                 Indonesia, Philippines, Vietnam, Thailand, Myanmar, Malaysia, Cambodia, Laos, Singapore, Brunei Darussalam.
               '';
               Password = "";
-              MaxPlayers = 30;
+              MaxPlayers = 99;
               MaxVehiclePerPlayer = 16;
               bAllowPlayerToJoinWithCompanyVehicles = true;
               bAllowAdminToRemoveAdmin = true;
