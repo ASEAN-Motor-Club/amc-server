@@ -945,9 +945,12 @@
                   # Transformer_50MVA_60t_C (0.7.19 switched ActorClass from
                   # import-ref to soft-path class string; the build's
                   # set_import_ref silently no-oped) — all cargos spawned as
-                  # the 60t transformer. v0.4.7 rebuilds the row patch as
-                  # soft-path class strings (Money_C etc.).
-                  "Schedule_I_v0.4.7_0.7.19_P" = true;
+                  # the 60t transformer. v0.4.7 wrote bare class names with a
+                  # wrong/empty package — everything fell back to a default
+                  # cube. v0.4.8 writes full FSoftObjectPath values matching
+                  # vanilla 0.7.19 (package=/Game/Objects/Mission/Delivery/<Row>,
+                  # asset=<Row>_C, verified by re-parsing the packed pak).
+                  "Schedule_I_v0.4.8_0.7.19_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
