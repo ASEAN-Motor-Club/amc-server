@@ -641,6 +641,11 @@
                   # Role gate for the event-admin Discord commands (join/kick to event).
                   # Read by amc-backend PR #79 (DISCORD_EVENT_ADMIN_ROLE_ID).
                   DISCORD_EVENT_ADMIN_ROLE_ID = "1395460420189421713";
+                  # Daily "Active" Discord role sync (amc-backend PR #82): linked
+                  # players with a game login in the last 30 days hold the role.
+                  # Not a secret (public Discord ID) — lives in the plain env
+                  # block; 0/unset disables the feature (cron + /active_sync no-op).
+                  DISCORD_ACTIVE_ROLE_ID = "1545136541234630686";
                   BEAMMP_SERVER_HOST = "127.0.0.1";
                   BEAMMP_SERVER_PORT = "30814";
                   # --- Automated player-name moderation (auto-rename) ---
