@@ -943,13 +943,14 @@
                   qxZap_CranyUnlocked_P = false;
                   "MajasDetailWorksV3-7.18_P" = false;
                   "MajasMnTrailerworksV6-7.18_P" = false;
-                  # Schedule_I 0.7.18-era pak crashes the 0.7.19 server at boot
-                  # (status=3/NOTIMPLEMENTED, UE5 asset mismatch during engine
-                  # init). Enabled 2026-09-04 with the 0.7.19-compatible
-                  # rebuild Schedule_I_v0.4.6_0.7.19_P (mod v0.4.6, same pak
-                  # verified on staging 2026-08-13, PR #35; md5
-                  # 39d3535c33b304da93b6892ab9ea04bd).
-                  "Schedule_I_v0.4.6_0.7.19_P" = true;
+                  # Schedule_I illicit-cargo pak (0.7.19). v0.4.10 = retuned
+                  # cargo economy (mt-pak-extract PR #12) on top of the
+                  # 0.7.19 ActorClass mesh fix (mt-pak-extract PR #13);
+                  # md5 c5da6573ccd5cf7fd3d8255373205aef, 358850 bytes.
+                  # Do NOT enable a pak whose game version suffix != 0.7.19:
+                  # the 0.7.18-era pak crash-loops this server at boot
+                  # (status=3/NOTIMPLEMENTED, UE5 asset mismatch).
+                  "Schedule_I_v0.4.10_0.7.19_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
