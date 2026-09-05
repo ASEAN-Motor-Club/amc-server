@@ -943,15 +943,18 @@
                   qxZap_CranyUnlocked_P = false;
                   "MajasDetailWorksV3-7.18_P" = false;
                   "MajasMnTrailerworksV6-7.18_P" = false;
-                  # Schedule_I illicit-cargo pak (0.7.19). v0.4.11 = retuned
-                  # cargo economy (mt-pak-extract PR #12) + Export_Harbor
-                  # patch restored (faucet/sinks/x2.0 brick demand) on top of
-                  # the 0.7.19 ActorClass mesh fix (mt-pak-extract PR #13);
-                  # md5 235084d84240d055bc933d5661fe2b8d, 388974 bytes.
-                  # Do NOT enable a pak whose game version suffix != 0.7.19:
-                  # the 0.7.18-era pak crash-loops this server at boot
-                  # (status=3/NOTIMPLEMENTED, UE5 asset mismatch).
-                  "Schedule_I_v0.4.11_0.7.19_P" = true;
+                  # Schedule_I illicit-cargo pak (0.7.19). v0.4.12 = laundering-
+                  # only money economy (mt-pak-extract PR #12 @ 0c92ca7):
+                  # harbor faucets/sinks/demand removed (bricks endpoint only),
+                  # Toy hidden sinks removed, MoneyPallet unwound, world spawn
+                  # zeroed, catalysts + Money demand at Hemp/Sunflower/IronOre,
+                  # out/ template pollution guard. Single-rate laundering
+                  # (5 bricks -> 30 Money/120s); md5 da16a4475ad00fefae626c4f3f
+                  # 44f0b5, 360335 bytes. Do NOT enable a pak whose game
+                  # version suffix != 0.7.19: the 0.7.18-era pak crash-loops
+                  # this server at boot (status=3/NOTIMPLEMENTED, UE5 asset
+                  # mismatch).
+                  "Schedule_I_v0.4.12_0.7.19_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
