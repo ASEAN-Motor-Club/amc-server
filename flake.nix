@@ -943,14 +943,15 @@
                   qxZap_CranyUnlocked_P = false;
                   "MajasDetailWorksV3-7.18_P" = false;
                   "MajasMnTrailerworksV6-7.18_P" = false;
-                  # Schedule_I illicit-cargo pak (0.7.19). v0.4.10 = retuned
-                  # cargo economy (mt-pak-extract PR #12) on top of the
-                  # 0.7.19 ActorClass mesh fix (mt-pak-extract PR #13);
-                  # md5 c5da6573ccd5cf7fd3d8255373205aef, 358850 bytes.
+                  # Schedule_I illicit-cargo pak (0.7.19). v0.4.11 = retuned
+                  # cargo economy (mt-pak-extract PR #12) + Export_Harbor
+                  # patch restored (faucet/sinks/x2.0 brick demand) on top of
+                  # the 0.7.19 ActorClass mesh fix (mt-pak-extract PR #13);
+                  # md5 235084d84240d055bc933d5661fe2b8d, 388974 bytes.
                   # Do NOT enable a pak whose game version suffix != 0.7.19:
                   # the 0.7.18-era pak crash-loops this server at boot
                   # (status=3/NOTIMPLEMENTED, UE5 asset mismatch).
-                  "Schedule_I_v0.4.10_0.7.19_P" = true;
+                  "Schedule_I_v0.4.11_0.7.19_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
