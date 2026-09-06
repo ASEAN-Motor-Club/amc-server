@@ -60,14 +60,27 @@ Runs radio station and peripheral Discord bots as a regular systemd service.
 
 ## Deployment
 
-Deployment is done using the `deploy` script from the root of the monorepo. The script lives in `devShells.default`, so use `nix develop`:
+Deployment runs `nixos-rebuild switch` (build on target) via the `deploy` script in `devShells.default` (defined in [`nix/scripts.nix`](nix/scripts.nix)):
 
 ```bash
 nix develop --command deploy root@asean-mt-server   # Deploy to main server
 nix develop --command deploy root@amc-peripheral    # Deploy to peripheral server
 ```
 
-The script wraps `nixos-rebuild switch` with `--override-input` to use local submodule checkouts (`amc-backend/`, `amc-peripheral/`, `motortown-server-flake/`), `--build-host` to build on the target, and `--fast` to skip evaluation caching. See [`nix/deploy.nix`](nix/deploy.nix).
+**Deploy base: use the dedicated deploy clone, not the main workspace.** Tasks run
+in parallel worktrees; the main workspace must never be a deploy input (it caused
+the 2026-09-05 concurrent-deploy race where a deploy shipped a sibling branch).
+
+- `/opt/data/workspace/amc-deploy` — clean clone of `origin/master`, no
+  submodules. Non-overridden flake inputs ship their `flake.lock` pins.
+- Baseline deploy: `cd /opt/data/workspace/amc-deploy && nix develop --command deploy --ff-base root@<host>`
+- Test a task worktree: add `--override-input amc-backend=/opt/data/workspace/amc-backend-wt-<topic>`
+  (repeatable `input=path`; the script prints each override target's HEAD and dirty state).
+- Test a parent-flake change (flake.nix, machines/, mod-versions.nix): deploy
+  from the task worktree directly, overriding only inputs the task also touches.
+- Freshness model: merged submodule code ships when its pin-bump PR merges, or
+  earlier via an explicit `--override-input`. `--local-submodules` restores the
+  legacy ship-local-checkout-HEADs behavior (requires initialized submodules).
 
 ## Skills
 

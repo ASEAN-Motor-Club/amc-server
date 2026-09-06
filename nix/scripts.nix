@@ -33,6 +33,9 @@
     pre-deploy = ''
       # @flag --skip-pytest   Skip pytest (saves ~60s, use for quick iteration)
       # @flag --fix           Auto-fix ruff lint issues before checking
+      # @option --backend     Path to the amc-backend checkout used for backend
+      #                       checks (default: $REPO_ROOT/amc-backend; deploy
+      #                       passes an --override-input amc-backend=<path> here)
 
       eval "$(${argc}/bin/argc --argc-eval "$0" "$@")"
 
@@ -48,16 +51,23 @@
       # ── 1. Submodule hygiene ────────────────────────────────────────────────
       echo ""
       echo "📦 Checking submodule state..."
+
+      if [[ -z "$(git submodule status 2>/dev/null)" ]]; then
+        echo "  ℹ️  No initialized submodules (deploy-clone flow)"
+        echo "     Non-overridden inputs ship their flake.lock pins"
+      fi
+
       SUBMODULE_PROBLEMS=0
 
       while IFS= read -r line; do
         STATUS="''${line:0:1}"
         NAME=$(echo "$line" | awk '{print $2}')
-        if [[ "$STATUS" == "+" ]]; then
-          echo "  ⚠️  $NAME has uncommitted changes (dirty)"
-          SUBMODULE_PROBLEMS=1
-        elif [[ "$STATUS" == "-" ]]; then
-          echo "  ❌ $NAME is not initialised — run: git submodule update --init"
+        if [[ "$STATUS" == "-" ]]; then
+          # Uninitialized submodule — normal under the deploy-clone flow
+          # (inputs resolve from flake.lock pins unless overridden)
+          :
+        elif [[ "$STATUS" == "+" ]]; then
+          echo "  ⚠️  $NAME checkout differs from the pin (shipped only with --local-submodules or if overridden)"
           SUBMODULE_PROBLEMS=1
         elif [[ "$STATUS" == "U" ]]; then
           echo "  ❌ $NAME has merge conflicts"
@@ -88,8 +98,16 @@
       fi
 
       # ── 3. Backend checks (amc-backend flake) ──────────────────────────────
-      cd "$REPO_ROOT/amc-backend"
-      SYSTEM=$(${pkgs.nix}/bin/nix eval --raw --impure --expr 'builtins.currentSystem')
+      BACKEND_DIR="''${argc_backend:-$REPO_ROOT/amc-backend}"
+      if [[ ! -d "$BACKEND_DIR" ]]; then
+        echo ""
+        echo "  ⏭️  No backend checkout at $BACKEND_DIR — skipping backend checks"
+        echo "     (deploy-clone flow: rely on CI, or run deploy with"
+        echo "      --override-input amc-backend=<worktree> and pre-deploy will"
+        echo "      validate that worktree via --backend)"
+      else
+        cd "$BACKEND_DIR"
+        SYSTEM=$(${pkgs.nix}/bin/nix eval --raw --impure --expr 'builtins.currentSystem')
       echo ""
       echo "🖥️  Running backend checks on $SYSTEM..."
 
@@ -113,7 +131,8 @@
         echo "  ⏭️  pytest skipped (--skip-pytest)"
       fi
 
-      cd "$REPO_ROOT"
+        cd "$REPO_ROOT"
+      fi
 
       echo ""
       echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -142,6 +161,14 @@
       # @flag --migrate       Run Django migrations after deploy
       # @flag --restart-be    Restart amc-backend + amc-worker after deploy
       # @flag --no-health-check  Skip post-deploy health check
+      # @flag --ff-base       Fetch + fast-forward the current branch to its
+      #                       upstream before deploying (deploy-clone flow)
+      # @flag --local-submodules  LEGACY: override all 8 flake inputs with ./
+      #                       <submodule> local checkouts (requires initialized
+      #                       submodules; pre-deploy-clone behavior)
+      # @option --override-input*  Task-scoped flake input override, repeatable:
+      #                       --override-input amc-backend=/abs/path/to/worktree
+      #                       Paths should be ABSOLUTE (task worktrees).
 
       eval "$(${argc}/bin/argc --argc-eval "$0" "$@")"
 
@@ -150,15 +177,89 @@
       REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
       cd "$REPO_ROOT"
 
+      # ── 0. Deploy serialization ───────────────────────────────────────────
+      # Target-scoped process check + best-effort machine lock (skipped where
+      # flock is unavailable, e.g. macOS)
+      if pgrep -f "nixos-rebuild --target-host $argc_target" >/dev/null 2>&1; then
+        echo "❌ A deploy to $argc_target is already in flight (nixos-rebuild running)"
+        echo "   Poll it: pgrep -af 'nixos-rebuild --target-host $argc_target'"
+        exit 1
+      fi
+      if command -v flock >/dev/null 2>&1; then
+        exec 200>"''${TMPDIR:-/tmp}/amc-deploy.lock"
+        if ! flock -n 200; then
+          echo "❌ Another deploy is in flight on this machine (lock held)"
+          exit 1
+        fi
+      fi
+
+      # Optional: fast-forward the base branch (deploy-clone flow)
+      if [[ -n "$argc_ff_base" ]]; then
+        if [[ -n "$(git status --porcelain)" ]]; then
+          echo "❌ --ff-base requires a clean working tree"
+          exit 1
+        fi
+        echo ""
+        echo "⏩ Fast-forwarding base to upstream..."
+        git fetch origin
+        git merge --ff-only "@{upstream}"
+        echo "  ✅ Base is now $(git rev-parse --short HEAD)"
+      fi
+
+      # ── 0b. Build nixos-rebuild override flags ────────────────────────────
+      # Default (deploy-clone flow): NO implicit overrides — non-overridden
+      # inputs ship their flake.lock pins. Task code ships via explicit
+      # --override-input <input>=<worktree>.
+      OVERRIDE_FLAGS=()
+      if [[ -n "$argc_local_submodules" ]]; then
+        echo "⚠️  --local-submodules: overriding all 8 inputs with local submodule checkouts"
+        OVERRIDE_FLAGS+=(--override-input amc-backend "$REPO_ROOT/amc-backend")
+        OVERRIDE_FLAGS+=(--override-input amc-peripheral "$REPO_ROOT/amc-peripheral")
+        OVERRIDE_FLAGS+=(--override-input motortown-server "$REPO_ROOT/motortown-server-flake")
+        OVERRIDE_FLAGS+=(--override-input beammp-server "$REPO_ROOT/beammp-server-flake")
+        OVERRIDE_FLAGS+=(--override-input assetto-server "$REPO_ROOT/assetto-server-flake")
+        OVERRIDE_FLAGS+=(--override-input eco-server "$REPO_ROOT/eco-server")
+        OVERRIDE_FLAGS+=(--override-input zomboid-server "$REPO_ROOT/zomboid-server")
+        OVERRIDE_FLAGS+=(--override-input mt-pak-extract "$REPO_ROOT/mt-pak-extract")
+      fi
+      BACKEND_OVERRIDE_PATH=""
+      for pair in "''${argc_override_input[@]}"; do
+        KEY="''${pair%%=*}"
+        OVPATH="''${pair#*=}"
+        if [[ "$KEY" == "$pair" || -z "$OVPATH" ]]; then
+          echo "❌ --override-input expects <input>=<path>, got: $pair"
+          exit 1
+        fi
+        if [[ ! -e "$OVPATH" ]]; then
+          echo "❌ --override-input path does not exist: $OVPATH"
+          exit 1
+        fi
+        if [[ "$KEY" == "amc-backend" ]]; then
+          BACKEND_OVERRIDE_PATH="$OVPATH"
+        fi
+        OVERRIDE_FLAGS+=(--override-input "$KEY" "$OVPATH")
+        echo "  🔗 override $KEY → $OVPATH"
+        if git -C "$OVPATH" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+          echo "     HEAD $(git -C "$OVPATH" rev-parse --short HEAD) ($(git -C "$OVPATH" branch --show-current 2>/dev/null || echo detached))"
+          if [[ -n "$(git -C "$OVPATH" status --porcelain 2>/dev/null)" ]]; then
+            echo "     ⚠️  dirty worktree — uncommitted changes WILL ship (eval-time snapshot)"
+          fi
+        fi
+      done
+      if [[ ''${#OVERRIDE_FLAGS[@]} -eq 0 ]]; then
+        echo "📦 Baseline deploy: non-overridden inputs ship their flake.lock pins"
+      fi
+
       echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       echo "🚀 Deploy → $argc_target"
       echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
       # ── 1. Pre-deploy checks ───────────────────────────────────────────────
       if [[ -z $argc_skip_checks ]]; then
-        PYTEST_FLAG=""
-        [[ -n $argc_skip_pytest ]] && PYTEST_FLAG="--skip-pytest"
-        pre-deploy $PYTEST_FLAG || {
+        PREDEPLOY_FLAGS=()
+        [[ -n $argc_skip_pytest ]] && PREDEPLOY_FLAGS+=(--skip-pytest)
+        [[ -n "$BACKEND_OVERRIDE_PATH" ]] && PREDEPLOY_FLAGS+=(--backend "$BACKEND_OVERRIDE_PATH")
+        pre-deploy "''${PREDEPLOY_FLAGS[@]}" || {
           echo "❌ Pre-deploy checks failed — aborting deploy"
           echo "   Use --skip-checks to bypass (emergency only)"
           exit 1
@@ -205,14 +306,7 @@
         --flake . \
         --fast \
         switch \
-        --override-input amc-backend ./amc-backend \
-        --override-input amc-peripheral ./amc-peripheral \
-        --override-input motortown-server ./motortown-server-flake \
-        --override-input beammp-server ./beammp-server-flake \
-        --override-input assetto-server ./assetto-server-flake \
-        --override-input eco-server ./eco-server \
-        --override-input zomboid-server ./zomboid-server \
-        --override-input mt-pak-extract ./mt-pak-extract
+        "''${OVERRIDE_FLAGS[@]}"
 
       echo "  ✅ nixos-rebuild complete"
 
