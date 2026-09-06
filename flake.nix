@@ -324,7 +324,7 @@
             changelogNotifier = {
               enable = true;
               webhookFile = config.age.secrets.pzChangelogWebhook.path;
-              interval = "*:0";   # hourly fallback only; deploy is the primary trigger
+              interval = "*:0"; # hourly fallback only; deploy is the primary trigger
             };
           };
           services.motortown-server = {
@@ -1090,6 +1090,7 @@
               pkgs.jq
               pkgs.rsync
               pkgs.gh
+              pkgs.git
             ]
             ++ (import ./nix/scripts.nix {
               lib = nixpkgs.lib;
