@@ -966,8 +966,16 @@
                   # whole-game garage parts catalog blanked while enabled),
                   # replaces Vehicles_Truck + Decals whole-table (conflicts
                   # with any other table-replacing mod, load order decides).
-                  # Missing display names (VehicleName null).
-                  "zzzzzz_Atlas_8x8_Semi_1_0_1_P" = true;
+                  # MISSING display names (VehicleName null). TEST RESULT
+                  # 2026-09-07: crash-loops the server at boot —
+                  # status=3/NOTIMPLEMENTED ~12s after start, right after
+                  # UE4SS "Event loop start", no dumps, NRestarts climbing
+                  # (4 before stop). Pak file byte-complete (110222685 B),
+                  # so this is a cooked-asset incompatibility — prime
+                  # suspects: the older-cook _Generated_ Jeju world chunk
+                  # (server streams Jeju_World during init) and/or the V8B
+                  # pak container. Disabled pending a repaired rebuild.
+                  "zzzzzz_Atlas_8x8_Semi_1_0_1_P" = false;
                 };
                 engineIni = ''
                   mh.maxCombinedVehicleLength=4000
