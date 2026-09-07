@@ -956,6 +956,26 @@
                   # mismatch).
                   "Schedule_I_v0.4.12_0.7.19_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
+                  # Community Atlas 8x8 Semi custom-vehicle pak (0.7.19-built;
+                  # Vehicles_Truck snapshot matches vanilla 0.7.19 exactly).
+                  # 110222685 bytes, md5 b4c0d8838a00f0db6f2f3ebee6d14044.
+                  # Adds Atlas_8x8_Semi/Twin/Trio trucks + engines + Gujwa
+                  # world-chunk replacement (3 MTDealerVehicleSpawnPoint).
+                  # STAGING TEST ONLY / known hazards: ships an EMPTY
+                  # VehicleParts DataTable (replaces vanilla 768-row master →
+                  # whole-game garage parts catalog blanked while enabled),
+                  # replaces Vehicles_Truck + Decals whole-table (conflicts
+                  # with any other table-replacing mod, load order decides).
+                  # MISSING display names (VehicleName null). TEST RESULT
+                  # 2026-09-07: crash-loops the server at boot —
+                  # status=3/NOTIMPLEMENTED ~12s after start, right after
+                  # UE4SS "Event loop start", no dumps, NRestarts climbing
+                  # (4 before stop). Pak file byte-complete (110222685 B),
+                  # so this is a cooked-asset incompatibility — prime
+                  # suspects: the older-cook _Generated_ Jeju world chunk
+                  # (server streams Jeju_World during init) and/or the V8B
+                  # pak container. Disabled pending a repaired rebuild.
+                  "zzzzzz_Atlas_8x8_Semi_1_0_1_P" = false;
                 };
                 engineIni = ''
                   mh.maxCombinedVehicleLength=4000
