@@ -638,6 +638,10 @@
                   DISCORD_CRIMINAL_STATS_CHANNEL_ID = "1486645816042061864";
                   DISCORD_COP_STATS_CHANNEL_ID = "1486645931595272222";
                   DISCORD_BEAMMP_STATUS_CHANNEL_ID = "1504133800425291930";
+                  # Silent parts audit (amc-backend PR #106): event-join +
+                  # /check_all_players reports post here. 0/unset disables
+                  # posting (summaries fall back to the worker journal).
+                  DISCORD_PARTS_LOG_CHANNEL_ID = "1547184692132843531";
                   # Role gate for the event-admin Discord commands (join/kick to event).
                   # Read by amc-backend PR #79 (DISCORD_EVENT_ADMIN_ROLE_ID).
                   DISCORD_EVENT_ADMIN_ROLE_ID = "1395460420189421713";
