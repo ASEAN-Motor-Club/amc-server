@@ -338,7 +338,7 @@ in {
     # Add the ngx_brotli module so precompressed .br static files can be
     # served (brotli_static) alongside gzip_static.
     package = pkgs.nginxStable.override {
-      modules = [ pkgs.nginxModules.brotli ];
+      modules = [pkgs.nginxModules.brotli];
     };
 
     virtualHosts."www.aseanmotorclub.com" = {
