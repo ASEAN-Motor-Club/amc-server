@@ -658,6 +658,9 @@
                   NAMER_LLM_MODEL = "openai/gpt-5.6-luna";
                   NAMER_AUTO_CONFIDENCE_THRESHOLD = "0.9";
                   NAMER_REVIEW_CHANNEL_ID = "1366478091131551834";
+                  # Fraud clawback Discord alerts (amc-backend PR #110).
+                  # Same staff channel as the name-moderation review.
+                  DISCORD_FRAUD_ALERT_CHANNEL_ID = "1366478091131551834";
                   NAMER_ANNOUNCE = "1";
                 };
               };
