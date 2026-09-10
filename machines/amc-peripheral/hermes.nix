@@ -161,8 +161,8 @@ in {
             REV_FILE="/var/lib/hermes-agent/.hermes-rev"
             IMAGE_TAG="hermes-agent:local"
             # Bump this when the Dockerfile.slim changes force a rebuild
-            # even if the upstream rev hasn't changed.
-            DOCKERFILE_VERSION="3"
+            # even if the upstream rev hasn't changed. (4 = node 26 stage, no apt nodejs)
+            DOCKERFILE_VERSION="4"
             BUILD_KEY="$REV:$DOCKERFILE_VERSION"
 
             # Check if we already have an image built for this rev+dockerfile combo
@@ -196,12 +196,16 @@ in {
             cat > "$WORK/hermes/Dockerfile.slim" << 'SLIM'
       FROM ghcr.io/astral-sh/uv:0.11.6-python3.13-trixie AS uv_source
       FROM tianon/gosu:1.19-trixie AS gosu_source
+      # Node 26 source stage — Debian trixie's nodejs is 20.x (EOL Apr 2026)
+      # and upstream v2026.9.7+ requires node ^22.22 || ^24.11 || >=26.
+      # Copy node + npm from the upstream node image like upstream's Dockerfile.
+      FROM node:26-bookworm-slim@sha256:9e6f9357d371591e32ab6f2d8a26d63bdd0d17c29eee3f4f3e7e454d9634bf73 AS node_source
       FROM debian:13.4
       ENV PYTHONUNBUFFERED=1
       ENV PLAYWRIGHT_BROWSERS_PATH=/opt/hermes/.playwright
       RUN apt-get update && \
           apt-get install -y --no-install-recommends \
-              build-essential curl nodejs npm python3 ripgrep ffmpeg gcc python3-dev libffi-dev procps git openssh-client tini \
+              build-essential curl python3 ripgrep ffmpeg gcc python3-dev libffi-dev procps git openssh-client tini \
               libnss3 libnspr4 libcups2 libatk1.0-0 libatk-bridge2.0-0 libatspi2.0-0 \
               libxcomposite1 libxdamage1 libxtst6 libxrandr2 libgbm1 libdrm2 libxkbcommon0 \
               libasound2t64 libpango-1.0-0 libcairo2 && \
@@ -209,6 +213,11 @@ in {
       RUN useradd -u 10000 -m -d /opt/data hermes
       COPY --chmod=0755 --from=gosu_source /gosu /usr/local/bin/
       COPY --chmod=0755 --from=uv_source /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/
+      # Node 26: copy the node binary + bundled npm, recreate npm/npx symlinks.
+      COPY --chmod=0755 --from=node_source /usr/local/bin/node /usr/local/bin/
+      COPY --from=node_source /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/npm
+      RUN ln -sf /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm && \
+          ln -sf /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
       COPY . /opt/hermes
       WORKDIR /opt/hermes
       RUN npm install --prefer-offline --no-audit && \
@@ -338,7 +347,7 @@ in {
       IMAGE_TAG="hermes-agent:local"
       REV="${hermesRev}"
       REV_FILE="/var/lib/hermes-agent/.hermes-rev"
-      DOCKERFILE_VERSION="3"
+      DOCKERFILE_VERSION="4"
       BUILD_KEY="$REV:$DOCKERFILE_VERSION"
 
       # Check if we have an image built for the current build key
