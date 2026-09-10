@@ -6,7 +6,7 @@
   # Pinned upstream git revision for reproducible builds.
   # Update this string and re-deploy to build a new Hermes image.
   # Use a branch name (e.g. "main") or a commit hash.
-  hermesRev = "v2026.6.5";
+  hermesRev = "v2026.9.7";
 
   # ── GitHub App (asean-coding-agent[bot]) ────────────────────────────
   # Reused from the opencode agent. Gives Hermes push access + `gh` (PRs,
