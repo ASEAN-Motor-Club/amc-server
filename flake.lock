@@ -1159,11 +1159,11 @@
         "systems": "systems_11"
       },
       "locked": {
-        "lastModified": 1789328223,
-        "narHash": "sha256-UAL6NR4v0hZkFTI/nHnleHNm2RrW80y9mOix3hUDyuw=",
+        "lastModified": 1789332541,
+        "narHash": "sha256-cvraJIf8pTOFzZ8dPiXY8Qr5VgEPAZS8a4XgtDaQp5o=",
         "owner": "ASEAN-Motor-Club",
         "repo": "zomboid-server",
-        "rev": "0e1fc7076f3584b2683158cfecd5b5adf7e5739d",
+        "rev": "5abe67994ffde2c0254f91d506ad71769a081e1d",
         "type": "github"
       },
       "original": {
