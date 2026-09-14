@@ -169,6 +169,10 @@
       # @option --override-input*  Task-scoped flake input override, repeatable:
       #                       --override-input amc-backend=/abs/path/to/worktree
       #                       Paths should be ABSOLUTE (task worktrees).
+      # @flag --allow-stale-override  Ship a task-scoped override even when its
+      #                       checkout is BEHIND the flake.lock pin (staleness
+      #                       guard escape hatch). --local-submodules overrides
+      #                       are exempt from the guard entirely.
 
       eval "$(${argc}/bin/argc --argc-eval "$0" "$@")"
 
@@ -243,6 +247,30 @@
           echo "     HEAD $(git -C "$OVPATH" rev-parse --short HEAD) ($(git -C "$OVPATH" branch --show-current 2>/dev/null || echo detached))"
           if [[ -n "$(git -C "$OVPATH" status --porcelain 2>/dev/null)" ]]; then
             echo "     ⚠️  dirty worktree — uncommitted changes WILL ship (eval-time snapshot)"
+          fi
+          # Staleness guard: an override checkout BEHIND the flake.lock pin
+          # silently ships old code (hit 2026-09-14: a zomboid-server override
+          # at #49 reverted the whole fresh-wipe mod pack on a backend-only
+          # deploy — the boot-time config reconcile then made the rollback
+          # survive every restart). Abort unless explicitly allowed.
+          export GUARD_KEY="$KEY"
+          PIN_REV=$(python3 -c 'import json,os; lock=json.load(open("flake.lock")); node=lock.get("nodes",{}).get(os.environ["GUARD_KEY"],{}); rev=node.get("locked",{}).get("rev"); print(rev or "")' 2>/dev/null || true)
+          unset GUARD_KEY
+          if [[ -n "$PIN_REV" ]] && git -C "$OVPATH" merge-base --is-ancestor "$PIN_REV" HEAD 2>/dev/null; then
+            : # checkout contains the pin — fine
+          elif [[ -n "$PIN_REV" ]]; then
+            if [[ -z "$argc_allow_stale_override" ]]; then
+              echo ""
+              echo "❌ Override for $KEY is STALE: checkout HEAD is BEHIND the flake.lock pin"
+              echo "   pin:  $PIN_REV"
+              echo "   HEAD: $(git -C "$OVPATH" rev-parse HEAD)"
+              echo "   Shipping this would revert anything merged since the pin."
+              echo "   Update the checkout (git -C $OVPATH fetch origin && git -C $OVPATH checkout origin/<default>),"
+              echo "   drop the override, or pass --allow-stale-override to ship anyway."
+              exit 1
+            else
+              echo "     ⚠️  stale override for $KEY shipped anyway (--allow-stale-override)"
+            fi
           fi
         fi
       done
