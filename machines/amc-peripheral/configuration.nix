@@ -308,6 +308,7 @@ in {
       "steamcmd"
       "steam-original"
       "steam-unwrapped"
+      "youtrack"
     ];
 
   environment.systemPackages = with pkgs; [
@@ -1565,5 +1566,28 @@ in {
 
   services.tailscale = {
     enable = true;
+  };
+
+  # ── YouTrack issue tracker ──────────────────────────────────────────
+  # Free tier (unfree package — allowed in allowUnfreePredicate above).
+  # Single systemd unit + nginx vhost from the nixpkgs module; state in
+  # /var/lib/youtrack/<year_version>. Binds 127.0.0.1:8080; nginx fronts it
+  # at https://youtrack.aseanmotorclub.com (DNS is a proxied Cloudflare
+  # record — the module sets up the ACME cert + SSE-safe proxy locations).
+  services.youtrack = {
+    enable = true;
+    virtualHost = "youtrack.aseanmotorclub.com";
+    # 15G total RAM on this host with ~11G used by existing services —
+    # keep the JVM bounded. autoUpgrade=false keeps upgrades explicit
+    # (a package bump is the change surface, not the app silently
+    # rewriting its own data dir on first boot).
+    generalParameters = [
+      "-Xmx1g"
+      "-Ddisable.configuration.wizard.on.upgrade=true"
+    ];
+    environmentalParameters = {
+      listen-address = "127.0.0.1";
+      listen-port = 8080;
+    };
   };
 }
