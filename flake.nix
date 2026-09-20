@@ -963,20 +963,26 @@
                   qxZap_CranyUnlocked_P = false;
                   "MajasDetailWorksV3-7.18_P" = false;
                   "MajasMnTrailerworksV6-7.18_P" = false;
-                  # Schedule_I illicit-cargo pak (0.7.19). v0.4.17 = per-entry
-                  # item type (mt-pak-extract PR #17): CC_Gold_Bar stays
-                  # buildable furniture (display "Gold Bar (Decoration)"),
-                  # new CC_Gold_Bar_Item is a vanilla-style sellable carryable
-                  # (ItemType::None, ₩1,000,000, MaxStack 10). CC_* criminal
-                  # collectible rows appended to the Items_Furnitures child
-                  # (441 vanilla + 9): CashWad/CashStack/GoldBar/GoldBarItem/
-                  # Ring/Necklace/Booze/LootBag/Safe — bNotForSale except
-                  # GoldBarItem, vanilla Polygon meshes.
-                  # md5 4e5c58dd084780c9eea4c2a9f7e04af2, 1608505 bytes. Do NOT enable a pak whose game
+                  # Schedule_I illicit-cargo pak (0.7.19). v0.4.18 = pocketable
+                  # items (mt-pak-extract PR #18): CC_Gold_Bar_Item carries the
+                  # vanilla pocketable flag set (bHoldOnlyItem=false — the
+                  # stash-into-inventory flag — plus bIsPersistence=false,
+                  # HoldableSocketName=Hand_R_Hold, cargo-hold-pose/bounds/
+                  # trash overrides; Flashlight/Cone/Jerrycan ground truth).
+                  # CC_Gold_Bar stays buildable furniture with housing
+                  # persistence, now ALSO stashable via per-entry pocketable
+                  # flag (bHoldOnlyItem=false only; no vanilla furniture has
+                  # that combo — unproven upstream). v0.4.17 base: per-entry
+                  # item type (PR #17), CC_* criminal collectible rows
+                  # appended to the Items_Furnitures child (441 vanilla + 9):
+                  # CashWad/CashStack/GoldBar/GoldBarItem/Ring/Necklace/Booze/
+                  # LootBag/Safe — bNotForSale except GoldBarItem, vanilla
+                  # Polygon meshes.
+                  # md5 3cf6d1a8741e6797c905c79e4e587140, 1608525 bytes. Do NOT enable a pak whose game
                   # version suffix != 0.7.19: the 0.7.18-era pak crash-loops
                   # this server at boot (status=3/NOTIMPLEMENTED, UE5 asset
                   # mismatch).
-                  "Schedule_I_v0.4.17_0.7.19_P" = true;
+                  "Schedule_I_v0.4.18_0.7.19_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
