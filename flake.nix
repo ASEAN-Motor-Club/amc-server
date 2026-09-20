@@ -955,18 +955,17 @@
                   qxZap_CranyUnlocked_P = false;
                   "MajasDetailWorksV3-7.18_P" = false;
                   "MajasMnTrailerworksV6-7.18_P" = false;
-                  # Schedule_I illicit-cargo pak (0.7.19). v0.4.12 = laundering-
-                  # only money economy (mt-pak-extract PR #12 @ 0c92ca7):
-                  # harbor faucets/sinks/demand removed (bricks endpoint only),
-                  # Toy hidden sinks removed, MoneyPallet unwound, world spawn
-                  # zeroed, catalysts + Money demand at Hemp/Sunflower/IronOre,
-                  # out/ template pollution guard. Single-rate laundering
-                  # (5 bricks -> 30 Money/120s); md5 da16a4475ad00fefae626c4f3f
-                  # 44f0b5, 360335 bytes. Do NOT enable a pak whose game
+                  # Schedule_I illicit-cargo pak (0.7.19). v0.4.13 = v0.4.12
+                  # laundering-only money economy (mt-pak-extract PR #12)
+                  # + CC_* criminal collectible item rows in the master Items
+                  # DataTable (mt-pak-extract PR #14): CashWad/CashStack/
+                  # GoldBar/Ring/Necklace/Booze/LootBag/Safe, bNotForSale,
+                  # vanilla Polygon meshes. md5 c7e4d9d69183d0277247d1db034f2a11,
+                  # 1942685 bytes. Do NOT enable a pak whose game
                   # version suffix != 0.7.19: the 0.7.18-era pak crash-loops
                   # this server at boot (status=3/NOTIMPLEMENTED, UE5 asset
                   # mismatch).
-                  "Schedule_I_v0.4.12_0.7.19_P" = true;
+                  "Schedule_I_v0.4.13_0.7.19_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
