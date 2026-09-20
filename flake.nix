@@ -955,20 +955,19 @@
                   qxZap_CranyUnlocked_P = false;
                   "MajasDetailWorksV3-7.18_P" = false;
                   "MajasMnTrailerworksV6-7.18_P" = false;
-                  # Schedule_I illicit-cargo pak (0.7.19). v0.4.14 = v0.4.12
+                  # Schedule_I illicit-cargo pak (0.7.19). v0.4.15 = v0.4.12
                   # laundering-only money economy (mt-pak-extract PR #12)
                   # + CC_* criminal collectible item rows in the master Items
-                  # DataTable child Items_ScheduleI (mt-pak-extract PR #14,
-                  # composite ParentTables registration — v0.4.13 put them inline
-                  # on the master composite and the engine never saw them):
-                  # CashWad/CashStack/
-                  # GoldBar/Ring/Necklace/Booze/LootBag/Safe, bNotForSale,
-                  # vanilla Polygon meshes. md5 0864305cc3fad42a95673d5d90b564d8,
-                  # 2066000 bytes. Do NOT enable a pak whose game
+                  # items appended to the Items_Furnitures child (441 vanilla + 8,
+                  # mt-pak-extract PR #15): CashWad/CashStack/GoldBar/Ring/
+                  # Necklace/Booze/LootBag/Safe — buildable home decorations
+                  # (ItemType::Furniture, InteractionType::Build, per-row
+                  # BuildingKey == row name), bNotForSale, vanilla Polygon
+                  # meshes. md5 c50b1003be958718fb13332d695710ac, 1605739 bytes. Do NOT enable a pak whose game
                   # version suffix != 0.7.19: the 0.7.18-era pak crash-loops
                   # this server at boot (status=3/NOTIMPLEMENTED, UE5 asset
                   # mismatch).
-                  "Schedule_I_v0.4.14_0.7.19_P" = true;
+                  "Schedule_I_v0.4.15_0.7.19_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
