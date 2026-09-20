@@ -216,6 +216,7 @@
       # inputs ship their flake.lock pins. Task code ships via explicit
       # --override-input <input>=<worktree>.
       OVERRIDE_FLAGS=()
+      ZOMBIE_OVERRIDDEN=""
       # Staleness guard shared by task overrides and --local-submodules: a
       # checkout BEHIND its flake.lock pin OR behind the input's own
       # origin/master silently ships old code.
@@ -296,6 +297,7 @@
             exit 1
           fi
           OVERRIDE_FLAGS+=(--override-input "$KEY" "$OVPATH")
+          [[ "$KEY" == "zomboid-server" ]] && ZOMBIE_OVERRIDDEN=1
           echo "  🔗 override $KEY → $OVPATH"
           guard_override_staleness "$KEY" "$OVPATH" || GUARD_FAIL=1
         done
@@ -320,11 +322,38 @@
           BACKEND_OVERRIDE_PATH="$OVPATH"
         fi
         OVERRIDE_FLAGS+=(--override-input "$KEY" "$OVPATH")
+        [[ "$KEY" == "zomboid-server" ]] && ZOMBIE_OVERRIDDEN=1
         echo "  🔗 override $KEY → $OVPATH"
         guard_override_staleness "$KEY" "$OVPATH" || exit 1
       done
       if [[ ''${#OVERRIDE_FLAGS[@]} -eq 0 ]]; then
         echo "📦 Baseline deploy: non-overridden inputs ship their flake.lock pins"
+      fi
+
+      # Zomboid-pin freshness: the boot-time config reconcile re-asserts
+      # WorkshopItems/Mods on every boot, so a stale zomboid pin STICKS and
+      # blinds the workshop watcher (hit 2026-09-19/20: a rebuild from a
+      # #49-era source downgraded the live modlist 88 -> 67 for ~18h while
+      # players got version-mismatch kicks). A baseline deploy must reference
+      # the LATEST merged zomboid master; override deploys are already pinned
+      # to origin/master by guard_override_staleness. Escape hatch:
+      # --allow-stale-override.
+      if [[ -z "$ZOMBIE_OVERRIDDEN" ]]; then
+        LOCK_REV=$(python3 -c 'import json; lock=json.load(open("flake.lock")); n=lock["nodes"][lock["root"]]["inputs"]["zomboid-server"]; print(lock["nodes"][n]["locked"]["rev"])' 2>/dev/null || true)
+        UP_REV=$(git ls-remote https://github.com/ASEAN-Motor-Club/zomboid-server.git refs/heads/master 2>/dev/null | cut -f1)
+        if [[ -z "$LOCK_REV" || -z "$UP_REV" ]]; then
+          echo "⚠️  cannot verify zomboid-server pin freshness (lock read or ls-remote failed)"
+          [[ -n "$argc_allow_stale_override" ]] || exit 1
+        elif [[ "$LOCK_REV" != "$UP_REV" ]]; then
+          echo "❌ zomboid-server pin is NOT zomboid master HEAD:"
+          echo "   pin:    $LOCK_REV"
+          echo "   master: $UP_REV"
+          echo "   Shipping this would downgrade the live modlist (the boot reconcile makes it stick)."
+          echo "   Merge the pin-bump PR first, or pass --allow-stale-override to ship anyway."
+          [[ -n "$argc_allow_stale_override" ]] || exit 1
+        else
+          echo "  ✅ zomboid-server pin is current with zomboid master"
+        fi
       fi
 
       echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
