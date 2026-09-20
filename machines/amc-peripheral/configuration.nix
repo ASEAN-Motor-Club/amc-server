@@ -2,6 +2,7 @@
   config,
   pkgs,
   lib,
+  nixpkgs-unstable,
   ...
 }: let
   # ── GitHub App credential helpers ──────────────────────────────────
@@ -1577,14 +1578,20 @@ in {
   services.youtrack = {
     enable = true;
     virtualHost = "youtrack.aseanmotorclub.com";
+    # 2026.2 from the pinned nixpkgs-unstable input (shared with the
+    # github-runner package — do not bump that pin for youtrack alone): the
+    # locked 25.05 pin carries 2025.1 and the app flags itself out-of-date
+    # at two majors back. Upgrades stay manual — bump this package; never
+    # the in-app "install latest" button (the store is immutable, the app
+    # can't self-upgrade).
+    package = nixpkgs-unstable.legacyPackages.${pkgs.system}.youtrack;
     # 15G total RAM on this host with ~11G used by existing services —
-    # keep the JVM bounded. autoUpgrade=false keeps upgrades explicit
-    # (a package bump is the change surface, not the app silently
-    # rewriting its own data dir on first boot).
-    generalParameters = [
-      "-Xmx1g"
-      "-Ddisable.configuration.wizard.on.upgrade=true"
-    ];
+    # keep the JVM bounded.
+    generalParameters = [ "-Xmx1g" ];
+    # false = upgrades (package bumps) go through the configuration wizard
+    # (the module emits disable.configuration.wizard.on.upgrade from this);
+    # true would let the app self-upgrade behind our backs.
+    autoUpgrade = false;
     environmentalParameters = {
       listen-address = "127.0.0.1";
       listen-port = 8080;

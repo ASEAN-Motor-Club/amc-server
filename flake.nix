@@ -777,6 +777,11 @@
             # Make mt-pak-extract flake available to modules
             {_module.args.mt-pak-extract = mt-pak-extract;}
 
+            # Unstable nixpkgs available to modules (used for
+            # services.youtrack.package; the github-runner package above
+            # references it directly).
+            {_module.args.nixpkgs-unstable = nixpkgs-unstable;}
+
             # Use opencode from the official flake — nixpkgs versions are too old.
             # Mark prettier as external so bun's bundler skips resolving it.
             # Only the dev-only `generate` command imports prettier; `serve` doesn't.
