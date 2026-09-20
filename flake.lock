@@ -107,17 +107,19 @@
         "systems": "systems_4"
       },
       "locked": {
+        "allRefs": true,
         "lastModified": 1778742898,
         "narHash": "sha256-cE/spok3L9ye1F0akFTOYRe2tZf2flEhZgmc6XuF03g=",
-        "owner": "ASEAN-Motor-Club",
-        "repo": "beammp-server-flake",
+        "ref": "refs/heads/main",
         "rev": "efa388e2b9c0802424220ad94e11c2292241a15c",
-        "type": "github"
+        "revCount": 11,
+        "type": "git",
+        "url": "https://github.com/ASEAN-Motor-Club/beammp-server-flake.git"
       },
       "original": {
-        "owner": "ASEAN-Motor-Club",
-        "repo": "beammp-server-flake",
-        "type": "github"
+        "allRefs": true,
+        "type": "git",
+        "url": "https://github.com/ASEAN-Motor-Club/beammp-server-flake.git"
       }
     },
     "crane": {
@@ -491,6 +493,7 @@
         "systems": "systems_6"
       },
       "locked": {
+        "allRefs": true,
         "lastModified": 1778040725,
         "lfs": true,
         "narHash": "sha256-hHQ+DfMwERmiw3hvFy++u0jFiFGVNkhK/wTInq5Q8hk=",
@@ -502,7 +505,9 @@
         "url": "https://github.com/ASEAN-Motor-Club/motortown-server-flake.git"
       },
       "original": {
+        "allRefs": true,
         "lfs": true,
+        "rev": "57918ed38113f59a281d4c157abf253633bcddb5",
         "type": "git",
         "url": "https://github.com/ASEAN-Motor-Club/motortown-server-flake.git"
       }
