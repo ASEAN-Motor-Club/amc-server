@@ -39,7 +39,6 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "__final": true,
         "lastModified": 1789931507,
         "narHash": "sha256-Bt5C3GU6y7iSaoqtQXcP1zmGGCkCscAJ05QE0G74DPA=",
         "owner": "ASEAN-Motor-Club",
@@ -66,7 +65,6 @@
         "uv2nix": "uv2nix_2"
       },
       "locked": {
-        "__final": true,
         "lastModified": 1789916421,
         "narHash": "sha256-I5bvT/aYXgGsvEyOVvJR7ShG1lGQECo/Gg6ozN5WsrU=",
         "owner": "ASEAN-Motor-Club",
