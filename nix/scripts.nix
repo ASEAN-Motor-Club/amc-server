@@ -239,11 +239,18 @@
         if [[ -n "$(git -C "$OVPATH" status --porcelain 2>/dev/null)" ]]; then
           echo "     ⚠️  dirty worktree — uncommitted changes WILL ship (eval-time snapshot)"
         fi
-        if ! git -C "$OVPATH" fetch origin master -q 2>/dev/null; then
-          echo "     ❌ $KEY: cannot fetch origin/master to verify staleness"
-          return 1
-        fi
         UP=origin/master
+        if ! git -C "$OVPATH" fetch origin master -q 2>/dev/null; then
+          if git -C "$OVPATH" fetch origin HEAD -q 2>/dev/null; then
+            UP=FETCH_HEAD
+          elif [[ -n "$argc_allow_stale_override" ]]; then
+            echo "     ⚠️  $KEY: cannot fetch origin master/HEAD — unverifiable, shipping anyway (--allow-stale-override)"
+            return 0
+          else
+            echo "     ❌ $KEY: cannot fetch origin/master to verify staleness"
+            return 1
+          fi
+        fi
         if ! git -C "$OVPATH" rev-parse --verify -q "$UP" >/dev/null 2>&1; then
           echo "     ❌ $KEY: no origin/master ref to verify staleness against"
           return 1
