@@ -521,11 +521,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1778050683,
-        "narHash": "sha256-ssdwBqNoz/jAms4GCb86girWNyreWQ5dxm4L+d9wMK8=",
+        "lastModified": 1789911568,
+        "narHash": "sha256-vVBeHG7dCZdbd4lGJLwpiVsLJ6F80+01i8wnjHBhY+4=",
         "owner": "ASEAN-Motor-Club",
         "repo": "mt-pak-extract",
-        "rev": "8bba42f08bc054d6b4a89547dc557dbc62d26db8",
+        "rev": "684171fad5750bb4e6f91352f0a8f6360aa35c8d",
         "type": "github"
       },
       "original": {
