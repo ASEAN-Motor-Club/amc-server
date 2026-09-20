@@ -2,6 +2,7 @@
   config,
   pkgs,
   lib,
+  nixpkgs-unstable,
   ...
 }: let
   # ── GitHub App credential helpers ──────────────────────────────────
@@ -308,6 +309,7 @@ in {
       "steamcmd"
       "steam-original"
       "steam-unwrapped"
+      "youtrack"
     ];
 
   environment.systemPackages = with pkgs; [
@@ -1565,5 +1567,53 @@ in {
 
   services.tailscale = {
     enable = true;
+  };
+
+  # ── YouTrack issue tracker ──────────────────────────────────────────
+  # Free tier (unfree package — allowed in allowUnfreePredicate above).
+  # Single systemd unit + nginx vhost from the nixpkgs module; state in
+  # /var/lib/youtrack/<year_version>. Binds 127.0.0.1:8080; nginx fronts it
+  # at https://youtrack.aseanmotorclub.com (DNS is a proxied Cloudflare
+  # record — the module ships the SSE-safe proxy locations).
+  services.youtrack = {
+    enable = true;
+    virtualHost = "youtrack.aseanmotorclub.com";
+    # 2026.2 from the pinned nixpkgs-unstable input: the locked 25.05 pin
+    # carries 2025.1 and the app flags itself out-of-date at two majors
+    # back. Upgrades stay manual — bump this package; never the in-app
+    # "install latest" button (the store is immutable, the app can't
+    # self-upgrade).
+    # IMPORTANT: import the input WITH allowUnfree — the machine's
+    # nixpkgs.config.allowUnfreePredicate only covers the machine's OWN
+    # nixpkgs instance, not packages picked from nixpkgs-unstable
+    # (first deploy attempt failed host-side eval with "Refusing to
+    # evaluate package 'youtrack-2026.2.17012' ... unfree license").
+    # allowUnfree here is scoped to this second instance only.
+    # NOTE: the github-runner package at the top of this flake uses the
+    # bare legacyPackages form because that package is MIT (free) — don't
+    # copy that form for unfree packages.
+    package = (import nixpkgs-unstable {
+      inherit (pkgs) system;
+      config.allowUnfree = true;
+    }).youtrack;
+    # 15G total RAM on this host with ~11G used by existing services —
+    # keep the JVM bounded.
+    generalParameters = [ "-Xmx1g" ];
+    # false = upgrades (package bumps) go through the configuration wizard
+    # (the module emits disable.configuration.wizard.on.upgrade from this);
+    # true would let the app self-upgrade behind our backs.
+    autoUpgrade = false;
+    environmentalParameters = {
+      listen-address = "127.0.0.1";
+      listen-port = 8080;
+    };
+  };
+
+  # The module's vhost is HTTP-only (it set no TLS options); without this,
+  # Cloudflare talks plaintext HTTP to the origin. Merge TLS onto the same
+  # vhost: ACME cert + force SSL, mirroring the other subdomains.
+  services.nginx.virtualHosts."youtrack.aseanmotorclub.com" = {
+    enableACME = true;
+    forceSSL = true;
   };
 }

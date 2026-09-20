@@ -165,10 +165,15 @@
       #                       upstream before deploying (deploy-clone flow)
       # @flag --local-submodules  LEGACY: override all 8 flake inputs with ./
       #                       <submodule> local checkouts (requires initialized
-      #                       submodules; pre-deploy-clone behavior)
+      #                       submodules; pre-deploy-clone behavior). Staleness-
+      #                       guarded like task overrides since 2026-09-20.
       # @option --override-input*  Task-scoped flake input override, repeatable:
       #                       --override-input amc-backend=/abs/path/to/worktree
       #                       Paths should be ABSOLUTE (task worktrees).
+      # @flag --allow-stale-override  Ship a task-scoped override even when its
+      #                       checkout is BEHIND the flake.lock pin or the
+      #                       input's origin/master (staleness guard escape
+      #                       hatch; applies to --local-submodules too).
 
       eval "$(${argc}/bin/argc --argc-eval "$0" "$@")"
 
@@ -211,16 +216,95 @@
       # inputs ship their flake.lock pins. Task code ships via explicit
       # --override-input <input>=<worktree>.
       OVERRIDE_FLAGS=()
+      ZOMBIE_OVERRIDDEN=""
+      # Staleness guard shared by task overrides and --local-submodules: a
+      # checkout BEHIND its flake.lock pin OR behind the input's own
+      # origin/master silently ships old code.
+      # (hit 2026-09-14: a zomboid-server override at #49 reverted the whole
+      # fresh-wipe mod pack on a backend-only deploy; hit 2026-09-19 14:44:
+      # an out-of-band rebuild from a source frozen at #49 downgraded the live
+      # zomboid config the same way — the boot-time config reconcile made each
+      # rollback survive every restart. A checkout-vs-own-lock check alone
+      # cannot catch a self-consistent stale clone, so origin/master
+      # containment is checked too.)
+      # Returns non-zero when shipping must abort. Escape hatch:
+      # --allow-stale-override.
+      guard_override_staleness() {
+        local KEY="$1" OVPATH="$2" PIN_REV UP STALE_REASON=""
+        if ! git -C "$OVPATH" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+          echo "     ⚠️  $KEY: not a git worktree — staleness unverifiable"
+          return 0
+        fi
+        echo "     HEAD $(git -C "$OVPATH" rev-parse --short HEAD) ($(git -C "$OVPATH" branch --show-current 2>/dev/null || echo detached))"
+        if [[ -n "$(git -C "$OVPATH" status --porcelain 2>/dev/null)" ]]; then
+          echo "     ⚠️  dirty worktree — uncommitted changes WILL ship (eval-time snapshot)"
+        fi
+        if ! git -C "$OVPATH" fetch origin master -q 2>/dev/null; then
+          echo "     ❌ $KEY: cannot fetch origin/master to verify staleness"
+          return 1
+        fi
+        UP=origin/master
+        if ! git -C "$OVPATH" rev-parse --verify -q "$UP" >/dev/null 2>&1; then
+          echo "     ❌ $KEY: no origin/master ref to verify staleness against"
+          return 1
+        fi
+        export GUARD_KEY="$KEY"
+        PIN_REV=$(python3 -c 'import json,os; lock=json.load(open("flake.lock")); node=lock.get("nodes",{}).get(os.environ["GUARD_KEY"],{}); rev=node.get("locked",{}).get("rev"); print(rev or "")' 2>/dev/null || true)
+        unset GUARD_KEY
+        if [[ -n "$PIN_REV" ]] && ! git -C "$OVPATH" merge-base --is-ancestor "$PIN_REV" HEAD 2>/dev/null; then
+          STALE_REASON="checkout HEAD is BEHIND the flake.lock pin ($PIN_REV)"
+        fi
+        if git -C "$OVPATH" merge-base --is-ancestor "$UP" HEAD 2>/dev/null; then
+          : # checkout contains origin/master — fine
+        else
+          STALE_REASON="checkout HEAD does not contain $UP (out-of-date base)"
+        fi
+        if [[ -z "$STALE_REASON" ]]; then
+          return 0
+        fi
+        if [[ -z "$argc_allow_stale_override" ]]; then
+          echo ""
+          echo "❌ $KEY is STALE: $STALE_REASON"
+          echo "   HEAD: $(git -C "$OVPATH" rev-parse HEAD)"
+          echo "   Shipping this would revert anything merged since the pin / on $UP."
+          echo "   Update the checkout (git -C $OVPATH fetch origin && git -C $OVPATH checkout origin/master),"
+          echo "   drop the override, or pass --allow-stale-override to ship anyway."
+          return 1
+        fi
+        echo "     ⚠️  stale checkout for $KEY shipped anyway (--allow-stale-override)"
+        return 0
+      }
       if [[ -n "$argc_local_submodules" ]]; then
         echo "⚠️  --local-submodules: overriding all 8 inputs with local submodule checkouts"
-        OVERRIDE_FLAGS+=(--override-input amc-backend "$REPO_ROOT/amc-backend")
-        OVERRIDE_FLAGS+=(--override-input amc-peripheral "$REPO_ROOT/amc-peripheral")
-        OVERRIDE_FLAGS+=(--override-input motortown-server "$REPO_ROOT/motortown-server-flake")
-        OVERRIDE_FLAGS+=(--override-input beammp-server "$REPO_ROOT/beammp-server-flake")
-        OVERRIDE_FLAGS+=(--override-input assetto-server "$REPO_ROOT/assetto-server-flake")
-        OVERRIDE_FLAGS+=(--override-input eco-server "$REPO_ROOT/eco-server")
-        OVERRIDE_FLAGS+=(--override-input zomboid-server "$REPO_ROOT/zomboid-server")
-        OVERRIDE_FLAGS+=(--override-input mt-pak-extract "$REPO_ROOT/mt-pak-extract")
+        LOCAL_SUB_PAIRS=(
+          "amc-backend amc-backend"
+          "amc-peripheral amc-peripheral"
+          "motortown-server motortown-server-flake"
+          "beammp-server beammp-server-flake"
+          "assetto-server assetto-server-flake"
+          "eco-server eco-server"
+          "zomboid-server zomboid-server"
+          "mt-pak-extract mt-pak-extract"
+        )
+        GUARD_FAIL=0
+        for pair in "''${LOCAL_SUB_PAIRS[@]}"; do
+          KEY="''${pair%% *}"
+          REL="''${pair#* }"
+          OVPATH="$REPO_ROOT/$REL"
+          if [[ ! -d "$OVPATH" || ! -e "$OVPATH/.git" ]]; then
+            echo "  ❌ $KEY: submodule not initialized ($REL)"
+            echo "     Run: git -C $REPO_ROOT submodule update --init $REL"
+            exit 1
+          fi
+          OVERRIDE_FLAGS+=(--override-input "$KEY" "$OVPATH")
+          [[ "$KEY" == "zomboid-server" ]] && ZOMBIE_OVERRIDDEN=1
+          echo "  🔗 override $KEY → $OVPATH"
+          guard_override_staleness "$KEY" "$OVPATH" || GUARD_FAIL=1
+        done
+        if [[ "$GUARD_FAIL" -ne 0 ]]; then
+          echo "❌ --local-submodules staleness guard failed — aborting (escape hatch: --allow-stale-override)"
+          exit 1
+        fi
       fi
       BACKEND_OVERRIDE_PATH=""
       for pair in "''${argc_override_input[@]}"; do
@@ -238,16 +322,38 @@
           BACKEND_OVERRIDE_PATH="$OVPATH"
         fi
         OVERRIDE_FLAGS+=(--override-input "$KEY" "$OVPATH")
+        [[ "$KEY" == "zomboid-server" ]] && ZOMBIE_OVERRIDDEN=1
         echo "  🔗 override $KEY → $OVPATH"
-        if git -C "$OVPATH" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-          echo "     HEAD $(git -C "$OVPATH" rev-parse --short HEAD) ($(git -C "$OVPATH" branch --show-current 2>/dev/null || echo detached))"
-          if [[ -n "$(git -C "$OVPATH" status --porcelain 2>/dev/null)" ]]; then
-            echo "     ⚠️  dirty worktree — uncommitted changes WILL ship (eval-time snapshot)"
-          fi
-        fi
+        guard_override_staleness "$KEY" "$OVPATH" || exit 1
       done
       if [[ ''${#OVERRIDE_FLAGS[@]} -eq 0 ]]; then
         echo "📦 Baseline deploy: non-overridden inputs ship their flake.lock pins"
+      fi
+
+      # Zomboid-pin freshness: the boot-time config reconcile re-asserts
+      # WorkshopItems/Mods on every boot, so a stale zomboid pin STICKS and
+      # blinds the workshop watcher (hit 2026-09-19/20: a rebuild from a
+      # #49-era source downgraded the live modlist 88 -> 67 for ~18h while
+      # players got version-mismatch kicks). A baseline deploy must reference
+      # the LATEST merged zomboid master; override deploys are already pinned
+      # to origin/master by guard_override_staleness. Escape hatch:
+      # --allow-stale-override.
+      if [[ -z "$ZOMBIE_OVERRIDDEN" ]]; then
+        LOCK_REV=$(python3 -c 'import json; lock=json.load(open("flake.lock")); n=lock["nodes"][lock["root"]]["inputs"]["zomboid-server"]; print(lock["nodes"][n]["locked"]["rev"])' 2>/dev/null || true)
+        UP_REV=$(git ls-remote https://github.com/ASEAN-Motor-Club/zomboid-server.git refs/heads/master 2>/dev/null | cut -f1)
+        if [[ -z "$LOCK_REV" || -z "$UP_REV" ]]; then
+          echo "⚠️  cannot verify zomboid-server pin freshness (lock read or ls-remote failed)"
+          [[ -n "$argc_allow_stale_override" ]] || exit 1
+        elif [[ "$LOCK_REV" != "$UP_REV" ]]; then
+          echo "❌ zomboid-server pin is NOT zomboid master HEAD:"
+          echo "   pin:    $LOCK_REV"
+          echo "   master: $UP_REV"
+          echo "   Shipping this would downgrade the live modlist (the boot reconcile makes it stick)."
+          echo "   Merge the pin-bump PR first, or pass --allow-stale-override to ship anyway."
+          [[ -n "$argc_allow_stale_override" ]] || exit 1
+        else
+          echo "  ✅ zomboid-server pin is current with zomboid master"
+        fi
       fi
 
       echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
