@@ -1573,7 +1573,7 @@ in {
   # Single systemd unit + nginx vhost from the nixpkgs module; state in
   # /var/lib/youtrack/<year_version>. Binds 127.0.0.1:8080; nginx fronts it
   # at https://youtrack.aseanmotorclub.com (DNS is a proxied Cloudflare
-  # record — the module sets up the ACME cert + SSE-safe proxy locations).
+  # record — the module ships the SSE-safe proxy locations).
   services.youtrack = {
     enable = true;
     virtualHost = "youtrack.aseanmotorclub.com";
@@ -1589,5 +1589,13 @@ in {
       listen-address = "127.0.0.1";
       listen-port = 8080;
     };
+  };
+
+  # The module's vhost is HTTP-only (it set no TLS options); without this,
+  # Cloudflare talks plaintext HTTP to the origin. Merge TLS onto the same
+  # vhost: ACME cert + force SSL, mirroring the other subdomains.
+  services.nginx.virtualHosts."youtrack.aseanmotorclub.com" = {
+    enableACME = true;
+    forceSSL = true;
   };
 }
