@@ -343,12 +343,19 @@
               "MajasDetailWorksV3.3-7.19-SERVER_P" = true;
               "MajasMnTrailerworksV7-7.19_P" = true;
               "qxZap_satigt3_MoreAttachments_P" = true;
-              # Schedule_I illicit-cargo pak (0.7.19), v0.4.17 — same pak
-              # staging runs (per-entry item type / two gold bar types,
-              # mt-pak-extract PR #17). md5 4e5c58dd084780c9eea4c2a9f7e04af2,
-              # 1608505 bytes. Do NOT enable a pak whose game version
+              # Schedule_I illicit-cargo pak (0.7.19), v0.4.18 — same pak
+              # staging runs. v0.4.18 = pocketable items (mt-pak-extract PR
+              # #18): CC_Gold_Bar_Item carries the vanilla pocketable flag
+              # set (bHoldOnlyItem=false — the stash flag — plus
+              # bIsPersistence=false, HoldableSocketName=Hand_R_Hold, cargo
+              # pose/bounds/trash overrides). CC_Gold_Bar stays buildable
+              # furniture with housing persistence, now ALSO stashable via
+              # per-entry pocketable flag (unproven combo upstream). Base
+              # v0.4.17: per-entry item type / two gold bar types, mt-pak-
+              # extract PR #17. md5 3cf6d1a8741e6797c905c79e4e587140,
+              # 1608525 bytes. Do NOT enable a pak whose game version
               # suffix != 0.7.19: the 0.7.18-era pak crashes the server.
-              "Schedule_I_v0.4.17_0.7.19_P" = true;
+              "Schedule_I_v0.4.18_0.7.19_P" = true;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
