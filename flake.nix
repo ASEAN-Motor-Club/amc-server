@@ -337,10 +337,18 @@
             modVersion = (import ./mod-versions.nix).main;
             enableExternalMods = {
               # 7.19 mods. 2 mods without 7.19-compatible paks disabled:
-              #   qxZap_CranyUnlocked_P (old pak crashes 7.19), Schedule_I_v0.4.8_0.7.18+1_P
+              #   qxZap_CranyUnlocked_P (old pak crashes 7.19),
+              #   Schedule_I_v0.4.8_0.7.18+1_P (superseded by
+              #   Schedule_I_v0.4.17_0.7.19_P below)
               "MajasDetailWorksV3.3-7.19-SERVER_P" = true;
               "MajasMnTrailerworksV7-7.19_P" = true;
               "qxZap_satigt3_MoreAttachments_P" = true;
+              # Schedule_I illicit-cargo pak (0.7.19), v0.4.17 — same pak
+              # staging runs (per-entry item type / two gold bar types,
+              # mt-pak-extract PR #17). md5 4e5c58dd084780c9eea4c2a9f7e04af2,
+              # 1608505 bytes. Do NOT enable a pak whose game version
+              # suffix != 0.7.19: the 0.7.18-era pak crashes the server.
+              "Schedule_I_v0.4.17_0.7.19_P" = true;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
