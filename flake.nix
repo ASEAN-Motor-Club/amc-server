@@ -955,20 +955,20 @@
                   qxZap_CranyUnlocked_P = false;
                   "MajasDetailWorksV3-7.18_P" = false;
                   "MajasMnTrailerworksV6-7.18_P" = false;
-                  # Schedule_I illicit-cargo pak (0.7.19). v0.4.16 = v0.4.12
-                  # laundering-only money economy (mt-pak-extract PR #12)
-                  # + CC_* criminal collectible item rows appended to the
-                  # Items_Furnitures child (441 vanilla + 8, mt-pak-extract
-                  # PR #15): CashWad/CashStack/GoldBar/Ring/Necklace/Booze/
-                  # LootBag/Safe — buildable home decorations
-                  # (ItemType::Furniture, InteractionType::Build, per-row
-                  # BuildingKey == row name), bNotForSale, vanilla Polygon
-                  # meshes. v0.4.16 raises CC_Gold_Bar value to ₩1,000,000
-                  # (mt-pak-extract PR #16). md5 ade6ed2243c8742a8e50e84c767e020e, 1605739 bytes. Do NOT enable a pak whose game
+                  # Schedule_I illicit-cargo pak (0.7.19). v0.4.17 = per-entry
+                  # item type (mt-pak-extract PR #17): CC_Gold_Bar stays
+                  # buildable furniture (display "Gold Bar (Decoration)"),
+                  # new CC_Gold_Bar_Item is a vanilla-style sellable carryable
+                  # (ItemType::None, ₩1,000,000, MaxStack 10). CC_* criminal
+                  # collectible rows appended to the Items_Furnitures child
+                  # (441 vanilla + 9): CashWad/CashStack/GoldBar/GoldBarItem/
+                  # Ring/Necklace/Booze/LootBag/Safe — bNotForSale except
+                  # GoldBarItem, vanilla Polygon meshes.
+                  # md5 4e5c58dd084780c9eea4c2a9f7e04af2, 1608505 bytes. Do NOT enable a pak whose game
                   # version suffix != 0.7.19: the 0.7.18-era pak crash-loops
                   # this server at boot (status=3/NOTIMPLEMENTED, UE5 asset
                   # mismatch).
-                  "Schedule_I_v0.4.16_0.7.19_P" = true;
+                  "Schedule_I_v0.4.17_0.7.19_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
