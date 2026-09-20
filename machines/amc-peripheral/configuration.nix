@@ -1076,7 +1076,10 @@ in {
   # Replaces the old amc-jarvis bot. Uses the Jarvis Discord bot token
   # to bridge Discord messages directly into OpenCode coding sessions.
   # Kimaki spawns its own opencode serve on port 33405.
+  # Kimaki (Discord↔OpenCode bridge) — DISABLED 2026-09-20 at operator request.
+  # Definition kept for easy re-enable: flip enable back to true.
   systemd.services.kimaki = {
+    enable = false;
     description = "Kimaki – Discord↔OpenCode Bridge";
     after = ["network-online.target" "opencode-workspace.service"];
     wants = ["network-online.target" "opencode-workspace.service"];
