@@ -39,11 +39,12 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1789926716,
-        "narHash": "sha256-QHvjLxJTC2fyoKsnLU2mCFqskDNirB7Pqjg3h4B+71w=",
+        "__final": true,
+        "lastModified": 1789931507,
+        "narHash": "sha256-Bt5C3GU6y7iSaoqtQXcP1zmGGCkCscAJ05QE0G74DPA=",
         "owner": "ASEAN-Motor-Club",
         "repo": "amc-backend",
-        "rev": "427a317c097a18e8705e314d80231e2dc2c5c634",
+        "rev": "f1512329be9cee162239001096a8bc014c4341d5",
         "type": "github"
       },
       "original": {
@@ -65,11 +66,12 @@
         "uv2nix": "uv2nix_2"
       },
       "locked": {
-        "lastModified": 1789703161,
-        "narHash": "sha256-VDQwL3H5MsEd7YGM7e0sslrjVqoMWt9wCko095cGaZQ=",
+        "__final": true,
+        "lastModified": 1789916421,
+        "narHash": "sha256-I5bvT/aYXgGsvEyOVvJR7ShG1lGQECo/Gg6ozN5WsrU=",
         "owner": "ASEAN-Motor-Club",
         "repo": "amc-peripheral",
-        "rev": "186cb043fd03778780ffef5e13420bdffb852638",
+        "rev": "88164d4190b2215eb6134a6b6c730a92f4f000d4",
         "type": "github"
       },
       "original": {
