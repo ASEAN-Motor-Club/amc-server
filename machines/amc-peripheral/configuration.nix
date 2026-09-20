@@ -1578,13 +1578,24 @@ in {
   services.youtrack = {
     enable = true;
     virtualHost = "youtrack.aseanmotorclub.com";
-    # 2026.2 from the pinned nixpkgs-unstable input (shared with the
-    # github-runner package — do not bump that pin for youtrack alone): the
-    # locked 25.05 pin carries 2025.1 and the app flags itself out-of-date
-    # at two majors back. Upgrades stay manual — bump this package; never
-    # the in-app "install latest" button (the store is immutable, the app
-    # can't self-upgrade).
-    package = nixpkgs-unstable.legacyPackages.${pkgs.system}.youtrack;
+    # 2026.2 from the pinned nixpkgs-unstable input: the locked 25.05 pin
+    # carries 2025.1 and the app flags itself out-of-date at two majors
+    # back. Upgrades stay manual — bump this package; never the in-app
+    # "install latest" button (the store is immutable, the app can't
+    # self-upgrade).
+    # IMPORTANT: import the input WITH allowUnfree — the machine's
+    # nixpkgs.config.allowUnfreePredicate only covers the machine's OWN
+    # nixpkgs instance, not packages picked from nixpkgs-unstable
+    # (first deploy attempt failed host-side eval with "Refusing to
+    # evaluate package 'youtrack-2026.2.17012' ... unfree license").
+    # allowUnfree here is scoped to this second instance only.
+    # NOTE: the github-runner package at the top of this flake uses the
+    # bare legacyPackages form because that package is MIT (free) — don't
+    # copy that form for unfree packages.
+    package = (import nixpkgs-unstable {
+      inherit (pkgs) system;
+      config.allowUnfree = true;
+    }).youtrack;
     # 15G total RAM on this host with ~11G used by existing services —
     # keep the JVM bounded.
     generalParameters = [ "-Xmx1g" ];
