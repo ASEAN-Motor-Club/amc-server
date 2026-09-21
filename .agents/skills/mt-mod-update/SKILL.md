@@ -77,6 +77,28 @@ ssh root@asean-mt-server "ls /var/lib/motortown-server/MotorTown/Content/Paks/ |
 `mods.nix` deletes all non-base paks then reinstalls only the enabled ones, so disabled mods'
 paks are removed automatically. A 404 on a mod means its pak isn't uploaded to amc-peripheral.
 
+## AMC-built paks (mt-pak-extract) — staging-first flow
+
+For paks built from our own `mt-pak-extract` toolchain (schedule-i, muhan-difflock, …), the
+verify loop is staging-first:
+
+1. **Build** in the mt-pak-extract fork worktree (host-side `nix develop`): `python3 scripts/mods.py build <mod>`.
+   Check published versions first — take the next free minor; never shadow a same-name pak
+   (`ls /var/lib/mod-releases/mods/`).
+2. **Upload + verify**: `scp root@amc-peripheral:/var/lib/mod-releases/mods/`, then md5 both sides
+   and `curl -sI` the public URL (expect 200). The release dir lives on **amc-peripheral**.
+3. **Staging key bump PR** in amc-server `flake.nix` → staging `enableExternalMods` block (the prod
+   block is further up in the same file — edit the right one), update the comment's md5/size, `nix
+   flake check --no-build` host-side, one PR per change.
+4. **Merge → auto-deploy** to amc-peripheral (~4 min via amc-peripheral-deploy), then an **explicit
+   `systemctl restart motortown-server`** on staging (consent-gated; the key bump alone does NOT load
+   the pak — a missing pak file only bites at restart, verify the URL before any restart).
+5. **Verify**: staging `/var/lib/motortown-server/MotorTown/Content/Paks/` carries ONLY the new pak
+   file (md5-exact), then in-game check.
+
+Pak byte-level verification without launching the game: `mod_explore <pak> --extract ...` +
++`UAssetTool --dump` (see mt-pak-extract AGENTS.md gotchas for the dump-cargo/furniture patterns).
+
 ## Old pak cleanup
 Remove obsolete paks from amc-peripheral when no longer referenced:
 ```bash
