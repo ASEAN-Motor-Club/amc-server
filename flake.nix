@@ -970,7 +970,13 @@
                   qxZap_CranyUnlocked_P = false;
                   "MajasDetailWorksV3-7.18_P" = false;
                   "MajasMnTrailerworksV6-7.18_P" = false;
-                  # Schedule_I illicit-cargo pak (0.7.19). v0.4.19 = furniture
+                  # Schedule_I illicit-cargo pak (0.7.19). v0.4.20 = CocaPaste
+                  # dump-bed visual fix (mt-pak-extract @ 9796b3a): dump-space
+                  # rows now set DumpCargoSurfaceMesh/DumpCargoSurfaceMaterial
+                  # (vanilla Coal mesh + M_Coal; null refs rendered the cargo
+                  # invisible in dump beds), and CocaPaste's actor BP is cloned
+                  # from VolumeTypeCargo_Coal (vanilla dump particles/sound).
+                  # v0.4.19 = furniture
                   # placement renders (mt-pak-extract PR #19): the Build flow
                   # joins Items.BuildingKey → Buildings_Furnitures row of the
                   # same name, whose Steps[0].StaticMeshes map supplies the
@@ -986,11 +992,11 @@
                   # CashWad/CashStack/GoldBar/GoldBarItem/Ring/Necklace/Booze/
                   # LootBag/Safe — bNotForSale except GoldBarItem, vanilla
                   # Polygon meshes.
-                  # md5 ce723ed2a98966352579ac5060a6683c, 2191317 bytes. Do NOT enable a pak whose game
+                  # md5 78568ab8e5f5e9946479bb69e693ffaa, 2192545 bytes. Do NOT enable a pak whose game
                   # version suffix != 0.7.19: the 0.7.18-era pak crash-loops
                   # this server at boot (status=3/NOTIMPLEMENTED, UE5 asset
                   # mismatch).
-                  "Schedule_I_v0.4.19_0.7.19_P" = true;
+                  "Schedule_I_v0.4.20_0.7.19_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
