@@ -343,19 +343,20 @@
               "MajasDetailWorksV3.3-7.19-SERVER_P" = true;
               "MajasMnTrailerworksV7-7.19_P" = true;
               "qxZap_satigt3_MoreAttachments_P" = true;
-              # Schedule_I illicit-cargo pak (0.7.19), v0.4.18 — same pak
-              # staging runs. v0.4.18 = pocketable items (mt-pak-extract PR
-              # #18): CC_Gold_Bar_Item carries the vanilla pocketable flag
-              # set (bHoldOnlyItem=false — the stash flag — plus
-              # bIsPersistence=false, HoldableSocketName=Hand_R_Hold, cargo
-              # pose/bounds/trash overrides). CC_Gold_Bar stays buildable
-              # furniture with housing persistence, now ALSO stashable via
-              # per-entry pocketable flag (unproven combo upstream). Base
-              # v0.4.17: per-entry item type / two gold bar types, mt-pak-
-              # extract PR #17. md5 3cf6d1a8741e6797c905c79e4e587140,
-              # 1608525 bytes. Do NOT enable a pak whose game version
-              # suffix != 0.7.19: the 0.7.18-era pak crashes the server.
-              "Schedule_I_v0.4.18_0.7.19_P" = true;
+              # Schedule_I illicit-cargo pak (0.7.19), v0.4.20 = mixed-
+              # provenance rebuild (mt-pak-extract @ feat/schedule-i-buildings
+              # aa2326e+2682a1a): DP/SmallBox/Coal templates from the CLIENT
+              # pak, Cargos composite/child + Items/Buildings tables from the
+              # SERVER pak. The 0.7.19 client and server ship different
+              # per-asset DP tables; server-only tables broke the Iron Mine
+              # delivery-point prompt, client-only tables crash on unversioned
+              # composite writes. This is the only combination verified to
+              # restore the Iron Mine prompt AND show all custom cargo names
+              # client-side without crashing (staging-tested 2026-09-21).
+              # md5 7412ea1bd0c2d4f0fc2c0dbc17690085, 2111191 bytes. Do NOT
+              # enable a pak whose game version suffix != 0.7.19: the
+              # 0.7.18-era pak crashes the server.
+              "Schedule_I_v0.4.20_0.7.19_P" = true;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
@@ -970,29 +971,14 @@
                   qxZap_CranyUnlocked_P = false;
                   "MajasDetailWorksV3-7.18_P" = false;
                   "MajasMnTrailerworksV6-7.18_P" = false;
-                  # Schedule_I illicit-cargo pak (0.7.19). v0.4.20 = CocaPaste
-                  # dump-bed visual fix (mt-pak-extract @ 9796b3a): dump-space
-                  # rows now set DumpCargoSurfaceMesh/DumpCargoSurfaceMaterial
-                  # (vanilla Coal mesh + M_Coal; null refs rendered the cargo
-                  # invisible in dump beds), and CocaPaste's actor BP is cloned
-                  # from VolumeTypeCargo_Coal (vanilla dump particles/sound).
-                  # v0.4.19 = furniture
-                  # placement renders (mt-pak-extract PR #19): the Build flow
-                  # joins Items.BuildingKey → Buildings_Furnitures row of the
-                  # same name, whose Steps[0].StaticMeshes map supplies the
-                  # placed mesh (_Common_InventoryProp_C has no mesh of its
-                  # own). v0.4.19 adds 8 Buildings_Furnitures rows (441
-                  # vanilla + 8 CC furniture; GoldBarItem is a pure carryable,
-                  # no BuildingKey). v0.4.18 = pocketable items (PR #18):
-                  # CC_Gold_Bar_Item carries the vanilla pocketable flag set
-                  # (bHoldOnlyItem=false etc.); CC_Gold_Bar stays buildable
-                  # furniture, also stashable via per-entry pocketable flag.
-                  # v0.4.17 base: per-entry item type (PR #17), CC_* rows
-                  # appended to the Items_Furnitures child (441 vanilla + 9):
-                  # CashWad/CashStack/GoldBar/GoldBarItem/Ring/Necklace/Booze/
-                  # LootBag/Safe — bNotForSale except GoldBarItem, vanilla
-                  # Polygon meshes.
-                  # md5 78568ab8e5f5e9946479bb69e693ffaa, 2192545 bytes. Do NOT enable a pak whose game
+                  # Schedule_I illicit-cargo pak (0.7.19). v0.4.20 (rebuilt
+                  # 2026-09-21) = mixed-provenance build (client DP assets +
+                  # server tables) — same pak prod runs; fixes the Iron Mine
+                  # delivery-point prompt and restores all custom cargo names
+                  # client-side. md5 7412ea1bd0c2d4f0fc2c0dbc17690085,
+                  # 2111191 bytes. Earlier 0.4.20 content (CocaPaste dump-bed
+                  # visual fix @ 9796b3a) is INCLUDED in this rebuild.
+                  # Do NOT enable a pak whose game
                   # version suffix != 0.7.19: the 0.7.18-era pak crash-loops
                   # this server at boot (status=3/NOTIMPLEMENTED, UE5 asset
                   # mismatch).
