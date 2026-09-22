@@ -1053,6 +1053,15 @@
                 };
               };
 
+              # Staging is manually controlled: systemctl start/stop motortown-server.
+              # Do NOT auto-enable it. switch-to-configuration starts every unit wanted
+              # by an active target (multi-user.target) on every switch, so a plain
+              # wantedBy = ["multi-user.target"] turns the staging server on at every
+              # deploy even when it was stopped. restartIfChanged=false (set in
+              # motortown-server.nix) already keeps a RUNNING staging server from being
+              # bounced by deploys; wantedBy=[] completes the manual-on/off story.
+              systemd.services.motortown-server.wantedBy = lib.mkForce [];
+
               # Use default CPUAffinity from motortown-server.nix ("0 1 2 3")
               # to isolate game server from backend services on shared host.
 
