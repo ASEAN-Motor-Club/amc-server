@@ -5,7 +5,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
     flake-parts.url = "github:hercules-ci/flake-parts";
     motortown-server = {
-      url = "git+https://github.com/ASEAN-Motor-Club/motortown-server-flake.git?lfs=1&allRefs=1&rev=57918ed38113f59a281d4c157abf253633bcddb5";
+      url = "git+https://github.com/ASEAN-Motor-Club/motortown-server-flake.git?lfs=1&allRefs=1&rev=a467ca5e4ad5e125ef12cb64a6ce73ccbfaaf87d";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     necesse-server = {
