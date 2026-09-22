@@ -343,20 +343,20 @@
               "MajasDetailWorksV3.3-7.19-SERVER_P" = true;
               "MajasMnTrailerworksV7-7.19_P" = true;
               "qxZap_satigt3_MoreAttachments_P" = true;
-              # Schedule_I illicit-cargo pak (0.7.19), v0.4.20 = mixed-
-              # provenance rebuild (mt-pak-extract @ feat/schedule-i-buildings
-              # aa2326e+2682a1a): DP/SmallBox/Coal templates from the CLIENT
-              # pak, Cargos composite/child + Items/Buildings tables from the
-              # SERVER pak. The 0.7.19 client and server ship different
-              # per-asset DP tables; server-only tables broke the Iron Mine
-              # delivery-point prompt, client-only tables crash on unversioned
-              # composite writes. This is the only combination verified to
-              # restore the Iron Mine prompt AND show all custom cargo names
-              # client-side without crashing (staging-tested 2026-09-21).
-              # md5 7412ea1bd0c2d4f0fc2c0dbc17690085, 2111191 bytes. Do NOT
+              # Schedule_I illicit-cargo pak (0.7.19), v0.4.21 (2026-09-22) =
+              # pure-client provenance build (mt-pak-extract @ cae3225,
+              # UAssetAPI fork @ a6f8dab): every asset re-serialized from the
+              # CLIENT pak, Cargos composite written VERSIONED
+              # (WRITE_VERSIONED=1) — versioned writes need no unversioned
+              # schema contract, and the client engine reads both formats.
+              # Replaces 0.4.20 (mixed-provenance b1). Client-verified by
+              # freeman (loads, all cargo names, Iron Mine prompt, gold bar
+              # furniture); staging-stable since 2026-09-22 (403 delivery
+              # points registered, zero journal errors).
+              # md5 17dfee6cf866738ba30488c93dcc1164, 2099014 bytes. Do NOT
               # enable a pak whose game version suffix != 0.7.19: the
               # 0.7.18-era pak crashes the server.
-              "Schedule_I_v0.4.20_0.7.19_P" = true;
+              "Schedule_I_v0.4.21_0.7.19_P" = true;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
