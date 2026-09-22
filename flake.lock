@@ -494,12 +494,12 @@
       },
       "locked": {
         "allRefs": true,
-        "lastModified": 1778040725,
+        "lastModified": 1786259334,
         "lfs": true,
-        "narHash": "sha256-hHQ+DfMwERmiw3hvFy++u0jFiFGVNkhK/wTInq5Q8hk=",
+        "narHash": "sha256-CLxQvsp6DKGsGF2Erwx22dsU1kjKfvmp9Hkxs/ic89I=",
         "ref": "refs/heads/master",
-        "rev": "57918ed38113f59a281d4c157abf253633bcddb5",
-        "revCount": 178,
+        "rev": "a467ca5e4ad5e125ef12cb64a6ce73ccbfaaf87d",
+        "revCount": 179,
         "submodules": true,
         "type": "git",
         "url": "https://github.com/ASEAN-Motor-Club/motortown-server-flake.git"
@@ -507,7 +507,7 @@
       "original": {
         "allRefs": true,
         "lfs": true,
-        "rev": "57918ed38113f59a281d4c157abf253633bcddb5",
+        "rev": "a467ca5e4ad5e125ef12cb64a6ce73ccbfaaf87d",
         "type": "git",
         "url": "https://github.com/ASEAN-Motor-Club/motortown-server-flake.git"
       }
