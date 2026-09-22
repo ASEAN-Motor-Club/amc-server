@@ -971,18 +971,20 @@
                   qxZap_CranyUnlocked_P = false;
                   "MajasDetailWorksV3-7.18_P" = false;
                   "MajasMnTrailerworksV6-7.18_P" = false;
-                  # Schedule_I illicit-cargo pak (0.7.19). v0.4.20 (rebuilt
-                  # 2026-09-21) = mixed-provenance build (client DP assets +
-                  # server tables) — same pak prod runs; fixes the Iron Mine
-                  # delivery-point prompt and restores all custom cargo names
-                  # client-side. md5 7412ea1bd0c2d4f0fc2c0dbc17690085,
-                  # 2111191 bytes. Earlier 0.4.20 content (CocaPaste dump-bed
-                  # visual fix @ 9796b3a) is INCLUDED in this rebuild.
+                  # Schedule_I illicit-cargo pak (0.7.19). v0.4.21 (2026-09-22)
+                  # = pure-client provenance build: every asset re-serialized
+                  # from the CLIENT pak, with the Cargos composite written
+                  # VERSIONED (WRITE_VERSIONED=1, mt-pak-extract @ cae3225) —
+                  # a versioned write needs no unversioned schema contract and
+                  # the client engine reads both formats. Freeman client-
+                  # verified (loads, all names, Iron Mine prompt, gold bar
+                  # furniture). Staging server-side test pending this deploy.
+                  # md5 17dfee6cf866738ba30488c93dcc1164, 2099014 bytes.
                   # Do NOT enable a pak whose game
                   # version suffix != 0.7.19: the 0.7.18-era pak crash-loops
                   # this server at boot (status=3/NOTIMPLEMENTED, UE5 asset
                   # mismatch).
-                  "Schedule_I_v0.4.20_0.7.19_P" = true;
+                  "Schedule_I_v0.4.21_0.7.19_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
