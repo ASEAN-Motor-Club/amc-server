@@ -356,7 +356,7 @@
               # md5 17dfee6cf866738ba30488c93dcc1164, 2099014 bytes. Do NOT
               # enable a pak whose game version suffix != 0.7.19: the
               # 0.7.18-era pak crashes the server.
-              "Schedule_I_v0.4.21_0.7.19_P" = true;
+              "Schedule_I_v0.5.3_0.7.19_SERVER_P" = true;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
