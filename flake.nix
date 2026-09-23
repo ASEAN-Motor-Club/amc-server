@@ -350,7 +350,7 @@
               # versioned-write provenance as v0.4.21. Do NOT enable a pak
               # whose game version suffix != 0.7.19: the 0.7.18-era pak
               # crashes the server.
-              "Schedule_I_v0.5.1_0.7.19_P" = true;
+              "Schedule_I_v0.5.2_0.7.19_P" = true;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
@@ -972,7 +972,7 @@
                   # version suffix != 0.7.19: the 0.7.18-era pak crash-loops
                   # this server at boot (status=3/NOTIMPLEMENTED, UE5 asset
                   # mismatch).
-                  "Schedule_I_v0.5.1_0.7.19_P" = true;
+                  "Schedule_I_v0.5.2_0.7.19_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
