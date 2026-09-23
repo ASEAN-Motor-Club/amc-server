@@ -59,6 +59,20 @@
   systemd.targets.hibernate.enable = false;
   systemd.targets.hybrid-sleep.enable = false;
 
+  # Windows KVM guest (Motor Town burn-in) — libvirt with the default NAT
+  # network (virbr0, 192.168.122.0/24). Host<->guest traffic and guest
+  # outbound (SteamCMD) work out of the box; direct player joins from the LAN
+  # are a later phase (bridge or port-forwards), not part of this change.
+  boot.kernelModules = ["kvm-amd"];
+  virtualisation.libvirtd = {
+    enable = true;
+    qemu.package = pkgs.qemu_kvm;
+  };
+  # Let the guest reach the host RELP log listener (2514) over virbr0 —
+  # the KVM guest's ServerLog will be shipped into the existing
+  # imfile->RELP->ingest_logs pipeline in a follow-up change.
+  networking.firewall.interfaces."virbr0".allowedTCPPorts = [2514];
+
   programs.atop.enable = true;
   time.timeZone = "Asia/Bangkok";
 
