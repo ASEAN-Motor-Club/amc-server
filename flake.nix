@@ -343,20 +343,14 @@
               "MajasDetailWorksV3.3-7.19-SERVER_P" = true;
               "MajasMnTrailerworksV7-7.19_P" = true;
               "qxZap_satigt3_MoreAttachments_P" = true;
-              # Schedule_I illicit-cargo pak (0.7.19), v0.4.21 (2026-09-22) =
-              # pure-client provenance build (mt-pak-extract @ cae3225,
-              # UAssetAPI fork @ a6f8dab): every asset re-serialized from the
-              # CLIENT pak, Cargos composite written VERSIONED
-              # (WRITE_VERSIONED=1) — versioned writes need no unversioned
-              # schema contract, and the client engine reads both formats.
-              # Replaces 0.4.20 (mixed-provenance b1). Client-verified by
-              # freeman (loads, all cargo names, Iron Mine prompt, gold bar
-              # furniture); staging-stable since 2026-09-22 (403 delivery
-              # points registered, zero journal errors).
-              # md5 17dfee6cf866738ba30488c93dcc1164, 2099014 bytes. Do NOT
-              # enable a pak whose game version suffix != 0.7.19: the
-              # 0.7.18-era pak crashes the server.
-              "Schedule_I_v0.4.21_0.7.19_P" = true;
+              # Schedule_I illicit-cargo pak (0.7.19), v0.5.1 (2026-09-23):
+              # CocaineBricks CDO bCanPickup=false (no hand-carry) —
+              # clone-asset match_export + ApplyPatch bool IsZero fix
+              # (mt-pak-extract PR #21 @ 1e1350e). Same pure-client
+              # versioned-write provenance as v0.4.21. Do NOT enable a pak
+              # whose game version suffix != 0.7.19: the 0.7.18-era pak
+              # crashes the server.
+              "Schedule_I_v0.5.3_0.7.19_P" = true;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
@@ -971,20 +965,14 @@
                   qxZap_CranyUnlocked_P = false;
                   "MajasDetailWorksV3-7.18_P" = false;
                   "MajasMnTrailerworksV6-7.18_P" = false;
-                  # Schedule_I illicit-cargo pak (0.7.19). v0.4.21 (2026-09-22)
-                  # = pure-client provenance build: every asset re-serialized
-                  # from the CLIENT pak, with the Cargos composite written
-                  # VERSIONED (WRITE_VERSIONED=1, mt-pak-extract @ cae3225) —
-                  # a versioned write needs no unversioned schema contract and
-                  # the client engine reads both formats. Freeman client-
-                  # verified (loads, all names, Iron Mine prompt, gold bar
-                  # furniture). Staging server-side test pending this deploy.
-                  # md5 17dfee6cf866738ba30488c93dcc1164, 2099014 bytes.
-                  # Do NOT enable a pak whose game
+                  # Schedule_I illicit-cargo pak (0.7.19), v0.5.1 (2026-09-23):
+                  # CocaineBricks CDO bCanPickup=false (no hand-carry).
+                  # Same pure-client versioned-write provenance as v0.4.21
+                  # (mt-pak-extract PR #21 @ 1e1350e). Do NOT enable a pak whose game
                   # version suffix != 0.7.19: the 0.7.18-era pak crash-loops
                   # this server at boot (status=3/NOTIMPLEMENTED, UE5 asset
                   # mismatch).
-                  "Schedule_I_v0.4.21_0.7.19_P" = true;
+                  "Schedule_I_v0.5.3_0.7.19_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
