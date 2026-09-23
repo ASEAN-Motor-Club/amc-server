@@ -1599,13 +1599,14 @@ in {
     # NOTE: the github-runner package at the top of this flake uses the
     # bare legacyPackages form because that package is MIT (free) — don't
     # copy that form for unfree packages.
-    package = (import nixpkgs-unstable {
-      inherit (pkgs) system;
-      config.allowUnfree = true;
-    }).youtrack;
+    package =
+      (import nixpkgs-unstable {
+        inherit (pkgs) system;
+        config.allowUnfree = true;
+      }).youtrack;
     # 15G total RAM on this host with ~11G used by existing services —
     # keep the JVM bounded.
-    generalParameters = [ "-Xmx1g" ];
+    generalParameters = ["-Xmx1g"];
     # false = upgrades (package bumps) go through the configuration wizard
     # (the module emits disable.configuration.wizard.on.upgrade from this);
     # true would let the app self-upgrade behind our backs.
