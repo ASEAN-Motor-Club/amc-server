@@ -65,11 +65,11 @@
         "uv2nix": "uv2nix_2"
       },
       "locked": {
-        "lastModified": 1789992997,
-        "narHash": "sha256-bQBl1R08Ke38DdkphnzZ0FVCar38VvBM0G4ZhmfT/yk=",
+        "lastModified": 1790238719,
+        "narHash": "sha256-JlUMD4AXyKxl2uBN0QjxCjDShXfuEVkciEAI8xFypP0=",
         "owner": "ASEAN-Motor-Club",
         "repo": "amc-peripheral",
-        "rev": "7adf7539a185aa12b78247e3cf89f437f94de921",
+        "rev": "ff12f0b5b0851fd0aa4dc90b192e3cd462be4f69",
         "type": "github"
       },
       "original": {
@@ -521,11 +521,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1789991575,
-        "narHash": "sha256-1rQ0WeRaVTJhClwZFUliRxNZ5sNVmJxYrzZHcR86Lxo=",
+        "lastModified": 1790238700,
+        "narHash": "sha256-jz1DqsOrVbjlhttIM5mUIUY0bayE7Ps5ooUjOxeTy1Y=",
         "owner": "ASEAN-Motor-Club",
         "repo": "mt-pak-extract",
-        "rev": "5e61a1a38f2d802a337b506c7010a99d6a667b05",
+        "rev": "f3bd6f36eacbcf5f18db8a60e37d35e2998cbbbd",
         "type": "github"
       },
       "original": {
@@ -1164,11 +1164,11 @@
         "systems": "systems_11"
       },
       "locked": {
-        "lastModified": 1789872666,
-        "narHash": "sha256-HK6jKd+Tj27iMB1GfqkclAcZWZnSlX0Z+OC6HKitwcY=",
+        "lastModified": 1790238633,
+        "narHash": "sha256-+4uZEGqMHeXPMAWR5hTv0hTt98o38nQ2WKSeCVvj0ag=",
         "owner": "ASEAN-Motor-Club",
         "repo": "zomboid-server",
-        "rev": "71f36219b59d5858fa23fab39d0ecc168b94196f",
+        "rev": "a458354c496bf55c3eabcd063a6a808ee535f517",
         "type": "github"
       },
       "original": {
