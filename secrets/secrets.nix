@@ -29,4 +29,5 @@ in {
   "pz-changelog-webhook.age".publicKeys = [owner asean-mt-server];
   "hermes-env.age".publicKeys = [owner peripheral];
   "hermes-deploy-key.age".publicKeys = [owner peripheral];
+  "wg-server-private-key.age".publicKeys = [owner peripheral];
 }

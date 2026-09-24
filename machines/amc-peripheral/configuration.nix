@@ -221,9 +221,39 @@ in {
   networking.firewall = {
     enable = true;
     allowedTCPPorts = [22 80 443 8000 8008 8443 1935 1936];
-    allowedUDPPorts = [1935];
+    allowedUDPPorts = [1935 51820];
     # Icecast admin UI accessible only over Tailscale
     interfaces."tailscale0".allowedTCPPorts = [8000];
+  };
+
+  # === Club VPN (WireGuard) ===
+  # Each member gets a peer entry (public key + a unique 10.13.37.x/32).
+  # NAT lets VPN clients reach the internet through this host.
+  networking.nat = {
+    enable = true;
+    enableIPv6 = false;
+    externalInterface = "enp1s0";
+    internalInterfaces = ["amc-vpn"];
+  };
+
+  age.secrets.wg-server-private-key = {
+    file = ../../secrets/wg-server-private-key.age;
+    mode = "400";
+    owner = "root";
+  };
+
+  networking.wireguard.interfaces.amc-vpn = {
+    ips = ["10.13.37.1/24"];
+    listenPort = 51820;
+    privateKeyFile = config.age.secrets.wg-server-private-key.path;
+
+    peers = [
+      # freeman
+      {
+        publicKey = "Clz5A7U3SOtadbMz4Jf70rM7xrNmXfBQKLzYAgb1CA4=";
+        allowedIPs = ["10.13.37.2/32"];
+      }
+    ];
   };
   networking.networkmanager.enable = true;
   services.openssh.enable = true;
