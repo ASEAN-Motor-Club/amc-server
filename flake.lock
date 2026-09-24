@@ -40,7 +40,7 @@
             },
             "locked": {
                 "lastModified": 1790264430,
-                "narHash": "sha256-vVE6lrXoxP/vizjylkGcHBpgyU8TjJsvHE55NyWLB8o=",
+                "narHash": "sha256-aa2Cqya5xl9E8HMC9ypjwqWIVfWieiqmdJY1iRTUXwo=",
                 "owner": "ASEAN-Motor-Club",
                 "repo": "amc-backend",
                 "rev": "604f27324db1faf597dcab0dd05120a2d256c5f5",
