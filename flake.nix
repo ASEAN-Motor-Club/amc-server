@@ -616,6 +616,7 @@
                 amc-backend.nixosModules.backend
                 amc-backend.nixosModules.log-listener
                 (import ./nix/db_backup.nix)
+                (import ./nix/economy-monitor.nix)
               ];
 
               # GeoDjango native library paths
@@ -680,6 +681,9 @@
                   NAMER_ANNOUNCE = "1";
                 };
               };
+
+              # Live State-of-the-Economy embed in #economy (self-updating chart, 1/min)
+              services.amc-economy-monitor.enable = true;
 
               # Point PostgreSQL at the data directory from Phase 1 bind mount
               services.postgresql.dataDir = "/var/lib/amc-postgresql/16";
