@@ -681,7 +681,6 @@
                 };
               };
 
-
               # Point PostgreSQL at the data directory from Phase 1 bind mount
               services.postgresql.dataDir = "/var/lib/amc-postgresql/16";
 
