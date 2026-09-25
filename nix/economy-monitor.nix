@@ -14,6 +14,7 @@
   renderChart =
     pkgs.writers.writePython3 "economy-render-chart" {
       libraries = [pkgs.python3Packages.matplotlib];
+      flakeIgnore = ["E501" "E401" "W503" "E203" "E722"];
     } ''
       import json, os, sys
       from datetime import datetime, timezone
@@ -101,19 +102,22 @@
           main(sys.argv[1], sys.argv[2], sys.argv[3])
     '';
 
-  buildPayload = pkgs.writers.writePython3 "economy-build-payload" {} ''
-    import json, sys
-    print(json.dumps({
-        "embeds": [{
-            "title": "State of the Economy",
-            "url": "${livePage}",
-            "color": 5814783,
-            "description": "Live delivery-point health. Deliver to starved sectors to move the bars.",
-            "image": {"url": "attachment://economy.png"},
-            "footer": {"text": "updates every minute"},
-        }]
-    }))
-  '';
+  buildPayload =
+    pkgs.writers.writePython3 "economy-build-payload" {
+      flakeIgnore = ["E501" "E401" "W503" "E203"];
+    } ''
+      import json, sys
+      print(json.dumps({
+          "embeds": [{
+              "title": "State of the Economy",
+              "url": "${livePage}",
+              "color": 5814783,
+              "description": "Live delivery-point health. Deliver to starved sectors to move the bars.",
+              "image": {"url": "attachment://economy.png"},
+              "footer": {"text": "updates every minute"},
+          }]
+      }))
+    '';
 
   runScript = pkgs.writeShellScript "economy-monitor-run" ''
     set -uo pipefail
@@ -166,7 +170,7 @@ in {
         Type = "oneshot";
         StateDirectory = "amc-economy-monitor";
       };
-      script = lib.getExe runScript;
+      script = "${runScript}/bin/economy-monitor-run";
     };
     systemd.timers.amc-economy-monitor = {
       description = "Update the AMC economy Discord embed every minute";
