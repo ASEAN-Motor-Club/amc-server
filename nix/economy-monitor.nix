@@ -106,13 +106,16 @@
     pkgs.writers.writePython3 "economy-build-payload" {
       flakeIgnore = ["E501" "E401" "W503" "E203"];
     } ''
-      import json, sys
+      import json
       print(json.dumps({
           "embeds": [{
               "title": "State of the Economy",
               "url": "${livePage}",
               "color": 5814783,
-              "description": "Live delivery-point health. Deliver to starved sectors to move the bars.",
+              "description": (
+                  "Live delivery-point health."
+                  " Deliver to starved sectors to move the bars."
+              ),
               "image": {"url": "attachment://economy.png"},
               "footer": {"text": "updates every minute"},
           }]
