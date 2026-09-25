@@ -20,8 +20,8 @@
       from datetime import datetime, timezone
 
       import matplotlib
-      matplotlib.use("Agg")
       import matplotlib.pyplot as plt
+      matplotlib.use("Agg")
 
       BG = "#0d1117"
       SURFACE = "#141a23"
