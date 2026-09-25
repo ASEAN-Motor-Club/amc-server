@@ -509,11 +509,19 @@
         FAILED=1
       fi
 
-      # HTTP check — backend runs on port 9000, verify it responds
-      if ssh "$argc_target" -- curl -sf --max-time 5 http://localhost:9000/api/ > /dev/null 2>&1; then
-        echo "  ✅ HTTP /api/: responding"
+      # HTTP check — verify the API responds. /api/ itself is a 404 on both
+      # prod and staging, so probe a real route; /api/webui/deliveryjobs/
+      # returns 200 on a healthy backend (2026-09-25: the old hardcoded
+      # http://localhost:9000/api/ check ALWAYS failed → false-alarm "❌"
+      # after every successful deploy). Port comes from the target's
+      # services.amc-backend.port (9000 prod, 9001 staging on
+      # amc-peripheral).
+      HEALTHCHECK_HOSTNAME=$(echo "$argc_target" | cut -d@ -f2)
+      BACKEND_PORT=$(${pkgs.nix}/bin/nix eval --raw ".#nixosConfigurations.''${HEALTHCHECK_HOSTNAME}.config.services.amc-backend.port" --apply "p: builtins.toString p" 2>/dev/null || echo 9000)
+      if ssh "$argc_target" -- curl -sf --max-time 5 "http://localhost:''${BACKEND_PORT}/api/webui/deliveryjobs/" > /dev/null 2>&1; then
+        echo "  ✅ HTTP API: responding on port ''${BACKEND_PORT}"
       else
-        echo "  ❌ HTTP /api/: not responding on localhost:9000"
+        echo "  ❌ HTTP API: not responding on localhost:''${BACKEND_PORT}"
         FAILED=1
       fi
 
