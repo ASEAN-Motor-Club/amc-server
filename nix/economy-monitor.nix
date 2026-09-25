@@ -14,7 +14,7 @@
   renderChart =
     pkgs.writers.writePython3 "economy-render-chart" {
       libraries = [pkgs.python3Packages.matplotlib];
-      flakeIgnore = ["E501" "E401" "W503" "E203" "E722" "E226" "E305"];
+      flakeIgnore = ["E501" "E401" "W503" "E203" "E722" "E226" "E305" "E302" "E731"];
     } ''
       import json, os, sys
       from datetime import datetime, timezone
