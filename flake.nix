@@ -643,7 +643,11 @@
                 environmentFile = config.age.secrets.backend.path;
                 environment = {
                   MOD_SERVER_API_URL = "http://localhost:5001";
-                  GAME_SERVER_API_URL = "http://localhost:8080";
+                  # KVM guest cutover: the MTDediMod WebAPI moved into the
+                  # motortown-win VM (8080 allowed on virbr0 in the machine
+                  # config). Deploy together with the cutover config PR —
+                  # the localhost endpoint dies with the Proton service.
+                  GAME_SERVER_API_URL = "http://192.168.122.61:8080";
                   EVENT_GAME_SERVER_API_URL = "http://127.0.0.1:8082";
                   EVENT_MOD_SERVER_API_URL = "http://localhost:5011";
                   MOD_MANAGEMENT_API_URL = "http://localhost:5000";
