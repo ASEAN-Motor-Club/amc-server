@@ -356,7 +356,12 @@
               # md5 17dfee6cf866738ba30488c93dcc1164, 2099014 bytes. Do NOT
               # enable a pak whose game version suffix != 0.7.19: the
               # 0.7.18-era pak crashes the server.
-              "Schedule_I_v0.5.3_0.7.19_SERVER_P" = true;
+              # v0.6.0 supply-chain rework (cocaine chain, Liquid Cocaine,
+              # Uncut/(Cut) Cocaine Bricks, Kerosene at Oji, exports).
+              # md5 34ed9b556db567c3d9c5a1dc2f3c5fe8, 2460923 bytes. Do NOT
+              # enable a pak whose game version suffix != 0.7.19: the
+              # 0.7.18-era pak crashes the server.
+              "Schedule_I_v0.6.0_0.7.19_SERVER_P" = true;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
