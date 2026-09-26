@@ -71,7 +71,38 @@
   # Let the guest reach the host RELP log listener (2514) over virbr0 —
   # the KVM guest's ServerLog will be shipped into the existing
   # imfile->RELP->ingest_logs pipeline in a follow-up change.
-  networking.firewall.interfaces."virbr0".allowedTCPPorts = [2514];
+  # 8080 = guest MTDediMod WebAPI consumed by amc-backend
+  # (GAME_SERVER_API_URL, set in the same cutover in flake.nix).
+  networking.firewall.interfaces."virbr0".allowedTCPPorts = [2514 8080];
+
+  # Motor Town KVM guest cutover (motortown-win @ 192.168.122.61 on virbr0):
+  # forward the public game/query ports from the WAN interface to the guest.
+  # NOTE: these DNAT rules apply as soon as this config deploys — the Proton
+  # services.motortown-server (same ports on the host) must be stopped at the
+  # switch, or its inbound UDP goes to the guest instead. Deploy order is
+  # stop prod -> switch -> start VM + dedicated server (see PR body).
+  networking.nat = {
+    enable = true;
+    externalInterface = "enp11s0";
+    internalInterfaces = ["virbr0"];
+    forwardPorts = [
+      { destination = "192.168.122.61"; proto = "udp"; sourcePort = 7777; } # MT game (Steam relay SDR)
+      { destination = "192.168.122.61"; proto = "udp"; sourcePort = 7778; } # MT game, KVM test slot
+      { destination = "192.168.122.61"; proto = "udp"; sourcePort = 27015; } # MT query (A2S / server list)
+      { destination = "192.168.122.61"; proto = "udp"; sourcePort = 27016; } # MT query, KVM test slot
+    ];
+  };
+  # Explicit FORWARD accept for the DNAT'd game traffic (matches the runtime
+  # rules validated live; libvirt's own virbr0 chains cover guest egress).
+  networking.firewall.extraCommands = ''
+    iptables -I FORWARD 1 -i enp11s0 -o virbr0 -p udp -d 192.168.122.61 -j ACCEPT
+  '';
+
+  # Cutover: the KVM guest (motortown-win) is the primary Motor Town server.
+  # The Proton service shares its ports (7777/27015) and is retired here —
+  # set enable back to true to roll back the cutover. The VM image keeps its
+  # own state under /var/lib/libvirt/images/motortown-win.img.
+  services.motortown-server.enable = lib.mkForce false;
 
   programs.atop.enable = true;
   time.timeZone = "Asia/Bangkok";
