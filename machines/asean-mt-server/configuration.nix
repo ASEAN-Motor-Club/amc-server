@@ -71,7 +71,35 @@
   # Let the guest reach the host RELP log listener (2514) over virbr0 —
   # the KVM guest's ServerLog will be shipped into the existing
   # imfile->RELP->ingest_logs pipeline in a follow-up change.
-  networking.firewall.interfaces."virbr0".allowedTCPPorts = [2514];
+  # Guest log relay: Vector in the KVM guest ships ServerLog lines here.
+  networking.firewall.interfaces."virbr0".allowedTCPPorts = [2514 6014 8080];
+
+  # Accept ServerLog lines from the KVM guest's Vector shipper and inject
+  # them into the same rsyslogd -> omprog(ingest_logs) pipeline as RELP.
+  # (omrelp -> the amc-log-listener imrelp on 2514, exactly like the local
+  # imfile inputs use; mt-in -> omprog -> ingest_logs happens there.)
+  services.rsyslogd.extraConfig = ''
+    # Guest log relay: Vector in the KVM guest sends one plain line per
+    # entry; re-shape it into the format ingest_logs expects
+    # (log_ts host tag filename game_timestamp content).
+    template(name="guest_with_filename" type="list") {
+      property(name="timestamp" dateFormat="rfc3339")
+      constant(value=" guest mt-server C:/mtserver/MotorTown/Saved/ServerLog/guest.log ")
+      property(name="msg" spifno1stsp="on" )
+      property(name="msg" droplastlf="on" )
+      constant(value="\\n")
+    }
+
+    module(load="imtcp")
+    input(type="imtcp" port="6014" ruleset="guest-in")
+    Ruleset(name="guest-in") {
+      action(type="omrelp"
+        target="127.0.0.1"
+        port="2514"
+        template="guest_with_filename"
+      )
+    }
+  '';
 
   programs.atop.enable = true;
   time.timeZone = "Asia/Bangkok";
