@@ -397,7 +397,7 @@
             dedicatedServerConfig = {
               # ServerName = lib.mkDefault "Vanilla+ | ASEAN Motor Club | discord.gg/aseanmotorclub";
               # ServerName = "〈 ASEAN Motor Club 〉 discord.gg/aseanmotorclub";
-              ServerName = "★★ ASEAN Motor Club ★★  discord.gg/aseanmotorclub";
+              ServerName = "ASEAN Motor Club | Cops v Criminals | Street Racing | Jobs";
               ServerMessage = ''                <Title>ASEAN Motor Club</>
                 <Small>Welcome | 你好 | Selamat Datang | Sawasdee Krub | Maligayang Pagdating</>
 
