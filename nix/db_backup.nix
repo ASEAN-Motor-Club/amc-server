@@ -47,6 +47,15 @@ in {
 
       echo "Starting database backup: $dumpFile"
 
+      # Free-space guard: never start a dump that could fill the root fs
+      # (disk-full took down MT + postgres on 2026-08-28/29 and 2026-09-27).
+      FREE_GB=$(df -BG --output=avail / | tail -1 | tr -dc '0-9')
+      if [ "$FREE_GB" -lt 60 ]; then
+        echo "Backup skipped: only ${FREE_GB}G free on / (< 60G required)"
+        ${discordNotify} "$DISCORD_ERRORS_WEBHOOK" "🚨 **[AMC DB Backup]** Backup SKIPPED: only \`${FREE_GB}G\` free on \`/\` (< 60G required). Free disk space before the next dump."
+        exit 1
+      fi
+
       RC=0
       su -s /bin/sh postgres -c "${pg_dump} -Fc amc" \
         > "$dumpFile" || RC=$?
@@ -56,8 +65,9 @@ in {
         echo "Backup complete: $((SIZE / 1048576))MB"
         ${discordNotify} "$DISCORD_ERRORS_WEBHOOK" "✅ **[AMC DB Backup]** Daily backup completed: \`amc.$today.dump\` ($((SIZE / 1048576))MB)"
 
-        # Rotate: keep last 7 days
-        find ${backupDir} -name "amc.*.dump" -mtime +7 -delete
+        # Rotate: keep last 3 days (~36G at current dump size); a 7-day
+        # window at 12G/day filled the 457G root fs (2026-09-27 outage).
+        find ${backupDir} -name "amc.*.dump" -mtime +3 -delete
       else
         echo "Backup failed!"
         ${discordNotify} "$DISCORD_ERRORS_WEBHOOK" "❌ **[AMC DB Backup]** Daily backup FAILED for \`$today\`"
