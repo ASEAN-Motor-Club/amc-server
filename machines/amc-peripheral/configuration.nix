@@ -92,8 +92,10 @@ in {
   # ── Disk space management ──────────────────────────────────────────
   # Cap journal logs to prevent unbounded growth (was 4GB+ uncapped)
   services.journald.extraConfig = ''
-    SystemMaxUse=500M
-    MaxRetentionSec=7day
+    # 500M was exhausted within hours by podman-hermes-agent logging, leaving
+    # <1 day of retention — not enough to measure gateway hang frequency.
+    SystemMaxUse=2G
+    MaxRetentionSec=30day
   '';
   # Disable coredump storage (only CargoExtractor crashes, not useful)
   systemd.coredump.extraConfig = ''

@@ -189,8 +189,9 @@ in {
               git -C "$WORK/hermes" checkout "$REV"
             fi
 
-            # Vacuum logs before build (safe — doesn't touch images).
-            journalctl --vacuum-size=300M 2>/dev/null || true
+            # Cap journal size (journald itself enforces SystemMaxUse; this
+            # just trims early to reclaim space at build time).
+            journalctl --vacuum-size=2G 2>/dev/null || true
 
             # Use slim Dockerfile (skips Playwright/Chromium)
             cat > "$WORK/hermes/Dockerfile.slim" << 'SLIM'
