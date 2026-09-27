@@ -437,6 +437,10 @@
               MaxHousingPlotRentalDays = 15;
               HousingPlotRentalPriceRatio = 1.0;
               bAllowModdedVehicle = true;
+              # Native police whitelist: restrict police vehicles to players
+              # with the police role. PoliceRolePlayers is intentionally
+              # omitted (empty) for now.
+              bAllowPoliceVehicleByPlayerRole = true;
               NPCVehicleDensity = 0.5;
               NPCPoliceDensity = 0.0;
               bEnableHostWebAPIServer = true;
