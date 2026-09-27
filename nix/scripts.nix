@@ -6,6 +6,7 @@
 # Usage (from nix develop):
 #   pre-deploy [--skip-pytest] [--fix]
 #   deploy <root@host> [--skip-checks] [--skip-pytest] [--migrate] [--restart-be]
+#                      [--build-host <host|localhost>]
 #   health-check <root@host>
 #   rollback <root@host>
 {
@@ -27,8 +28,8 @@
     #
     # Architecture note: checks run on the local system (aarch64-darwin or
     # x86_64-linux). They validate code correctness. Build correctness on the
-    # target (x86_64-linux) is validated by nixos-rebuild itself, which runs
-    # --build-host on the target machine.
+    # target is validated by nixos-rebuild itself; by default it builds on the
+    # target machine (--build-host <target>), overridable with --build-host.
     # ---------------------------------------------------------------------------
     pre-deploy = ''
       # @flag --skip-pytest   Skip pytest (saves ~60s, use for quick iteration)
@@ -161,6 +162,12 @@
       # @flag --migrate       Run Django migrations after deploy
       # @flag --restart-be    Restart amc-backend + amc-worker after deploy
       # @flag --no-health-check  Skip post-deploy health check
+      # @option --build-host  Where nix runs the closure build. Default: the
+      #                       TARGET (historical behavior, kept for cross-arch
+      #                       correctness). Pass "localhost" to build on THIS
+      #                       machine (e.g. the agent container on
+      #                       amc-peripheral) and only copy + activate on the
+      #                       target — keeps eval/build CPU off the prod host.
       # @flag --ff-base       Fetch + fast-forward the current branch to its
       #                       upstream before deploying (deploy-clone flow)
       # @flag --local-submodules  LEGACY: override all 8 flake inputs with ./
@@ -410,12 +417,13 @@
       fi
 
       # ── 4. Deploy ─────────────────────────────────────────────────────────
+      BUILD_HOST="''${argc_build_host:-$argc_target}"
       echo ""
       echo "📡 Running nixos-rebuild on $argc_target..."
-      echo "   (builds on target — x86_64-linux)"
+      echo "   (build-host: $BUILD_HOST)"
       ${pkgs.nixos-rebuild}/bin/nixos-rebuild \
         --target-host "$argc_target" \
-        --build-host "$argc_target" \
+        --build-host "$BUILD_HOST" \
         --flake . \
         --fast \
         switch \
