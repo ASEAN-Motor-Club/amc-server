@@ -51,8 +51,8 @@ in {
       # (disk-full took down MT + postgres on 2026-08-28/29 and 2026-09-27).
       FREE_GB=$(df -BG --output=avail / | tail -1 | tr -dc '0-9')
       if [ "$FREE_GB" -lt 60 ]; then
-        echo "Backup skipped: only ${FREE_GB}G free on / (< 60G required)"
-        ${discordNotify} "$DISCORD_ERRORS_WEBHOOK" "🚨 **[AMC DB Backup]** Backup SKIPPED: only \`${FREE_GB}G\` free on \`/\` (< 60G required). Free disk space before the next dump."
+        echo "Backup skipped: only $${FREE_GB}G free on / (< 60G required)"
+        ${discordNotify} "$DISCORD_ERRORS_WEBHOOK" "🚨 **[AMC DB Backup]** Backup SKIPPED: only \`$${FREE_GB}G\` free on \`/\` (< 60G required). Free disk space before the next dump."
         exit 1
       fi
 
