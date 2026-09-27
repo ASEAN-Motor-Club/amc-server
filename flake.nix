@@ -356,12 +356,14 @@
               # md5 17dfee6cf866738ba30488c93dcc1164, 2099014 bytes. Do NOT
               # enable a pak whose game version suffix != 0.7.19: the
               # 0.7.18-era pak crashes the server.
-              # v0.6.0 supply-chain rework (cocaine chain, Liquid Cocaine,
-              # Uncut/(Cut) Cocaine Bricks, Kerosene at Oji, exports).
-              # md5 34ed9b556db567c3d9c5a1dc2f3c5fe8, 2460923 bytes. Do NOT
-              # enable a pak whose game version suffix != 0.7.19: the
-              # 0.7.18-era pak crashes the server.
-              "Schedule_I_v0.6.0_0.7.19_SERVER_P" = true;
+              # v0.6.5 (mt-pak-extract @ 8420cd36): full cocaine chain +
+              # CocaineBags flat 5000/km (cargo-space sqrt scaling off) +
+              # Dongsan Limestone moonshine recipes (keg->keg 1s, keg->money
+              # 120s, storage 50/side). Server pak md5
+              # 29b6f27581bc237f9e2cf6017da4679f. Do NOT enable a pak whose
+              # game version suffix != 0.7.19: the 0.7.18-era pak crashes
+              # the server.
+              "Schedule_I_v0.6.5_0.7.19_SERVER_P" = true;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
@@ -989,7 +991,7 @@
                   # version suffix != 0.7.19: the 0.7.18-era pak crash-loops
                   # this server at boot (status=3/NOTIMPLEMENTED, UE5 asset
                   # mismatch).
-                  "Schedule_I_v0.6.0_0.7.19_SERVER_P" = true;
+                  "Schedule_I_v0.6.5_0.7.19_SERVER_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
