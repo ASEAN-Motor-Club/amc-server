@@ -989,11 +989,15 @@
                   # verified (loads, all names, Iron Mine prompt, gold bar
                   # furniture). Staging server-side test pending this deploy.
                   # md5 17dfee6cf866738ba30488c93dcc1164, 2099014 bytes.
+                  # v0.7.0-rc1 (mt-pak-extract @ ce1b6c0b): meth chain (Phosphorus
+                  # quarry->Nobong cook->Nivart furniture->shops->residents).
+                  # Server pak md5 09a3eb91e0edd81487cc99cce9088f9e. Do NOT
+                  # enable a pak whose game version suffix != 0.7.19.
                   # Do NOT enable a pak whose game
                   # version suffix != 0.7.19: the 0.7.18-era pak crash-loops
                   # this server at boot (status=3/NOTIMPLEMENTED, UE5 asset
                   # mismatch).
-                  "Schedule_I_v0.6.6_0.7.19_SERVER_P" = true;
+                  "Schedule_I_v0.7.0-rc1_0.7.19_SERVER_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
