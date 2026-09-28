@@ -361,7 +361,7 @@
               # 9e5127b0496d5cd9b8d2038a1050076b. Do NOT enable a pak whose
               # game version suffix != 0.7.19: the 0.7.18-era pak crashes
               # the server.
-              "Schedule_I_v0.6.6_0.7.19_SERVER_P" = true;
+              "Schedule_I_v0.7.0-rc3_0.7.19_SERVER_P" = true;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
