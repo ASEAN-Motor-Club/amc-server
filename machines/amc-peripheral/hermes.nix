@@ -329,7 +329,7 @@ in {
 
     extraOptions = [
       "--memory=4g"
-      "--cpus=2"
+      "--cpus=4"
       "--network=host"
       "--workdir=/opt/data"
       "--add-host=host.docker.internal:127.0.0.1"
