@@ -361,7 +361,13 @@
               # 9e5127b0496d5cd9b8d2038a1050076b. Do NOT enable a pak whose
               # game version suffix != 0.7.19: the 0.7.18-era pak crashes
               # the server.
-              "Schedule_I_v0.7.0_0.7.19_SERVER_P" = true;
+              # v0.7.2 (mt-pak-extract @ 92d8e38): moonshine-keg->bottles
+              # restored, DestTypes [Errand,Factory], Money/pseudo storage 10,
+              # furniture Money outputs, Farm_Sunflower SunflowerSeed 500
+              # (replace_storage:false). Staging-tested 2026-09-29 (client pak
+              # md5 1ac40cbb9f6f79afe7ca0aac278a7c9f). Server pak md5
+              # 848662a528381aaffe31b9c8cf29634e.
+              "Schedule_I_v0.7.2_0.7.19_SERVER_P" = true;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
@@ -997,7 +1003,12 @@
                   # version suffix != 0.7.19: the 0.7.18-era pak crash-loops
                   # this server at boot (status=3/NOTIMPLEMENTED, UE5 asset
                   # mismatch).
-                  "Schedule_I_v0.7.0_0.7.19_SERVER_P" = true;
+                  # v0.7.2 (mt-pak-extract @ 92d8e38): moonshine-keg->bottles
+                  # restored, DestTypes [Errand,Factory], Money/pseudo storage
+                  # 10, furniture Money outputs, Farm_Sunflower SunflowerSeed
+                  # 500 (replace_storage:false). Server pak md5
+                  # 848662a528381aaffe31b9c8cf29634e.
+                  "Schedule_I_v0.7.2_0.7.19_SERVER_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
