@@ -381,7 +381,10 @@
               # 1.5x/1.2x; per-cargo so no effect on other cargos). Staging
               # built+verified via gated pipeline (PR #42), PR #43 merged.
               # Server pak md5 dc62fc777fdd977facb74fa19c36fcab.
-              "Schedule_I_v0.7.4_0.7.19_SERVER_P" = true;
+              # v0.7.5 (mt-pak-extract #44): CourierService transform 1
+              # CocainePacket -> 1 CocaineBag (was 1->5, time 120s kept).
+              # Server pak md5 ec34483861e494775d1bc61861ef4547.
+              "Schedule_I_v0.7.5_0.7.19_SERVER_P" = true;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
@@ -1034,7 +1037,10 @@
                   # MaxStorage 20->5 at Supermarket + GasStation (pays
                   # unchanged 1.5x/1.2x). Server pak md5
                   # dc62fc777fdd977facb74fa19c36fcab.
-                  "Schedule_I_v0.7.4_0.7.19_SERVER_P" = true;
+                  # v0.7.5 (mt-pak-extract #44): CourierService transform 1
+                  # CocainePacket -> 1 CocaineBag (was 1->5, time 120s kept).
+                  # Server pak md5 ec34483861e494775d1bc61861ef4547.
+                  "Schedule_I_v0.7.5_0.7.19_SERVER_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
