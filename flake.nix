@@ -367,7 +367,16 @@
               # (replace_storage:false). Staging-tested 2026-09-29 (client pak
               # md5 1ac40cbb9f6f79afe7ca0aac278a7c9f). Server pak md5
               # 848662a528381aaffe31b9c8cf29634e.
-              "Schedule_I_v0.7.2_0.7.19_SERVER_P" = true;
+              # v0.7.3 (mt-pak-extract @ a65066b): supply-chain storage
+              # rebalance — Sunflower Acetone 100 / HCl 50 (+ LiquidCocaine
+              # 40 new slot), Refinery CrudeOil 50 / Acetone 100, Hemp
+              # Kerosene 50, Quicklime CocaineBricks 50, Mine CornPallet 40,
+              # Courier 10/20, Export_Harbor Money 50; supermarket pseudo
+              # kept 10 (deliberate). Staging-tested 2026-09-29: world load,
+              # Liquid Cocaine OU slot live, 3x Olle Packets/Bags, UE4SS 0
+              # errors. Client pak md5 90737b6146869a8827a8df72eb603e68.
+              # Server pak md5 88e247e98cee6b384ddb7be5589998f3.
+              "Schedule_I_v0.7.3_0.7.19_SERVER_P" = true;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
@@ -1008,7 +1017,15 @@
                   # 10, furniture Money outputs, Farm_Sunflower SunflowerSeed
                   # 500 (replace_storage:false). Server pak md5
                   # 848662a528381aaffe31b9c8cf29634e.
-                  "Schedule_I_v0.7.2_0.7.19_SERVER_P" = true;
+                  # v0.7.3 (mt-pak-extract @ a65066b): supply-chain storage
+                  # rebalance — Sunflower Acetone 100 / HCl 50 (+ LiquidCocaine
+                  # 40 new slot), Refinery CrudeOil 50 / Acetone 100, Hemp
+                  # Kerosene 50, Quicklime CocaineBricks 50, Mine CornPallet
+                  # 40, Courier 10/20, Export_Harbor Money 50; supermarket
+                  # pseudo kept 10 (deliberate). Staging-tested 2026-09-29.
+                  # Client pak md5 90737b6146869a8827a8df72eb603e68. Server
+                  # pak md5 88e247e98cee6b384ddb7be5589998f3.
+                  "Schedule_I_v0.7.3_0.7.19_SERVER_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
