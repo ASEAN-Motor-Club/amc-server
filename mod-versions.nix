@@ -1,4 +1,4 @@
 {
-  main = "server-v0.42.0-rc15";
-  staging = "server-v0.42.0-rc15";
+  main = "server-v0.42.0-rc16";
+  staging = "server-v0.42.0-rc16";
 }
