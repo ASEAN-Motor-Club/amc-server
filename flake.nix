@@ -376,7 +376,12 @@
               # Liquid Cocaine OU slot live, 3x Olle Packets/Bags, UE4SS 0
               # errors. Client pak md5 90737b6146869a8827a8df72eb603e68.
               # Server pak md5 88e247e98cee6b384ddb7be5589998f3.
-              "Schedule_I_v0.7.3_0.7.19_SERVER_P" = true;
+              # v0.7.4 (mt-pak-extract @ a0f1c69): Moonshine Keg demand
+              # MaxStorage 20->5 at Supermarket + GasStation (pays unchanged
+              # 1.5x/1.2x; per-cargo so no effect on other cargos). Staging
+              # built+verified via gated pipeline (PR #42), PR #43 merged.
+              # Server pak md5 dc62fc777fdd977facb74fa19c36fcab.
+              "Schedule_I_v0.7.4_0.7.19_SERVER_P" = true;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
@@ -1025,7 +1030,11 @@
                   # pseudo kept 10 (deliberate). Staging-tested 2026-09-29.
                   # Client pak md5 90737b6146869a8827a8df72eb603e68. Server
                   # pak md5 88e247e98cee6b384ddb7be5589998f3.
-                  "Schedule_I_v0.7.3_0.7.19_SERVER_P" = true;
+                  # v0.7.4 (mt-pak-extract @ a0f1c69): Moonshine Keg demand
+                  # MaxStorage 20->5 at Supermarket + GasStation (pays
+                  # unchanged 1.5x/1.2x). Server pak md5
+                  # dc62fc777fdd977facb74fa19c36fcab.
+                  "Schedule_I_v0.7.4_0.7.19_SERVER_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
