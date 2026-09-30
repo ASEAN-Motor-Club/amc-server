@@ -384,7 +384,13 @@
               # v0.7.5 (mt-pak-extract #44): CourierService transform 1
               # CocainePacket -> 1 CocaineBag (was 1->5, time 120s kept).
               # Server pak md5 ec34483861e494775d1bc61861ef4547.
-              "Schedule_I_v0.7.5_0.7.19_SERVER_P" = true;
+              # v0.7.6 (mt-pak-extract #45): pseudo production moved
+              # Supermarket -> pallet warehouses (Money 1 -> Pseudoephedrine
+              # x1 @60s, Money demand max 40, storages 10/10 matching SM);
+              # no resident pseudo demand; quicklime-only consumption (demand
+              # max 30); quicklime CocaineBricks/MethBase production 120s;
+              # all our recipes capped at 300s. Server pak md5 eb9c26983eadd5ae5e4ee0b9bed1083c.
+              "Schedule_I_v0.7.6_0.7.19_SERVER_P" = true;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
@@ -1040,7 +1046,13 @@
                   # v0.7.5 (mt-pak-extract #44): CourierService transform 1
                   # CocainePacket -> 1 CocaineBag (was 1->5, time 120s kept).
                   # Server pak md5 ec34483861e494775d1bc61861ef4547.
-                  "Schedule_I_v0.7.5_0.7.19_SERVER_P" = true;
+                  # v0.7.6 (mt-pak-extract #45): pseudo production moved
+              # Supermarket -> pallet warehouses (Money 1 -> Pseudoephedrine
+              # x1 @60s, Money demand max 40, storages 10/10 matching SM);
+              # no resident pseudo demand; quicklime-only consumption (demand
+              # max 30); quicklime CocaineBricks/MethBase production 120s;
+              # all our recipes capped at 300s. Server pak md5 eb9c26983eadd5ae5e4ee0b9bed1083c.
+              "Schedule_I_v0.7.6_0.7.19_SERVER_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
                 };
                 engineIni = ''
