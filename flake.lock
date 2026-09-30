@@ -39,11 +39,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1790800632,
-        "narHash": "sha256-gYEXuo5+OYsu/oxAfJKUAFFXRtcjnZkKl/kuZCXFZZ4=",
+        "lastModified": 1790809199,
+        "narHash": "sha256-Gta3Y8HI6HuxhFz0gM7sEEiQEDr0R/is6BmpmUoeehY=",
         "owner": "ASEAN-Motor-Club",
         "repo": "amc-backend",
-        "rev": "ebecc709f524f4eda3cbef8f34d5c58726e11a23",
+        "rev": "1a04f04ebe57e0906fd9c1466974daf13203b308",
         "type": "github"
       },
       "original": {
