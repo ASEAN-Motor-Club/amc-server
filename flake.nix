@@ -907,6 +907,36 @@
                 };
               };
 
+              # Radio stack isolation: the realtime chain (liquidsoap radio +
+              # fallback + icecast) gets cores 4-5, off the cores the staging
+              # Motor Town dedi is confined to (its block above). High weights
+              # keep them first in line for those cores; MemoryLow protects
+              # their small pages from reclaim/swap under host memory
+              # pressure (the dedi + nix builds can push the box into swap,
+              # which showed up as icecast dropping listeners).
+              systemd.services.radio.serviceConfig = {
+                AllowedCPUs = "4 5";
+                CPUWeight = 1000;
+                MemoryLow = "512M";
+              };
+              systemd.services.fallback.serviceConfig = {
+                AllowedCPUs = "4 5";
+                CPUWeight = 1000;
+                MemoryLow = "256M";
+              };
+              systemd.services.icecast.serviceConfig = {
+                AllowedCPUs = "4 5";
+                CPUWeight = 1000;
+                MemoryLow = "256M";
+              };
+              # amc-radio (bot/API feeding the queue) is not realtime-critical
+              # but should stay responsive: high weight, memory protected,
+              # not pinned (its yt-dlp downloads may want more parallelism).
+              systemd.services.amc-radio.serviceConfig = {
+                CPUWeight = 500;
+                MemoryLow = "512M";
+              };
+
               services.github-runners."amc-peripheral-deploy" = {
                 enable = true;
                 replace = true;
@@ -1119,6 +1149,19 @@
                     }
                   ];
                 };
+              };
+
+              # Resource isolation: the staging dedi must not starve the radio.
+              # Host is 6 cores; the realtime radio chain (liquidsoap radio +
+              # fallback + icecast) is pinned to cores 4-5 in the peripheral
+              # module config below, so the game server stays off those cores.
+              # MemoryHigh throttles at 7G (observed peak RSS ~6.8G) instead of
+              # ever hard-killing the server (MemoryMax would risk save
+              # corruption). MemorySwapMax=0 comes from the motortown module.
+              systemd.services.motortown-server.serviceConfig = {
+                AllowedCPUs = "0 1 2 3";
+                CPUWeight = 20;
+                MemoryHigh = "7G";
               };
 
               # Staging is manually controlled: systemctl start/stop motortown-server.
