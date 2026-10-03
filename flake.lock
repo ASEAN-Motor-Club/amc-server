@@ -39,7 +39,6 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "__final": true,
         "lastModified": 1791059183,
         "owner": "ASEAN-Motor-Club",
         "repo": "amc-backend",
