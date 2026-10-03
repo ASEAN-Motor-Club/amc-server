@@ -385,7 +385,7 @@
               # CocainePacket -> 1 CocaineBag (was 1->5, time 120s kept).
               # Server pak md5 8bee2538a70df6de5100d490281ec34c (v0.7.8).
               # v0.7.7 (#47): money moved to furniture-factory recipes.
-                  # v0.7.8 (#48): moonshine pays 50% of cocaine bags, no scaling; pseudo per-km x2.
+              # v0.7.8 (#48): moonshine pays 50% of cocaine bags, no scaling; pseudo per-km x2.
               # v0.7.6 (mt-pak-extract #45): pseudo production moved
               # Supermarket -> pallet warehouses (Money 1 -> Pseudoephedrine
               # x1 @60s, Money demand max 40, storages 10/10 matching SM);
@@ -1080,7 +1080,7 @@
                   # Server pak md5 8bee2538a70df6de5100d490281ec34c (v0.7.8).
                   # v0.7.7 (#47): money moved to furniture-factory recipes.
                   # v0.7.8 (#48): moonshine pays 50% of cocaine bags, no scaling; pseudo per-km x2.
-              # v0.7.6 (mt-pak-extract #45): pseudo production moved
+                  # v0.7.6 (mt-pak-extract #45): pseudo production moved
                   # Supermarket -> pallet warehouses (Money 1 -> Pseudoephedrine
                   # x1 @60s, Money demand max 40, storages 10/10 matching SM);
                   # no resident pseudo demand; quicklime-only consumption (demand
