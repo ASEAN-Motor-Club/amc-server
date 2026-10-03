@@ -909,6 +909,18 @@
                 };
               };
 
+              # Manager-level CPU reservation: everything on the host
+              # defaults to cores 0-3. Units with no explicit affinity
+              # inherit PID 1's mask, so transient load — nix builds,
+              # deploy scripts, CI runner, language servers (pyright),
+              # pytest bursts — can no longer land on the radio cores.
+              # The realtime radio stack below opts out with
+              # AllowedCPUs = "4 5", making those two cores effectively
+              # radio-exclusive.
+              systemd.extraConfig = ''
+                CPUAffinity=0 1 2 3
+              '';
+
               # Radio stack isolation: the realtime chain (liquidsoap radio +
               # fallback + icecast) gets cores 4-5, off the cores the staging
               # Motor Town dedi is confined to (its block above). High weights
