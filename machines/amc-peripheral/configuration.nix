@@ -784,6 +784,11 @@ in {
     "d /var/lib/data/mod-releases 0775 steam modders -"
     "d /var/lib/data/amc-memory 0755 root root -"
     "d /var/lib/data/amc-memory-bot 0755 root root -"
+    # Bot DBs on the system disk (vda): /var/lib/data (vdb) stalls under write
+    # pressure and froze the bots. Media cache stays on vdb.
+    "d /var/lib/amc-bots 0755 root root -"
+    "d /var/lib/amc-bots/radio 0755 root root -"
+    "d /var/lib/amc-bots/bot 0755 root root -"
     # OpenCode workspace directories (created on the volume via bind mount)
     "d /var/lib/opencode 0755 opencode opencode -"
     "d /var/lib/opencode/workspace 0755 opencode opencode -"
