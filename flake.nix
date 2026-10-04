@@ -902,7 +902,9 @@
                 enable = true;
                 environmentFile = config.age.secrets.peripheral-bots.path;
                 cookiesPath = config.age.secrets.cookies.path;
-                dbPath = "/var/lib/radio/radio.db";
+                # Bots' sqlite DBs live on vda (see amc-peripheral #99); the
+                # media cache stays on vdb.
+                dbPath = "/var/lib/amc-bots/radio/radio.db";
                 icecast.admin.password = "aseanmotorclub1234";
                 sharry = {
                   enable = true;
