@@ -49,8 +49,7 @@
       "original": {
         "owner": "ASEAN-Motor-Club",
         "repo": "amc-backend",
-        "type": "github",
-        "rev": "3bda123d2cb11b1a44dc4004fdf04259eec3e126"
+        "type": "github"
       }
     },
     "amc-peripheral": {
