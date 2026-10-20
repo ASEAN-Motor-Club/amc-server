@@ -294,6 +294,10 @@ in {
   # regrow to several GB. Weekly removal of files untouched for 7 days keeps
   # them bounded without racing a cache in active use. Never touches
   # workspace/, sessions/, memories/, config, or .env.
+  # Excludes uv's managed Python installs (.local/share/uv/python/): those
+  # are runtime interpreters the Hermes gateway venv resolves against, not
+  # caches — deleting them breaks every subprocess spawn (cron scripts,
+  # delegation) until manually reinstalled (hit weekly Mondays).
   systemd.timers.hermes-cache-prune = {
     wantedBy = ["timers.target"];
     timerConfig = {
@@ -305,7 +309,7 @@ in {
     path = with pkgs; [coreutils findutils];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.findutils}/bin/find /var/lib/hermes-agent/.cache /var/lib/hermes-agent/.local/share/pnpm /var/lib/hermes-agent/.local/share/uv -type f -mtime +7 -delete";
+      ExecStart = "${pkgs.findutils}/bin/find /var/lib/hermes-agent/.cache /var/lib/hermes-agent/.local/share/pnpm /var/lib/hermes-agent/.local/share/uv -type f -mtime +7 ! -path '*/python/*' -delete";
     };
   };
 
