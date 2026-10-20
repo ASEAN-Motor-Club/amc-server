@@ -241,6 +241,8 @@ in {
     ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII4ESBOMCHDOASmvdRTVtYEh6HFaTwgKs47ZyFCWtkW2 meehoi@mhpc''
     # Meehoi — second key, requested by Meehoi 2026-10-20.
     ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPBcT8VwrC38HA+mb2yvaYp4YDCSmmlSsc6H5Ys0IexR meehoi@mhpc''
+    # Meehoi — third key (GitHub beam41), requested by Meehoi 2026-10-20.
+    ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDYvxVyHjmIaSj6i0r4uN+Ifmh1hN2wP7bF/N/yQso9c meehoi@mhpc''
     # Wick / Yuuka (GitHub: WickedHaze) — club ops access, approved by freeman 2026-09-02.
     ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFl8y61GeINkDm2TF3FAqoGWU9GtF1+YnO5JBZjxRn3g yuuka-wickedhaze''
   ];
