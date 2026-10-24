@@ -498,7 +498,7 @@
         }: {
           imports = [beammp-server.nixosModules.default];
           services.beammp-server = {
-            enable = false; # disabled during Project Zomboid burn-in
+            enable = true;
             openFirewall = true;
             name = "★★ ASEAN Motor Club ★★ | BeamNG.drive";
             description = "ASEAN Motor Club BeamMP Server - discord.gg/aseanmotorclub";
@@ -513,9 +513,10 @@
             discordWebhookEnvironmentFile = config.age.secrets.backend.path;
             enableCareerMP = true;
             careerMPVersion = "v0.0.37";
-            enableRLS = false;
+            enableRLS = true;
             enableRiverHighway = false;
-            rlsCompatPatchVersion = "v1.0.0-beta.16";
+            rlsCompatPatchVersion = "v1.0.0-beta.19";
+            serverVersion = "v3.9.3";
             memoryMax = "4096M";
             memoryHigh = "3072M";
             careerMPConfig = {
