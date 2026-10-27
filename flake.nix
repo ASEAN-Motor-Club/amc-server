@@ -511,9 +511,14 @@
             restartSchedule = "*-*-* 09:00:00";
             authKeyFile = config.age.secrets.beammp-auth.path;
             discordWebhookEnvironmentFile = config.age.secrets.backend.path;
-            enableCareerMP = true;
+            # Mods disabled 2026-10-27 (operator request: run vanilla freeroam for now).
+            # enableCareerMP=false also drops the CareerMP client/server Lua resources;
+            # enableRLS=false is REQUIRED alongside it (module asserts RLS needs CareerMP).
+            # The careerMPVersion/rlsCompatPatchVersion/careerMPConfig values below are
+            # kept so re-enabling is a two-line flip back to true.
+            enableCareerMP = false;
             careerMPVersion = "v0.0.37";
-            enableRLS = true;
+            enableRLS = false;
             enableRiverHighway = false;
             rlsCompatPatchVersion = "v1.0.0-beta.19";
             serverVersion = "v3.9.3";
