@@ -505,7 +505,7 @@
             tags = "Freeroam,Modded,lang:english";
             maxPlayers = 20;
             maxCars = 100;
-            map = "/levels/west_coast_usa/info.json";
+            map = "/levels/utah/info.json";
             isPrivate = false;
             allowGuests = true;
             restartSchedule = "*-*-* 09:00:00";
