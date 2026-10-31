@@ -108,11 +108,11 @@
       },
       "locked": {
         "allRefs": true,
-        "lastModified": 1793442229,
-        "narHash": "sha256-+0mhvs3+fPZA86ztl7tjJMvyNYF/cdsdsztonB/cr0I=",
+        "lastModified": 1793443436,
+        "narHash": "sha256-FHfOJlfcs9JVwDO5q4A8RicgxYFB49X/u0QFsxQK1Bw=",
         "ref": "refs/heads/main",
-        "rev": "dbca5c6ea15c55194f8ab324a47b54a654087ae6",
-        "revCount": 13,
+        "rev": "237ae66430d382c42a06a52da1fa94dffe74d2fb",
+        "revCount": 15,
         "type": "git",
         "url": "https://github.com/ASEAN-Motor-Club/beammp-server-flake.git"
       },
