@@ -150,6 +150,11 @@ class Bridge:
     def _poll_runlog(self):
         for record in self.tailer.poll():
             self.records.append(record)
+        if self.tailer.error and self.tailer.error != getattr(self, "_logged_error", None):
+            self._logged_error = self.tailer.error
+            log(f"run log unreadable: {self.tailer.error}")
+        elif not self.tailer.error:
+            self._logged_error = None
         self._save_state()
 
     def _claim(self, race, finished_at):
