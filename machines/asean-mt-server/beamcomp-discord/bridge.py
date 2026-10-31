@@ -282,6 +282,17 @@ def _credential(name):
     return path if os.path.exists(path) else ""
 
 
+def _target_from_env(config):
+    if config["webhook_file"]:
+        with open(config["webhook_file"]) as handle:
+            return {"url": handle.read().strip()}
+    if config["token_file"]:
+        with open(config["token_file"]) as handle:
+            return {"token": handle.read().strip(), "channel": config["channel"]}
+    print("need BEAMCOMP_WEBHOOK_FILE or BEAMCOMP_TOKEN_FILE", file=sys.stderr)
+    return None
+
+
 def main(argv):
     config = {
         "channel": os.environ.get("BEAMCOMP_CHANNEL_ID", ""),
@@ -297,24 +308,33 @@ def main(argv):
         replay(argv[2], config)
         return 0
 
+    if len(argv) > 1 and argv[1] == "--self-test":
+        target = _target_from_env(config)
+        if target is None:
+            return 2
+        sample_race = {
+            "grid": "west_coast_usa/aiRace/001-circuit",
+            "humans": 2,
+            "ai": 4,
+            "mode": "circuit",
+            "car": "etkc",
+        }
+        sample_records = [
+            {"identity": "self-test-a", "status": "finished", "total_time": 280.92,
+             "best_lap": 138.1, "vehicle": {"model": "etk800"}, "ctx": {"pos": 1}, "event": "self-test"},
+            {"identity": "self-test-b", "status": "dnf", "ctx": {"pos": 2}, "event": "self-test"},
+        ]
+        Poster(target)._deliver(render.render_results(sample_race, sample_records, time.time()))
+        return 0
+
     if not config["runlog"]:
         print("BEAMCOMP_RUNLOG is required", file=sys.stderr)
         return 2
 
-    target = {}
-    if config["webhook_file"]:
-        with open(config["webhook_file"]) as handle:
-            target["url"] = handle.read().strip()
-    elif config["token_file"]:
-        with open(config["token_file"]) as handle:
-            target["token"] = handle.read().strip()
-        target["channel"] = config["channel"]
-    else:
-        print("need BEAMCOMP_WEBHOOK_FILE or BEAMCOMP_TOKEN_FILE", file=sys.stderr)
+    target = _target_from_env(config)
+    if target is None:
         return 2
     config["target"] = target
-    if config["dry_run"]:
-        config["target"] = target
 
     Bridge(config).run()
     return 0
