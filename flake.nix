@@ -424,6 +424,11 @@
               MOD_SERVER_PORT = "5001";
               MOD_MANAGEMENT_PORT = "5000";
               MOD_WEBHOOK_ENABLE_EVENTS = "none";
+              # Hides the replicated bIsAdmin flag from clients (MTDediMod
+              # AdminHide). The server keeps the real value, so admin
+              # permissions are unaffected; only the star and the " (Admin)"
+              # suffix disappear.
+              MOD_HIDE_ADMIN_FLAG = "1";
             };
             dedicatedServerConfig = {
               # ServerName = lib.mkDefault "Vanilla+ | ASEAN Motor Club | discord.gg/aseanmotorclub";
