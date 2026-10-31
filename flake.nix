@@ -520,6 +520,8 @@
             careerMPVersion = "v0.0.37";
             enableRLS = false;
             enableRiverHighway = false;
+            enableBeamComp = true;
+            beamCompVersion = "v0.10.0";
             rlsCompatPatchVersion = "v1.0.0-beta.19";
             serverVersion = "v3.9.3";
             memoryMax = "4096M";
