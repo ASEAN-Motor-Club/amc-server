@@ -1143,6 +1143,10 @@
                   MOD_SERVER_PORT = "5001";
                   MOD_MANAGEMENT_PORT = "5000";
                   MOD_WEBHOOK_ENABLE_EVENTS = "none";
+                  # Hides the replicated bIsAdmin flag from clients (MTDediMod
+                  # AdminHide, PR #52). Server keeps the real value, so admin
+                  # permissions are unaffected; only the star/suffix is hidden.
+                  MOD_HIDE_ADMIN_FLAG = "1";
                   MOD_AUTO_INJECT_DP = "1";
                   MOD_INJECT_DP_LOC_X = "-290000";
                   MOD_INJECT_DP_LOC_Y = "190000";
