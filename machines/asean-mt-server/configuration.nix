@@ -13,8 +13,17 @@
     ./hardware-configuration.nix
     "${disko}/module.nix"
     ./disko-config.nix
+    ./beamcomp-discord.nix
   ];
   disko.devices.disk.main.device = "/dev/nvme0n1";
+
+  # BeamComp race activity -> Discord #beamng-races. Posts as the "amc" bot;
+  # a webhook can replace the token later without touching the bridge.
+  services.beamcomp-discord = {
+    enable = true;
+    channelId = "1566171349846593687";
+    tokenFile = config.age.secrets.pzDiscordToken.path;
+  };
 
   boot.tmp.cleanOnBoot = true;
   zramSwap.enable = false;
