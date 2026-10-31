@@ -23,6 +23,7 @@ class RunLogTailer:
         self.offset = int(state.get("offset") or 0)
         self.partial = state.get("partial") or ""
         self.bad_schema_seen = False
+        self.error = None
 
     def state(self):
         return {
@@ -42,6 +43,11 @@ class RunLogTailer:
             st = os.stat(self.path)
         except FileNotFoundError:
             return []
+        except OSError as exc:  # permissions, transient mount issues
+            self.error = str(exc)
+            return []
+        if self.error:
+            self.error = None
 
         if st.st_ino != self.inode or st.st_size < self.offset:
             self._reset(st.st_ino)

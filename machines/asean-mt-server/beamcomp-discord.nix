@@ -67,7 +67,9 @@ in
         ExecStart = "${bridge}/bin/beamcomp-discord";
         StateDirectory = "beamcomp-discord";
         DynamicUser = true;
-        SupplementaryGroups = [ "systemd-journal" ];
+        # journal: read without root; beammp: traverse /var/lib/beammp-server,
+        # which is 0770 beammp:beammp (the run log itself is world-readable).
+        SupplementaryGroups = [ "systemd-journal" "beammp" ];
         LoadCredential = [ "discord-token:${cfg.tokenFile}" ];
 
         Environment = [
