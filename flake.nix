@@ -331,8 +331,12 @@
             enable = true;
             enableMods = true;
             enableLogStreaming = true;
-            restartSchedule = "*-*-* 08:30:00";
-            restartAnnouncementSchedule = "*-*-* 08:15,25,29";
+            # Restart only Mondays and Thursdays, 08:30 Asia/Bangkok (server
+            # local). Other days the server keeps running; new mod paks still
+            # only take effect on the next restart, so a mod ship lands on the
+            # next Mon/Thu.
+            restartSchedule = "Mon,Thu *-*-* 08:30:00";
+            restartAnnouncementSchedule = "Mon,Thu *-*-* 08:15,25,29";
             #modVersion = "server-v0.40.0-rc8";
             modVersion = (import ./mod-versions.nix).main;
             enableExternalMods = {
