@@ -75,7 +75,13 @@
 in {
   imports = [
     ./hardware-configuration.nix
+    ../../nix/unreal-headless.nix
   ];
+
+  # Headless Unreal Engine 5 commandlets (UnrealPak / UnrealEditor-Cmd) wrapping
+  # Epic's prebuilt Linux binaries extracted to /var/lib/unreal-engine.
+  # Disk: ~43 GB extracted + ~20 GB derived data cache.
+  amc.unrealEngine.enable = true;
 
   boot.tmp.cleanOnBoot = true;
 
