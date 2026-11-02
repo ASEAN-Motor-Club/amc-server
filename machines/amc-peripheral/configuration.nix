@@ -259,6 +259,25 @@ in {
     extraGroups = ["wheel" "networkmanager"];
     openssh.authorizedKeys.keys = [''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJcMiNGgqQtOeACMso3CgZz2J3X8Ne8RxsZrQcsnoewU fmnxl-m2''];
   };
+  # ── Reverse-SSH tunnel endpoint: Windows cook host ─────────────────
+  # DESKTOP-2B50FUG (freeman's desktop, UE 5.5.4 Win64 cook box) cannot
+  # accept inbound connections — ports 22/445/3389/5985 all time out because
+  # the Windows Filtering Platform drops them, not because nothing listens.
+  # It therefore dials *out* to this host and forwards its own sshd to
+  # 127.0.0.1:2222. The key carries `restrict,port-forwarding`: forwarding
+  # only, no shell, no agent/X11. GatewayPorts is no, so the forward binds
+  # loopback and is never reachable off-host.
+  # Procedure: skills/ops/windows-desktop-ssh-access.
+  users.users.hermes-tunnel = {
+    isSystemUser = true;
+    group = "users";
+    home = "/home/hermes-tunnel";
+    createHome = true;
+    shell = "${pkgs.shadow}/bin/nologin";
+    openssh.authorizedKeys.keys = [
+      ''restrict,port-forwarding ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK+DSRMjl0VE4ylCQ2O8PnXDlGTJAJX7a0IBRZMUwAG2 freeman@DESKTOP-2B50FUG''
+    ];
+  };
   system.stateVersion = "23.11";
   nix.settings.experimental-features = ["nix-command" "flakes"];
 
