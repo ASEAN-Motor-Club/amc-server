@@ -328,7 +328,7 @@ in {
     cmd = ["hermes" "gateway" "run"];
 
     extraOptions = [
-      "--memory=5g"
+      "--memory=8g"
       "--cpus=4"
       "--network=host"
       "--workdir=/opt/data"
