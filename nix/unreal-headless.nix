@@ -89,14 +89,24 @@
 
   # The FHS wrapper runs whatever command it is given (runScript is empty), so
   # pass the engine binary as the first argument and everything else through.
+  #
+  # UnrealEditor-Cmd refuses to start as root ("Refusing to run with the root
+  # privileges"), so when invoked as root we drop to the service user, which
+  # owns the engine tree (UE writes logs/config into Engine/**/Saved).
   mkUeCmd = name: relativePath:
     pkgs.writeShellScriptBin name ''
-      if [ ! -x "${linuxBinaries}/${relativePath}" ]; then
-        echo "${name}: missing ${linuxBinaries}/${relativePath}" >&2
-        echo "Extract Epic's Linux_Unreal_Engine zip into ${engineRoot} first." >&2
+      bin="${linuxBinaries}/${relativePath}"
+      if [ ! -x "$bin" ]; then
+        echo "${name}: missing $bin" >&2
+        echo "Extract Epic's Linux_Unreal_Engine zip into ${engineRoot} first, then:" >&2
+        echo "  chown -R ${cfg.user}:${cfg.group} ${engineRoot}" >&2
         exit 127
       fi
-      exec ${unrealFhs}/bin/unreal-fhs "${linuxBinaries}/${relativePath}" "$@"
+      if [ "$(id -u)" -eq 0 ] && [ "${cfg.user}" != "root" ]; then
+        exec ${pkgs.util-linux}/bin/runuser -u ${cfg.user} -- \
+          env HOME=${cfg.homeDir} ${unrealFhs}/bin/unreal-fhs "$bin" "$@"
+      fi
+      exec ${unrealFhs}/bin/unreal-fhs "$bin" "$@"
     '';
 in {
   options.amc.unrealEngine = {
@@ -111,13 +121,56 @@ in {
         purpose: the tree is tens of GB and must survive garbage collection.
       '';
     };
+
+    user = mkOption {
+      type = types.str;
+      default = "unreal";
+      description = ''
+        Account that owns the engine tree and runs the commandlets.
+        UnrealEditor-Cmd refuses to start as root, so invocations as root are
+        dropped to this user. Set to `"root"` to disable the privilege drop.
+      '';
+    };
+
+    group = mkOption {
+      type = types.str;
+      default = "unreal";
+      description = "Group for {option}`user`.";
+    };
+
+    homeDir = mkOption {
+      type = types.str;
+      default = "/var/lib/unreal-engine-home";
+      description = ''
+        Home directory for {option}`user`. UE writes config, logs and the local
+        derived-data cache under `$HOME`, and the engine tree must stay
+        readable by this account.
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
-    # Create the mount point for the extracted engine. Extraction itself is a
-    # manual, human step (see the AMC docs) because it needs the Epic download.
+    users.groups = lib.mkIf (cfg.group != "root") {
+      ${cfg.group} = {};
+    };
+
+    users.users = lib.mkIf (cfg.user != "root") {
+      ${cfg.user} = {
+        isSystemUser = true;
+        group = cfg.group;
+        home = cfg.homeDir;
+        createHome = true;
+        description = "Unreal Engine headless commandlets";
+      };
+    };
+
+    # Create the engine mount point and the commandlet home. Extraction itself
+    # is a manual, human step (it needs the account-gated Epic download).
     systemd.tmpfiles.rules = [
-      "d ${engineRoot} 0755 root root -"
+      "d ${engineRoot} 0755 ${cfg.user} ${cfg.group} -"
+      "d ${cfg.homeDir} 0750 ${cfg.user} ${cfg.group} -"
+      "d ${cfg.homeDir}/.cache 0750 ${cfg.user} ${cfg.group} -"
+      "d ${cfg.homeDir}/.config 0750 ${cfg.user} ${cfg.group} -"
     ];
 
     environment.systemPackages = [
