@@ -470,7 +470,7 @@
               bAllowPlayerToJoinWithCompanyVehicles = true;
               bAllowAdminToRemoveAdmin = true;
               bAllowCompanyAIDriver = true;
-              bAllowCorporation = false;
+              bAllowCorporation = true;
               MaxHousingPlotRentalPerPlayer = 20;
               MaxHousingPlotRentalDays = 15;
               HousingPlotRentalPriceRatio = 1.0;
