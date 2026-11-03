@@ -5,7 +5,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
     flake-parts.url = "github:hercules-ci/flake-parts";
     motortown-server = {
-      url = "git+https://github.com/ASEAN-Motor-Club/motortown-server-flake.git?lfs=1&allRefs=1&rev=a467ca5e4ad5e125ef12cb64a6ce73ccbfaaf87d";
+      url = "git+https://github.com/ASEAN-Motor-Club/motortown-server-flake.git?lfs=1&allRefs=1&rev=99a1ee39a40a5c51048fd1a90ba0d004a28415b3";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     necesse-server = {
@@ -1065,6 +1065,8 @@
                 maxFps = 30;
                 restartSchedule = "3000-01-01 00:00:00";
                 betaBranch = "beta";
+                # C1 (Shuto loop) map test: launch the mod map instead of Jeju_World.
+                mapName = "/Game/Mods/C1/Maps/C1";
                 modVersion = (import ./mod-versions.nix).staging;
                 enableExternalMods = {
                   CarPartsImport_P = false;
@@ -1119,6 +1121,12 @@
                   # all our recipes capped at 300s.
                   "Schedule_I_v0.7.8_0.7.19_SERVER_P" = true;
                   qxZap_satigt3_MoreAttachments_P = true;
+                  # C1 Shuto loop dedicated-server pak (WindowsServer cook of the
+                  # C1 project, 61,986,235 B, sha256 ed3fcfd5a8d20546d8a412dd8521
+                  # 8226ac812c9bb0ac9393fd713903075d83f6). Render assets stripped,
+                  # collision byte-identical to the client pak. Served from
+                  # /var/lib/mod-releases/mods/ on amc-peripheral.
+                  zzz_AMC_C1_Server_P = true;
                 };
                 engineIni = ''
                   mh.maxCombinedVehicleLength=4000
@@ -1164,7 +1172,7 @@
                 };
                 credentialsFile = config.age.secrets.steam-game.path;
                 dedicatedServerConfig = {
-                  ServerName = "ASEAN Test 2";
+                  ServerName = "ASEAN Shuto Highway Test - C1 Loop";
                   ServerMessage = ''                    THIS IS A TEST SERVER.
                     Please join ASEAN Motor Club instead'';
                   Password = "";
@@ -1176,7 +1184,7 @@
                   MaxHousingPlotRentalDays = 15;
                   HousingPlotRentalPriceRatio = 5.0;
                   bAllowModdedVehicle = true;
-                  NPCVehicleDensity = 0.01;
+                  NPCVehicleDensity = 0.0;
                   NPCPoliceDensity = 0.0;
                   bEnableHostWebAPIServer = true;
                   HostWebAPIServerPassword = "";
