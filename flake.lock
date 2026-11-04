@@ -494,12 +494,12 @@
       },
       "locked": {
         "allRefs": true,
-        "lastModified": 1793721471,
+        "lastModified": 1793788865,
         "lfs": true,
-        "narHash": "sha256-9oSdyG9S2cWSAS/ER67EQLpq4lY2k62U4wrLoUWWIqI=",
+        "narHash": "sha256-aXc6pC0AZcIXjGcbUs+wqngZQ/8HlIu+VDolqaEUgsk=",
         "ref": "refs/heads/master",
-        "rev": "99a1ee39a40a5c51048fd1a90ba0d004a28415b3",
-        "revCount": 181,
+        "rev": "43c3a36ee74c3056de8d1f9c1fff8704e9c718cb",
+        "revCount": 182,
         "submodules": true,
         "type": "git",
         "url": "https://github.com/ASEAN-Motor-Club/motortown-server-flake.git"
