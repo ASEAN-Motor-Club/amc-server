@@ -1021,9 +1021,12 @@
                     mapName = "/Game/Mods/C1/Maps/C1";
                     modVersion = (import ./mod-versions.nix).staging;
                     enableExternalMods = {
-                      # WindowsServer cook of the C1 project, v2 (2026-11-04).
-                      # Served from /var/lib/mod-releases/mods/ on this host.
-                      zzz_AMC_C1_Server_v2_P = true;
+                      # WindowsServer cook of the C1 project, v3 / t53 build
+                      # (2026-11-04). Mount point is unchanged
+                      # (../../../MotorTown/Content/Mods/C1/), so the map path
+                      # below still applies. Served from
+                      # /var/lib/mod-releases/mods/ on this host.
+                      zzz_AMC_C1_Server_v3_P = true;
                     };
                     openFirewall = true;
                     port = 27779;
