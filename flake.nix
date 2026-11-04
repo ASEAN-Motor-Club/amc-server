@@ -1000,6 +1000,9 @@
               imports = [
                 amc-backend.nixosModules.backend
                 amc-backend.nixosModules.log-listener
+                # Named container instances => a SECOND Motor Town server can
+                # run beside services.motortown-server (see c1v2 below).
+                motortown-server.nixosModules.containers
               ];
 
               age.secrets.backend-staging = {
@@ -1219,6 +1222,76 @@
               # motortown-server.nix) already keeps a RUNNING staging server from being
               # bounced by deploys; wantedBy=[] completes the manual-on/off story.
               systemd.services.motortown-server.wantedBy = lib.mkForce [];
+
+              # --- Second staging instance: C1 v2 map test -----------------
+              # Runs ALONGSIDE services.motortown-server (the C1 v1 loop server
+              # above) so the v2 WindowsServer pak can be A/B compared without
+              # touching the running instance. Containerised => own state dir
+              # (/var/lib/motortown-server-c1v2), own pak cache, own ports.
+              # Port map: game 27779 / query 27017 / mod 5011+5010 / webapi 8082.
+              services.motortown-server-containers = {
+                c1v2 = {
+                  # Yield CPU/memory to the v1 test server (nice -5, 7G).
+                  config = {
+                    systemd.services.motortown-server.serviceConfig = {
+                      Nice = lib.mkForce 10;
+                      MemoryHigh = "6G";
+                    };
+                  };
+                  motortown-server = {
+                    enable = true;
+                    enableMods = true;
+                    maxFps = 30;
+                    betaBranch = "beta";
+                    # Pak mounts at ../../../MotorTown/Content/Mods/C1/
+                    mapName = "/Game/Mods/C1/Maps/C1";
+                    modVersion = (import ./mod-versions.nix).staging;
+                    enableExternalMods = {
+                      # WindowsServer cook of the C1 project, v2 (2026-11-04).
+                      # Served from /var/lib/mod-releases/mods/ on this host.
+                      zzz_AMC_C1_Server_v2_P = true;
+                    };
+                    enableLogStreaming = false;
+                    openFirewall = true;
+                    port = 27779;
+                    queryPort = 27017;
+                    restartSchedule = "3000-01-01 00:00:00";
+                    user = "steam";
+                    credentialsFile = config.age.secrets.steam-game.path;
+                    environment = {
+                      MOD_SERVER_PORT = "5011";
+                      MOD_MANAGEMENT_PORT = "5010";
+                      MOD_WEBHOOK_ENABLE_EVENTS = "none";
+                    };
+                    dedicatedServerConfig = {
+                      ServerName = "ASEAN Shuto Highway Test - C1 Loop v2";
+                      ServerMessage = ''
+                        THIS IS A TEST SERVER (C1 v2).
+                        Please join ASEAN Motor Club instead'';
+                      Password = "";
+                      MaxPlayers = 50;
+                      MaxVehiclePerPlayer = 10;
+                      bAllowPlayerToJoinWithCompanyVehicles = true;
+                      bAllowCompanyAIDriver = true;
+                      MaxHousingPlotRentalPerPlayer = 20;
+                      MaxHousingPlotRentalDays = 15;
+                      HousingPlotRentalPriceRatio = 5.0;
+                      bAllowModdedVehicle = true;
+                      NPCVehicleDensity = 0.0;
+                      NPCPoliceDensity = 0.0;
+                      bEnableHostWebAPIServer = true;
+                      HostWebAPIServerPassword = "";
+                      HostWebAPIServerPort = 8082;
+                      Admins = [
+                        {
+                          UniqueNetId = "76561198378447512";
+                          Nickname = "freeman";
+                        }
+                      ];
+                    };
+                  };
+                };
+              };
 
               # Use default CPUAffinity from motortown-server.nix ("0 1 2 3")
               # to isolate game server from backend services on shared host.
