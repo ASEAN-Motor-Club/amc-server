@@ -133,6 +133,65 @@ Use these categories (omit empty ones):
 
 ---
 
+## Local Cross-Compile Bootstrap (hosts without UEPseudo access)
+
+The private `UEPseudo` submodule (`deps/first/Unreal` of RE-UE4SS) is the only gate for
+local builds: neither the amc-coding-agent GitHub App credential nor the nix access-tokens
+on `amc-peripheral` can fetch it. Bootstrap the source via CI once, then build locally.
+
+### 1. Dump UE4SS source (with submodules) from CI
+
+Branch `ci/ue4ss-src-artifact` in MTDediMod carries `.github/workflows/ue4ss-src-artifact.yml`
+(checks out UE4SS-RE/RE-UE4SS at the `flake.lock` rev with `submodules: recursive` using the
+repo's `UEPSEUDO_PAT` secret, strips `.git` metadata, uploads artifact `ue4ss-src`).
+It triggers on `workflow_dispatch` **and any push to `ci/**`**:
+
+```bash
+cd MTDediMod-wt-*   # any worktree; then from branch ci/ue4ss-src-artifact:
+git commit -q --allow-empty && git push   # re-run the dump
+# then download artifact via API; the artifact 302-redirects to a signed blob URL —
+# do NOT forward the Authorization header to the redirect target (401 from Azure)
+```
+
+Extract the tarball to a plain dir (e.g. `/opt/data/workspace/ue4ss-art/ue4ss-src`),
+reusable until `flake.lock`'s `ue4ss` rev changes (tarball name = locked rev).
+
+### 2. Build on the amc-peripheral HOST (not the container)
+
+- **RAM**: the agent container is cgroup-capped at **4GiB** (`free -h` shows the host's 15GiB —
+  misleading). Full UE4SS build needs the host (11GiB avail) over
+  `ssh root@host.docker.internal`, with `NIX_BUILD_CORES=4 nice -n 15`.
+- **Symlink gotcha**: `/opt/data` is a symlink to `/var/lib/hermes-agent` on the host —
+  nix `path:` inputs refuse symlinks. Use the real `/var/lib/hermes-agent/workspace/...`
+  paths for `cd` and for the `--override-input` value.
+- **Cargo host linker**: cargo build scripts (num-traits etc.) need a host `cc`, which
+  NixOS-minimal lacks. Prepend the store's gcc wrapper:
+  `export PATH=/nix/store/3d1c302vw7kc8a5vknhmn34c0pd7zm6m-gcc-wrapper-15.3.0/bin:$PATH`
+  (find current one with `ls -d /nix/store/*-gcc-wrapper-*/bin`).
+
+```bash
+ssh root@host.docker.internal 'export PATH=<gcc-wrapper-bin>:/run/current-system/sw/bin:$PATH; \
+  cd /var/lib/hermes-agent/workspace/MTDediMod-wt-despawnlog && \
+  NIX_BUILD_CORES=4 nice -n 15 nix run --no-update-lock-file \
+    --override-input ue4ss "path:/var/lib/hermes-agent/workspace/ue4ss-art/ue4ss-src" \
+    .#configure'
+# same command with .#build; log redirect must be INSIDE the ssh quotes
+# (host-side file: /var/lib/hermes-agent/workspace/mt-build.log == container /opt/data/workspace/mt-build.log)
+```
+
+Notes:
+- Pass the SAME `--override-input ue4ss` to configure, build, and package.
+- `rm -rf build-cross` when switching source paths — the CMake cache pins the old
+  `UE4SS_SOURCE_DIR` store path and silently keeps using it.
+- `free -h` on the host during the build: stay above ~6GiB available; 4 clang jobs peak
+  ~5-6GiB. Expect 60-75 min cold, minutes for incremental.
+- Build runs as root → `build-cross/` ends up root-owned (readable). chown back to
+  `10000:10000` if in-container tools need to write into it.
+- The container and host **share the same /nix/store** (bind mount), so toolchain paths
+  from either side are valid on both.
+
+---
+
 ## Server Mod Release Workflow
 
 ### 1. Commit all changes
