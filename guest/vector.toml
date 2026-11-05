@@ -1,0 +1,14 @@
+data_dir = "C:/vector/data"
+
+[sources.mt_logs]
+type = "file"
+include = ["C:/mtserver/MotorTown/Saved/ServerLog/*.log"]
+read_from = "beginning"
+fingerprint.strategy = "device_and_inode"
+
+[sinks.relay]
+type = "socket"
+inputs = ["mt_logs"]
+address = "192.168.122.1:6014"
+mode = "tcp"
+encoding.codec = "text"
