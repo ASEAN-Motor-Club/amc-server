@@ -1067,8 +1067,73 @@
                     };
                   };
                 })
-              ];
 
+              # --- Third staging instance: Shuto (C1Full) full map --------
+              # Runs as its own service next to the C1 loop server
+              # (motortown-server, 27778) and c1v2 (27779). Own unit
+              # (motortown-server-shuto), own state dir
+              # (/var/lib/motortown-server-shuto), own pak cache, own ports.
+              # Port map: game 27780 / query 27018 / mod 5012+5013 /
+              # webapi 8083.
+              #
+              # The pak mounts at ../../../ and ships
+              # MotorTown/Content/Mods/C1Full/Maps/C1Full.umap, so the launch
+              # map is /Game/Mods/C1Full/Maps/C1Full.
+              (motortown-server.lib.mkExtraInstance {
+                name = "shuto";
+                settings = {
+                  enable = true;
+                  enableMods = true;
+                  maxFps = 30;
+                  betaBranch = "beta";
+                  mapName = "/Game/Mods/C1Full/Maps/C1Full";
+                  modVersion = (import ./mod-versions.nix).staging;
+                  enableExternalMods = {
+                    # WindowsServer cook of the Shuto (C1Full) map, v1,
+                    # 253,264,659 B, published 2026-11-06. Served from
+                    # /var/lib/mod-releases/mods/ on this host.
+                    zzz_AMC_Shuto_Server_v1_P = true;
+                  };
+                  openFirewall = true;
+                  port = 27780;
+                  queryPort = 27018;
+                  stateDirectory = "motortown-server-shuto";
+                  user = "steam";
+                  credentialsFile = config.age.secrets.steam-game.path;
+                  environment = {
+                    MOD_SERVER_PORT = "5012";
+                    MOD_MANAGEMENT_PORT = "5013";
+                    MOD_WEBHOOK_ENABLE_EVENTS = "none";
+                  };
+                  dedicatedServerConfig = {
+                    ServerName = "ASEAN Shuto Highway - Full Map Test";
+                    ServerMessage = ''
+                      THIS IS A TEST SERVER (Shuto full map v1).
+                      Please join ASEAN Motor Club instead'';
+                    Password = "";
+                    MaxPlayers = 50;
+                    MaxVehiclePerPlayer = 10;
+                    bAllowPlayerToJoinWithCompanyVehicles = true;
+                    bAllowCompanyAIDriver = true;
+                    MaxHousingPlotRentalPerPlayer = 20;
+                    MaxHousingPlotRentalDays = 15;
+                    HousingPlotRentalPriceRatio = 5.0;
+                    bAllowModdedVehicle = true;
+                    NPCVehicleDensity = 0.0;
+                    NPCPoliceDensity = 0.0;
+                    bEnableHostWebAPIServer = true;
+                    HostWebAPIServerPassword = "";
+                    HostWebAPIServerPort = 8083;
+                    Admins = [
+                      {
+                        UniqueNetId = "76561198378447512";
+                        Nickname = "freeman";
+                      }
+                    ];
+                  };
+                };
+              })
+              ];
               age.secrets.backend-staging = {
                 file = ./secrets/backend-staging.age;
                 mode = "400";
@@ -1289,6 +1354,12 @@
 
               # Yield CPU/memory to the v1 test server (nice -5, 7G).
               systemd.services.motortown-server-c1v2.serviceConfig = {
+                Nice = lib.mkForce 10;
+                MemoryHigh = "6G";
+              };
+
+              # Same deal for the Shuto full-map instance.
+              systemd.services.motortown-server-shuto.serviceConfig = {
                 Nice = lib.mkForce 10;
                 MemoryHigh = "6G";
               };
