@@ -1089,10 +1089,12 @@
                   mapName = "/Game/Mods/C1Full/Maps/C1Full";
                   modVersion = (import ./mod-versions.nix).staging;
                   enableExternalMods = {
-                    # WindowsServer cook of the Shuto (C1Full) map, v1,
-                    # 253,264,659 B, published 2026-11-06. Served from
+                    # WindowsServer cook of the Shuto (C1Full) map, v2
+                    # (2026-11-07): both levels, nav graph v29 baked into the
+                    # level before the cook. 319,097,156 B / 4,364 records /
+                    # sha256 ce3406ef…87e7. Served from
                     # /var/lib/mod-releases/mods/ on this host.
-                    zzz_AMC_Shuto_Server_v1_P = true;
+                    zzz_AMC_Shuto_Server_v2_P = true;
                   };
                   openFirewall = true;
                   port = 27780;
@@ -1119,7 +1121,7 @@
                     MaxHousingPlotRentalDays = 15;
                     HousingPlotRentalPriceRatio = 5.0;
                     bAllowModdedVehicle = true;
-                    NPCVehicleDensity = 0.0;
+                    NPCVehicleDensity = 1.0;
                     NPCPoliceDensity = 0.0;
                     bEnableHostWebAPIServer = true;
                     HostWebAPIServerPassword = "";
