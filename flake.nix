@@ -1089,10 +1089,14 @@
                   mapName = "/Game/Mods/C1Full/Maps/C1Full";
                   modVersion = (import ./mod-versions.nix).staging;
                   enableExternalMods = {
-                    # WindowsServer cook of the Shuto (C1Full) map, v1,
-                    # 253,264,659 B, published 2026-11-06. Served from
-                    # /var/lib/mod-releases/mods/ on this host.
-                    zzz_AMC_Shuto_Server_v1_P = true;
+                    # WindowsServer cook of the Shuto (C1Full) map, v2,
+                    # 363,207,728 B, 4,426 records, published 2026-11-08.
+                    # Carries the v30 nav graph (C1Full_Roads.uexp
+                    # 57,026,474 B) and the C1_Decals + Lights records that
+                    # v1 predates. Served from /var/lib/mod-releases/mods/
+                    # on this host; install-mt-mods caches by filename, so
+                    # the v2 name is what makes the download happen.
+                    zzz_AMC_Shuto_Server_v2_P = true;
                   };
                   openFirewall = true;
                   port = 27780;
@@ -1108,7 +1112,7 @@
                   dedicatedServerConfig = {
                     ServerName = "ASEAN Shuto Highway - Full Map Test";
                     ServerMessage = ''
-                      THIS IS A TEST SERVER (Shuto full map v1).
+                      THIS IS A TEST SERVER (Shuto full map v2).
                       Please join ASEAN Motor Club instead'';
                     Password = "";
                     MaxPlayers = 50;
