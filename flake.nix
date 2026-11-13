@@ -1023,14 +1023,15 @@
                   mapName = "/Game/Mods/C1Full/Maps/C1Full";
                   modVersion = (import ./mod-versions.nix).staging;
                   enableExternalMods = {
-                    # WindowsServer cook of the Shuto (C1Full) map, v2,
-                    # 363,207,728 B, 4,426 records, published 2026-11-08.
-                    # Carries the v30 nav graph (C1Full_Roads.uexp
-                    # 57,026,474 B) and the C1_Decals + Lights records that
-                    # v1 predates. Served from /var/lib/mod-releases/mods/
-                    # on this host; install-mt-mods caches by filename, so
-                    # the v2 name is what makes the download happen.
-                    zzz_AMC_Shuto_Server_v2_P = true;
+                    # WindowsServer cook of the Shuto (C1Full) map, v3,
+                    # 389,480,359 B / 9,524 records, sha256 a0513647…3931,
+                    # published 2026-11-13 from releases/c1/pakset_release_v1
+                    # (SET.md). Mount ../../../, V11, Zlib. Ships the mesh-v15
+                    # paint fix, C1Full_Lights v13 and 4,632 DataAsset
+                    # course/resource overrides at the game content root.
+                    # install-mt-mods caches by filename, so the v3 name is what
+                    # makes the download happen.
+                    zzz_AMC_Shuto_Server_v3_P = true;
                   };
                   openFirewall = true;
                   port = 27780;
