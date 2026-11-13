@@ -1001,76 +1001,10 @@
                 amc-backend.nixosModules.backend
                 amc-backend.nixosModules.log-listener
 
-                # --- Second staging instance: C1 v2 map test ---------------
-                # Runs ALONGSIDE services.motortown-server (the C1 v1 loop
-                # server) so the v2 WindowsServer pak can be A/B compared
-                # without touching the running instance. A real second
-                # service, not a container: own unit
-                # (motortown-server-c1v2), own state dir
-                # (/var/lib/motortown-server-c1v2), own pak cache, own ports.
-                # Port map: game 27779 / query 27017 / mod 5011+5010 /
-                # webapi 8082.
-                (motortown-server.lib.mkExtraInstance {
-                  name = "c1v2";
-                  settings = {
-                    enable = true;
-                    enableMods = true;
-                    maxFps = 30;
-                    betaBranch = "beta";
-                    # Pak mounts at ../../../MotorTown/Content/Mods/C1/
-                    mapName = "/Game/Mods/C1/Maps/C1";
-                    modVersion = (import ./mod-versions.nix).staging;
-                    enableExternalMods = {
-                      # WindowsServer cook of the C1 project, v3 / t53 build
-                      # (2026-11-04). Mount point is unchanged
-                      # (../../../MotorTown/Content/Mods/C1/), so the map path
-                      # below still applies. Served from
-                      # /var/lib/mod-releases/mods/ on this host.
-                      zzz_AMC_C1_Server_v3_P = true;
-                    };
-                    openFirewall = true;
-                    port = 27779;
-                    queryPort = 27017;
-                    stateDirectory = "motortown-server-c1v2";
-                    user = "steam";
-                    credentialsFile = config.age.secrets.steam-game.path;
-                    environment = {
-                      MOD_SERVER_PORT = "5011";
-                      MOD_MANAGEMENT_PORT = "5010";
-                      MOD_WEBHOOK_ENABLE_EVENTS = "none";
-                    };
-                    dedicatedServerConfig = {
-                      ServerName = "ASEAN Shuto Highway Test - C1 Loop v2";
-                      ServerMessage = ''
-                        THIS IS A TEST SERVER (C1 v2).
-                        Please join ASEAN Motor Club instead'';
-                      Password = "";
-                      MaxPlayers = 50;
-                      MaxVehiclePerPlayer = 10;
-                      bAllowPlayerToJoinWithCompanyVehicles = true;
-                      bAllowCompanyAIDriver = true;
-                      MaxHousingPlotRentalPerPlayer = 20;
-                      MaxHousingPlotRentalDays = 15;
-                      HousingPlotRentalPriceRatio = 5.0;
-                      bAllowModdedVehicle = true;
-                      NPCVehicleDensity = 1.0;
-                      NPCPoliceDensity = 0.0;
-                      bEnableHostWebAPIServer = true;
-                      HostWebAPIServerPassword = "";
-                      HostWebAPIServerPort = 8082;
-                      Admins = [
-                        {
-                          UniqueNetId = "76561198378447512";
-                          Nickname = "freeman";
-                        }
-                      ];
-                    };
-                  };
-                })
 
               # --- Third staging instance: Shuto (C1Full) full map --------
               # Runs as its own service next to the C1 loop server
-              # (motortown-server, 27778) and c1v2 (27779). Own unit
+              # (motortown-server, 27778). Own unit
               # (motortown-server-shuto), own state dir
               # (/var/lib/motortown-server-shuto), own pak cache, own ports.
               # Port map: game 27780 / query 27018 / mod 5012+5013 /
@@ -1084,7 +1018,7 @@
                 settings = {
                   enable = true;
                   enableMods = true;
-                  maxFps = 30;
+                  maxFps = 60;
                   betaBranch = "beta";
                   mapName = "/Game/Mods/C1Full/Maps/C1Full";
                   modVersion = (import ./mod-versions.nix).staging;
@@ -1123,7 +1057,7 @@
                     MaxHousingPlotRentalDays = 15;
                     HousingPlotRentalPriceRatio = 5.0;
                     bAllowModdedVehicle = true;
-                    NPCVehicleDensity = 0.0;
+                    NPCVehicleDensity = 1.0;
                     NPCPoliceDensity = 0.0;
                     bEnableHostWebAPIServer = true;
                     HostWebAPIServerPassword = "";
@@ -1355,12 +1289,6 @@
               # motortown-server.nix) already keeps a RUNNING staging server from being
               # bounced by deploys; wantedBy=[] completes the manual-on/off story.
               systemd.services.motortown-server.wantedBy = lib.mkForce [];
-
-              # Yield CPU/memory to the v1 test server (nice -5, 7G).
-              systemd.services.motortown-server-c1v2.serviceConfig = {
-                Nice = lib.mkForce 10;
-                MemoryHigh = "6G";
-              };
 
               # Same deal for the Shuto full-map instance.
               systemd.services.motortown-server-shuto.serviceConfig = {
