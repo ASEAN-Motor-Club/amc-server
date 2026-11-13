@@ -1023,15 +1023,14 @@
                   mapName = "/Game/Mods/C1Full/Maps/C1Full";
                   modVersion = (import ./mod-versions.nix).staging;
                   enableExternalMods = {
-                    # WindowsServer cook of the Shuto (C1Full) map, v3,
-                    # 389,480,359 B / 9,524 records, sha256 a0513647…3931,
-                    # published 2026-11-13 from releases/c1/pakset_release_v1
-                    # (SET.md). Mount ../../../, V11, Zlib. Ships the mesh-v15
-                    # paint fix, C1Full_Lights v13 and 4,632 DataAsset
-                    # course/resource overrides at the game content root.
-                    # install-mt-mods caches by filename, so the v3 name is what
-                    # makes the download happen.
-                    zzz_AMC_Shuto_Server_v3_P = true;
+                    # WindowsServer cook of the Shuto (C1Full) map, v4,
+                    # 389,480,573 B / 9,524 records, sha256 7232369…4824,
+                    # published 2026-11-13 from releases/c1/pakset_release_v2
+                    # (SET.md). Identical to v3 except Maps/C1Full_Roads: the
+                    # spawner's 16 VehicleClass refs were null (Index=0), so AI
+                    # traffic could never spawn; they are now set per vc_map.json
+                    # (Small/Police->Stinger, Special/Truck->Campy, Bus->Liliput).
+                    zzz_AMC_Shuto_Server_v4_P = true;
                   };
                   openFirewall = true;
                   port = 27780;
