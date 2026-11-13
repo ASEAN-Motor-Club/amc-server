@@ -1026,12 +1026,23 @@
                     # WindowsServer cook of the Shuto (C1Full) map, v4,
                     # 389,480,573 B / 9,524 records, sha256 7232369…4824,
                     # published 2026-11-13 from releases/c1/pakset_release_v2
-                    # (SET.md). Identical to v3 except Maps/C1Full_Roads: the
-                    # spawner's 16 VehicleClass refs were null (Index=0), so AI
-                    # traffic could never spawn; they are now set per vc_map.json
-                    # (Small/Police->Stinger, Special/Truck->Campy, Bus->Liliput).
+                    # (SET.md). Carries the v30 nav graph (C1Full_Roads.uexp
+                    # 57,027,114 B, 40,062 nodes) in an always-loaded sublevel.
+                    # NOTE: this build also re-serialised the spawner's 16
+                    # VehicleClass refs, which is NOT what fixes traffic —
+                    # vanilla Jeju ships the same rows with null refs. Kept
+                    # because it is already published and harmless.
                     zzz_AMC_Shuto_Server_v4_P = true;
                   };
+                  # AI traffic tuning. Production (asean-mt-server) and the
+                  # C1 instance both set these; the Shuto test instance ran
+                  # without them and spawns no traffic.
+                  engineIni = ''
+                    mh.trafficSpawnVehicleMaxDistance=40000.0
+                    mh.trafficSpawnVehicleMinDistance=25000.0
+                    mh.trafficAgentMaxTickDeltaSeconds=5.0
+                    mh.trafficTickPerFrame=20.0
+                  '';
                   openFirewall = true;
                   port = 27780;
                   queryPort = 27018;
