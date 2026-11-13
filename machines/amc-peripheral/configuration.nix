@@ -390,6 +390,38 @@ in {
             add_header Cache-Control "no-cache, no-store, max-age=0, must-revalidate";
           '';
         };
+        # --- Shuto (C1) map viewer --------------------------------------
+        # Served from /var/www/shuto, deliberately OUTSIDE the amc-web rsync
+        # target: the amc-web CD workflow rsyncs ./build/ with --delete into
+        # /var/www/www.aseanmotorclub.com, which wiped the viewer and its
+        # tiles and left /shuto-map answering the SPA fallback (404 page).
+        # Declaring the routes in NixOS config makes them survive deploys.
+        "= /shuto-map" = {
+          return = "301 /shuto-map/";
+        };
+        "/shuto-map/" = {
+          root = "/var/www/shuto";
+          tryFiles = "$uri $uri/index.html";
+          extraConfig = ''
+            add_header Cache-Control "no-cache, no-store, max-age=0, must-revalidate";
+          '';
+        };
+        "/map_tiles/shuto/" = {
+          root = "/var/www/shuto";
+          extraConfig = ''
+            add_header 'Access-Control-Allow-Origin' '*';
+            add_header 'Access-Control-Allow-Methods' 'GET, OPTIONS';
+
+            # Serve the precompressed .br twins of the tile binaries.
+            brotli_static on;
+            brotli_types application/octet-stream;
+
+            # Tiles are content-addressed by version dir; cache them hard.
+            expires 1y;
+            add_header Cache-Control "public, max-age=31536000, immutable";
+            access_log off;
+          '';
+        };
         "/_app/immutable/" = {
           root = "/var/www/www.aseanmotorclub.com";
           extraConfig = ''
@@ -811,6 +843,9 @@ in {
   systemd.tmpfiles.rules = [
     "d /var/www 0755 root root -"
     "d /var/www/www.aseanmotorclub.com 0755 sftpuser sftpuser -"
+    # Shuto map viewer: separate root so the amc-web `rsync --delete`
+    # deploy can never remove it (see the www vhost locations).
+    "d /var/www/shuto 0755 root root -"
     # Ensure data volume subdirs exist before bind mounts activate
     "d /var/lib/data/radio 0755 root root -"
     "d /var/lib/data/opencode 0755 opencode opencode -"
