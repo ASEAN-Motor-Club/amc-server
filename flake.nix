@@ -1269,28 +1269,6 @@
                 };
               };
 
-              # Resource isolation: the staging dedi must not starve the radio.
-              # Host is 6 cores; the realtime radio chain (liquidsoap radio +
-              # fallback + icecast) is pinned to cores 4-5 in the peripheral
-              # module config below, so the game server stays off those cores.
-              # MemoryHigh throttles at 7G (observed peak RSS ~6.8G) instead of
-              # ever hard-killing the server (MemoryMax would risk save
-              # corruption). MemorySwapMax=0 comes from the motortown module.
-              systemd.services.motortown-server.serviceConfig = {
-                AllowedCPUs = "0 1 2 3";
-                CPUWeight = 20;
-                MemoryHigh = "7G";
-              };
-
-              # Staging is manually controlled: systemctl start/stop motortown-server.
-              # Do NOT auto-enable it. switch-to-configuration starts every unit wanted
-              # by an active target (multi-user.target) on every switch, so a plain
-              # wantedBy = ["multi-user.target"] turns the staging server on at every
-              # deploy even when it was stopped. restartIfChanged=false (set in
-              # motortown-server.nix) already keeps a RUNNING staging server from being
-              # bounced by deploys; wantedBy=[] completes the manual-on/off story.
-              systemd.services.motortown-server.wantedBy = lib.mkForce [];
-
               # Same deal for the Shuto full-map instance.
               systemd.services.motortown-server-shuto.serviceConfig = {
                 Nice = lib.mkForce 10;
