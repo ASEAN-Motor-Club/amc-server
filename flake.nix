@@ -1032,7 +1032,7 @@
                     # VehicleClass refs, which is NOT what fixes traffic —
                     # vanilla Jeju ships the same rows with null refs. Kept
                     # because it is already published and harmless.
-                    zzz_AMC_Shuto_Server_v4_P = true;
+                    zzz_AMC_Shuto_Server_v7_P = true;
                   };
                   # AI traffic tuning. Production (asean-mt-server) and the
                   # C1 instance both set these; the Shuto test instance ran
