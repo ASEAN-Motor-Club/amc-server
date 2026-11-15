@@ -1,0 +1,10 @@
+{
+  "locations": [
+    { "name": "shibaura", "x": 110237, "y": -470902, "z": 87511 },
+    { "name": "tatsumi", "x": 593234, "y": -466784, "z": 87549 },
+    { "name": "yotsuyakamicho", "x": 83167, "y": 406270, "z": 85090 },
+    { "name": "hanedakuko", "x": 381965, "y": 511319, "z": 85316 },
+    { "name": "shin-yamashita", "x": -844349, "y": 1606825, "z": 86772 },
+    { "name": "heiwajima", "x": -13950, "y": 146710, "z": 85630 }
+  ]
+}

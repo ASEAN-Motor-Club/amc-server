@@ -1053,6 +1053,16 @@
                     MOD_SERVER_PORT = "5012";
                     MOD_MANAGEMENT_PORT = "5013";
                     MOD_WEBHOOK_ENABLE_EVENTS = "none";
+                    # In-game chat commands (/tp, /tps, /despawn). This instance
+                    # has no amc-backend, so the mod's own chat hook provides
+                    # them. Production leaves this unset: its commands come
+                    # from the backend registry, and the hook stays off there.
+                    MOD_CHAT_COMMANDS = "1";
+                    # Named /tp destinations (the six C1 garages), declarative
+                    # in nix/c1-tp-locations.json and copied to the store, so
+                    # the list survives restarts and game updates. Z values are
+                    # garage ground + 100 cm so the capsule clears the floor.
+                    MOD_TP_LOCATIONS_FILE = "${./nix/c1-tp-locations.json}";
                   };
                   dedicatedServerConfig = {
                     ServerName = "ASEAN Shuto Highway - Full Map Test";
