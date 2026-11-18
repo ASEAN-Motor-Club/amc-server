@@ -901,7 +901,9 @@
                 workshop = {
                   enable = true;
                   environmentFile = config.age.secrets.workshop-sso.path;
-                  sourceDb = "/var/lib/hermes-agent/workspace/mt-workshop-scrape/workshop.db";
+                  # Written only by amc-workshop-sync (amc-peripheral #149); the
+                  # aggregate/web/similarity units open it read-only.
+                  sourceDb = "/var/lib/amc-workshop/source.db";
                   viewerRoot = "/var/www/www.aseanmotorclub.com/vehicles";
                   # Snapshot renders were socket-bound on the public edge
                   # (43 KB/s to a remote renderer vs 19 MB/s here), so assets
