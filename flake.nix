@@ -340,18 +340,21 @@
             #modVersion = "server-v0.40.0-rc8";
             modVersion = (import ./mod-versions.nix).main;
             enableExternalMods = {
-              # 0.7.20 (dedi build 26722073). Only one mod has a 0.7.20 pak:
+              # 0.7.20 (dedi build 26722073). Mods with 0.7.20 paks:
               #   Maja's Detail Works V4 (DEDI SERVER ONLY, uploaded 2026-11-13)
+              #   Schedule_I v0.7.9 (rebuilt 2026-11-18 off the 0.7.20 CLIENT pak
+              #     build 26722054 with mt-pak-extract + a 0.7.20 Mappings.usmap;
+              #     1,202,204 B, sha256 2d9482c3…, 88 entries, 21 cargos, server
+              #     canary: unversioned DP/DataTables as the 0.7.19 artifact had)
               # The others are OFF until their authors ship 0.7.20 builds —
               #   Maja's Trailer Works    last 7.19 V7 (2026-07-14), author
               #                           warns it crashes on 7.20
               #   More Attachments        last MoreAttachments1.5 (2026-09-06),
               #                           no 7.20 revision
-              #   Schedule_I (ours)       must be rebuilt off the 0.7.20 client
-              #                           pak with mt-pak-extract first
               # Do NOT re-enable a pak whose game version suffix != 0.7.20: it
               # crash-loops the server at boot (status=3/NOTIMPLEMENTED).
               "MajasDetailWorksV4-7.20-SERVER_P" = true;
+              "Schedule_I_v0.7.9_0.7.20_SERVER_P" = true;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
@@ -1143,13 +1146,13 @@
               systemd.services.syslog.serviceConfig.TimeoutStopSec = "5s";
 
               services.motortown-server = {
-                enable = false;
+                enable = true;
                 enableMods = true;
                 maxFps = 30;
                 restartSchedule = "3000-01-01 00:00:00";
                 betaBranch = "beta";
-                # C1 (Shuto loop) map test: launch the mod map instead of Jeju_World.
-                mapName = "/Game/Mods/C1/Maps/C1";
+                # 0.7.20 schedule-i test: default Jeju map, no C1 (the C1 paks
+                # are still 0.7.19 cooks; a mismatched pak crash-loops boot).
                 modVersion = (import ./mod-versions.nix).staging;
                 enableExternalMods = {
                   CarPartsImport_P = false;
@@ -1202,14 +1205,25 @@
                   # no resident pseudo demand; quicklime-only consumption (demand
                   # max 30); quicklime CocaineBricks/MethBase production 120s;
                   # all our recipes capped at 300s.
-                  "Schedule_I_v0.7.8_0.7.19_SERVER_P" = true;
+                  # v0.7.9: rebuilt for game 0.7.20 (client build 26722054) —
+                  # 1,202,204 B, sha256 2d9482c3…, 88 entries, 21 cargos.
+                  # STAGING IS THE 0.7.20 TEST: only this pak is enabled; the
+                  # 7.19 paks below stay OFF because a mismatched version
+                  # crash-loops the server at boot (status=3/NOTIMPLEMENTED).
+                  "Schedule_I_v0.7.9_0.7.20_SERVER_P" = true;
+                  # MoreAttachments 1.6 (qxZap, workshop 2026-11-18) — testing
+                  # alongside schedule-i on 0.7.20: 19,420,899 B, V8B pak,
+                  # 860 asset pairs. Ships its own DataAsset/Items/Items table
+                  # and needs the DataTable Framework; verify it does not
+                  # clobber 0.7.20 vanilla rows.
                   qxZap_satigt3_MoreAttachments_P = true;
                   # C1 Shuto loop dedicated-server pak (WindowsServer cook of the
                   # C1 project, 61,986,235 B, sha256 ed3fcfd5a8d20546d8a412dd8521
                   # 8226ac812c9bb0ac9393fd713903075d83f6). Render assets stripped,
                   # collision byte-identical to the client pak. Served from
                   # /var/lib/mod-releases/mods/ on amc-peripheral.
-                  zzz_AMC_C1_Server_P = true;
+                  # C1 Shuto paks are 0.7.19 cooks — OFF for the 0.7.20 test.
+                  zzz_AMC_C1_Server_P = false;
                 };
                 engineIni = ''
                   mh.maxCombinedVehicleLength=4000
