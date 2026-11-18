@@ -994,7 +994,7 @@
                 amc-backend.nixosModules.log-listener
 
 
-              # --- Third staging instance: Shuto (C1Full) full map --------
+              # --- Third staging instance: Shuto (vanilla 7.20) -----------
               # Runs as its own service next to the C1 loop server
               # (motortown-server, 27778). Own unit
               # (motortown-server-shuto), own state dir
@@ -1002,9 +1002,9 @@
               # Port map: game 27780 / query 27018 / mod 5012+5013 /
               # webapi 8083.
               #
-              # The pak mounts at ../../../ and ships
-              # MotorTown/Content/Mods/C1Full/Maps/C1Full.umap, so the launch
-              # map is /Game/Mods/C1Full/Maps/C1Full.
+              # 0.7.20: C1Full map paks are not supported. Any loaded C1 pak
+              # crashes the server on the GameThread. Boot vanilla Jeju_World
+              # with no external mods until a 0.7.20 boot-verified C1 pak exists.
               (motortown-server.lib.mkExtraInstance {
                 name = "shuto";
                 settings = {
@@ -1012,18 +1012,12 @@
                   enableMods = true;
                   maxFps = 60;
                   betaBranch = "beta";
-                  mapName = "/Game/Mods/C1Full/Maps/C1Full";
+                  mapName = "Jeju_World";
                   modVersion = (import ./mod-versions.nix).staging;
-                  enableExternalMods = {
-                    # WindowsServer cook of the Shuto (C1Full) map for Motor
-                    # Town 0.7.20, v8, 389,032,285 B / 9,524 records, sha256
-                    # ef2c9722…a8768, published 2026-11-18 from
-                    # releases/c1/release_20261118_0720. Fresh 7.20 server cook;
-                    # maps are the byte-identical, class-ref-repaired P22 client
-                    # records. Keeps the v30 nav graph (C1Full_Roads.uexp
-                    # 57,027,114 B) and the pre-existing DataAsset records.
-                    zzz_AMC_Shuto_Server_v8_P = true;
-                  };
+                  # 0.7.20: drop the unsupported C1Full pak. Loading any
+                  # 7.19-era or 7.20-recook attempt crash-loops the server with
+                  # EXCEPTION_ACCESS_VIOLATION on the GameThread.
+                  enableExternalMods = { };
                   # AI traffic tuning. Production (asean-mt-server) and the
                   # C1 instance both set these; the Shuto test instance ran
                   # without them and spawns no traffic.
@@ -1073,6 +1067,11 @@
                     bEnableHostWebAPIServer = true;
                     HostWebAPIServerPassword = "hackme";
                     HostWebAPIServerPort = 8083;
+                    # 0.7.20 config schema.
+                    PoliceRolePlayers = [];
+                    bAllowCorporation = true;
+                    bAllowPoliceVehicleByPlayerRole = true;
+                    bAllowAdminToRemoveAdmin = true;
                     Admins = [
                       {
                         UniqueNetId = "76561198378447512";
