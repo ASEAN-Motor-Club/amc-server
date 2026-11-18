@@ -54,7 +54,7 @@ jobs:
           stamp="$(date -u +%Y%m%dT%H%M%SZ)-$(git rev-parse --short HEAD)"
           root="$releases/$stamp"
           rm -f "$root" "$current.next"
-          nix-store --add-root "$root" --indirect -r "$RELEASE" >/dev/null
+          nix-store --store daemon --add-root "$root" --indirect -r "$RELEASE" >/dev/null
           ln -s "$root" "$current.next"
           mv -Tf "$current.next" "$current"
 
