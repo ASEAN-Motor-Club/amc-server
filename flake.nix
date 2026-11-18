@@ -1209,7 +1209,12 @@
                   # 7.19 paks below stay OFF because a mismatched version
                   # crash-loops the server at boot (status=3/NOTIMPLEMENTED).
                   "Schedule_I_v0.7.9_0.7.20_SERVER_P" = true;
-                  qxZap_satigt3_MoreAttachments_P = false;
+                  # MoreAttachments 1.6 (qxZap, workshop 2026-11-18) — testing
+                  # alongside schedule-i on 0.7.20: 19,420,899 B, V8B pak,
+                  # 860 asset pairs. Ships its own DataAsset/Items/Items table
+                  # and needs the DataTable Framework; verify it does not
+                  # clobber 0.7.20 vanilla rows.
+                  qxZap_satigt3_MoreAttachments_P = true;
                   # C1 Shuto loop dedicated-server pak (WindowsServer cook of the
                   # C1 project, 61,986,235 B, sha256 ed3fcfd5a8d20546d8a412dd8521
                   # 8226ac812c9bb0ac9393fd713903075d83f6). Render assets stripped,
