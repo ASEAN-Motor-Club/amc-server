@@ -340,63 +340,18 @@
             #modVersion = "server-v0.40.0-rc8";
             modVersion = (import ./mod-versions.nix).main;
             enableExternalMods = {
-              # 7.19 mods. 2 mods without 7.19-compatible paks disabled:
-              #   qxZap_CranyUnlocked_P (old pak crashes 7.19),
-              #   Schedule_I_v0.4.8_0.7.18+1_P (superseded by
-              #   Schedule_I_v0.4.17_0.7.19_P below)
-              "MajasDetailWorksV3.3-7.19-SERVER_P" = true;
-              "MajasMnTrailerworksV7-7.19_P" = true;
-              "qxZap_satigt3_MoreAttachments_P" = true;
-              # Schedule_I illicit-cargo pak (0.7.19), v0.4.21 (2026-09-22) =
-              # pure-client provenance build (mt-pak-extract @ cae3225,
-              # UAssetAPI fork @ a6f8dab): every asset re-serialized from the
-              # CLIENT pak, Cargos composite written VERSIONED
-              # (WRITE_VERSIONED=1) — versioned writes need no unversioned
-              # schema contract, and the client engine reads both formats.
-              # Replaces 0.4.20 (mixed-provenance b1). Client-verified by
-              # freeman (loads, all cargo names, Iron Mine prompt, gold bar
-              # furniture); staging-stable since 2026-09-22 (403 delivery
-              # points registered, zero journal errors).
-              # md5 17dfee6cf866738ba30488c93dcc1164, 2099014 bytes. Do NOT
-              # enable a pak whose game version suffix != 0.7.19: the
-              # 0.7.18-era pak crashes the server.
-              # v0.6.6 (mt-pak-extract @ 23e38176): Quicklime Factory
-              # 2x Uncut -> 3x Cut bricks. Server pak md5
-              # 9e5127b0496d5cd9b8d2038a1050076b. Do NOT enable a pak whose
-              # game version suffix != 0.7.19: the 0.7.18-era pak crashes
-              # the server.
-              # v0.7.2 (mt-pak-extract @ 92d8e38): moonshine-keg->bottles
-              # restored, DestTypes [Errand,Factory], Money/pseudo storage 10,
-              # furniture Money outputs, Farm_Sunflower SunflowerSeed 500
-              # (replace_storage:false). Staging-tested 2026-09-29 (client pak
-              # md5 1ac40cbb9f6f79afe7ca0aac278a7c9f). Server pak md5
-              # 848662a528381aaffe31b9c8cf29634e.
-              # v0.7.3 (mt-pak-extract @ a65066b): supply-chain storage
-              # rebalance — Sunflower Acetone 100 / HCl 50 (+ LiquidCocaine
-              # 40 new slot), Refinery CrudeOil 50 / Acetone 100, Hemp
-              # Kerosene 50, Quicklime CocaineBricks 50, Mine CornPallet 40,
-              # Courier 10/20, Export_Harbor Money 50; supermarket pseudo
-              # kept 10 (deliberate). Staging-tested 2026-09-29: world load,
-              # Liquid Cocaine OU slot live, 3x Olle Packets/Bags, UE4SS 0
-              # errors. Client pak md5 90737b6146869a8827a8df72eb603e68.
-              # Server pak md5 88e247e98cee6b384ddb7be5589998f3.
-              # v0.7.4 (mt-pak-extract @ a0f1c69): Moonshine Keg demand
-              # MaxStorage 20->5 at Supermarket + GasStation (pays unchanged
-              # 1.5x/1.2x; per-cargo so no effect on other cargos). Staging
-              # built+verified via gated pipeline (PR #42), PR #43 merged.
-              # Server pak md5 dc62fc777fdd977facb74fa19c36fcab.
-              # v0.7.5 (mt-pak-extract #44): CourierService transform 1
-              # CocainePacket -> 1 CocaineBag (was 1->5, time 120s kept).
-              # Server pak md5 8bee2538a70df6de5100d490281ec34c (v0.7.8).
-              # v0.7.7 (#47): money moved to furniture-factory recipes.
-              # v0.7.8 (#48): moonshine pays 50% of cocaine bags, no scaling; pseudo per-km x2.
-              # v0.7.6 (mt-pak-extract #45): pseudo production moved
-              # Supermarket -> pallet warehouses (Money 1 -> Pseudoephedrine
-              # x1 @60s, Money demand max 40, storages 10/10 matching SM);
-              # no resident pseudo demand; quicklime-only consumption (demand
-              # max 30); quicklime CocaineBricks/MethBase production 120s;
-              # all our recipes capped at 300s.
-              "Schedule_I_v0.7.8_0.7.19_SERVER_P" = true;
+              # 0.7.20 (dedi build 26722073). Only one mod has a 0.7.20 pak:
+              #   Maja's Detail Works V4 (DEDI SERVER ONLY, uploaded 2026-11-13)
+              # The others are OFF until their authors ship 0.7.20 builds —
+              #   Maja's Trailer Works    last 7.19 V7 (2026-07-14), author
+              #                           warns it crashes on 7.20
+              #   More Attachments        last MoreAttachments1.5 (2026-09-06),
+              #                           no 7.20 revision
+              #   Schedule_I (ours)       must be rebuilt off the 0.7.20 client
+              #                           pak with mt-pak-extract first
+              # Do NOT re-enable a pak whose game version suffix != 0.7.20: it
+              # crash-loops the server at boot (status=3/NOTIMPLEMENTED).
+              "MajasDetailWorksV4-7.20-SERVER_P" = true;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
