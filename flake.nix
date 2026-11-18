@@ -995,96 +995,95 @@
                 amc-backend.nixosModules.backend
                 amc-backend.nixosModules.log-listener
 
-
-              # --- Third staging instance: Shuto (C1Full, 7.20) ------------
-              # Runs as its own service next to the C1 loop server
-              # (motortown-server, 27778). Own unit
-              # (motortown-server-shuto), own state dir
-              # (/var/lib/motortown-server-shuto), own pak cache, own ports.
-              # Port map: game 27780 / query 27018 / mod 5012+5013 /
-              # webapi 8083.
-              #
-              # 0.7.20: boot the pure 7.20 server cook. Do not overlay old
-              # 7.19 DataAssets; those records crash the GameThread.
-              (motortown-server.lib.mkExtraInstance {
-                name = "shuto";
-                settings = {
-                  enable = true;
-                  enableMods = true;
-                  maxFps = 60;
-                  betaBranch = "beta";
-                  mapName = "/Game/Mods/C1Full/Maps/C1Full";
-                  modVersion = (import ./mod-versions.nix).staging;
-                  enableExternalMods = {
-                    # Pure Motor Town 0.7.20 WindowsServer cook of C1Full,
-                    # 1,628 records / 383,743,189 B, sha256 ec72e8d5…8821.
-                    # No 7.19 DataAsset overlays: preserving those records
-                    # caused a GameThread null dereference before ServerLog.
-                    zzz_AMC_Shuto_Server_v10pure_P = true;
+                # --- Third staging instance: Shuto (C1Full, 7.20) ------------
+                # Runs as its own service next to the C1 loop server
+                # (motortown-server, 27778). Own unit
+                # (motortown-server-shuto), own state dir
+                # (/var/lib/motortown-server-shuto), own pak cache, own ports.
+                # Port map: game 27780 / query 27018 / mod 5012+5013 /
+                # webapi 8083.
+                #
+                # 0.7.20: boot the pure 7.20 server cook. Do not overlay old
+                # 7.19 DataAssets; those records crash the GameThread.
+                (motortown-server.lib.mkExtraInstance {
+                  name = "shuto";
+                  settings = {
+                    enable = true;
+                    enableMods = true;
+                    maxFps = 60;
+                    betaBranch = "beta";
+                    mapName = "/Game/Mods/C1Full/Maps/C1Full";
+                    modVersion = (import ./mod-versions.nix).staging;
+                    enableExternalMods = {
+                      # Pure Motor Town 0.7.20 WindowsServer cook of C1Full,
+                      # 1,628 records / 383,743,189 B, sha256 ec72e8d5…8821.
+                      # No 7.19 DataAsset overlays: preserving those records
+                      # caused a GameThread null dereference before ServerLog.
+                      zzz_AMC_Shuto_Server_v10pure_P = true;
+                    };
+                    # AI traffic tuning. Production (asean-mt-server) and the
+                    # C1 instance both set these; the Shuto test instance ran
+                    # without them and spawns no traffic.
+                    engineIni = ''
+                      mh.trafficSpawnVehicleMaxDistance=40000.0
+                      mh.trafficSpawnVehicleMinDistance=25000.0
+                      mh.trafficAgentMaxTickDeltaSeconds=5.0
+                      mh.trafficTickPerFrame=20.0
+                    '';
+                    openFirewall = true;
+                    port = 27780;
+                    queryPort = 27018;
+                    stateDirectory = "motortown-server-shuto";
+                    user = "steam";
+                    credentialsFile = config.age.secrets.steam-game.path;
+                    environment = {
+                      MOD_SERVER_PORT = "5012";
+                      MOD_MANAGEMENT_PORT = "5013";
+                      MOD_WEBHOOK_ENABLE_EVENTS = "none";
+                      # In-game chat commands (/tp, /tps, /despawn). This instance
+                      # has no amc-backend, so the mod's own chat hook provides
+                      # them. Production leaves this unset: its commands come
+                      # from the backend registry, and the hook stays off there.
+                      MOD_CHAT_COMMANDS = "1";
+                      # Named /tp destinations (the six C1 garages), declarative
+                      # in nix/c1-tp-locations.json and copied to the store, so
+                      # the list survives restarts and game updates. Z values are
+                      # garage ground + 100 cm so the capsule clears the floor.
+                      MOD_TP_LOCATIONS_FILE = "${./nix/c1-tp-locations.json}";
+                    };
+                    dedicatedServerConfig = {
+                      ServerName = "ASEAN Shuto Highway - Full Map Test";
+                      ServerMessage = ''
+                        THIS IS A TEST SERVER (Shuto full map v2).
+                        Please join ASEAN Motor Club instead'';
+                      Password = "";
+                      MaxPlayers = 50;
+                      MaxVehiclePerPlayer = 10;
+                      bAllowPlayerToJoinWithCompanyVehicles = true;
+                      bAllowCompanyAIDriver = true;
+                      MaxHousingPlotRentalPerPlayer = 20;
+                      MaxHousingPlotRentalDays = 15;
+                      HousingPlotRentalPriceRatio = 5.0;
+                      bAllowModdedVehicle = true;
+                      NPCVehicleDensity = 1.0;
+                      NPCPoliceDensity = 0.0;
+                      bEnableHostWebAPIServer = true;
+                      HostWebAPIServerPassword = "hackme";
+                      HostWebAPIServerPort = 8083;
+                      # 0.7.20 config schema.
+                      PoliceRolePlayers = [];
+                      bAllowCorporation = true;
+                      bAllowPoliceVehicleByPlayerRole = true;
+                      bAllowAdminToRemoveAdmin = true;
+                      Admins = [
+                        {
+                          UniqueNetId = "76561198378447512";
+                          Nickname = "freeman";
+                        }
+                      ];
+                    };
                   };
-                  # AI traffic tuning. Production (asean-mt-server) and the
-                  # C1 instance both set these; the Shuto test instance ran
-                  # without them and spawns no traffic.
-                  engineIni = ''
-                    mh.trafficSpawnVehicleMaxDistance=40000.0
-                    mh.trafficSpawnVehicleMinDistance=25000.0
-                    mh.trafficAgentMaxTickDeltaSeconds=5.0
-                    mh.trafficTickPerFrame=20.0
-                  '';
-                  openFirewall = true;
-                  port = 27780;
-                  queryPort = 27018;
-                  stateDirectory = "motortown-server-shuto";
-                  user = "steam";
-                  credentialsFile = config.age.secrets.steam-game.path;
-                  environment = {
-                    MOD_SERVER_PORT = "5012";
-                    MOD_MANAGEMENT_PORT = "5013";
-                    MOD_WEBHOOK_ENABLE_EVENTS = "none";
-                    # In-game chat commands (/tp, /tps, /despawn). This instance
-                    # has no amc-backend, so the mod's own chat hook provides
-                    # them. Production leaves this unset: its commands come
-                    # from the backend registry, and the hook stays off there.
-                    MOD_CHAT_COMMANDS = "1";
-                    # Named /tp destinations (the six C1 garages), declarative
-                    # in nix/c1-tp-locations.json and copied to the store, so
-                    # the list survives restarts and game updates. Z values are
-                    # garage ground + 100 cm so the capsule clears the floor.
-                    MOD_TP_LOCATIONS_FILE = "${./nix/c1-tp-locations.json}";
-                  };
-                  dedicatedServerConfig = {
-                    ServerName = "ASEAN Shuto Highway - Full Map Test";
-                    ServerMessage = ''
-                      THIS IS A TEST SERVER (Shuto full map v2).
-                      Please join ASEAN Motor Club instead'';
-                    Password = "";
-                    MaxPlayers = 50;
-                    MaxVehiclePerPlayer = 10;
-                    bAllowPlayerToJoinWithCompanyVehicles = true;
-                    bAllowCompanyAIDriver = true;
-                    MaxHousingPlotRentalPerPlayer = 20;
-                    MaxHousingPlotRentalDays = 15;
-                    HousingPlotRentalPriceRatio = 5.0;
-                    bAllowModdedVehicle = true;
-                    NPCVehicleDensity = 1.0;
-                    NPCPoliceDensity = 0.0;
-                    bEnableHostWebAPIServer = true;
-                    HostWebAPIServerPassword = "hackme";
-                    HostWebAPIServerPort = 8083;
-                    # 0.7.20 config schema.
-                    PoliceRolePlayers = [];
-                    bAllowCorporation = true;
-                    bAllowPoliceVehicleByPlayerRole = true;
-                    bAllowAdminToRemoveAdmin = true;
-                    Admins = [
-                      {
-                        UniqueNetId = "76561198378447512";
-                        Nickname = "freeman";
-                      }
-                    ];
-                  };
-                };
-              })
+                })
               ];
               age.secrets.backend-staging = {
                 file = ./secrets/backend-staging.age;

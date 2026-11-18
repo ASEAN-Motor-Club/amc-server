@@ -3,8 +3,7 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   cfg = config.services.beamcomp-discord;
 
   bridge = pkgs.writeShellApplication {
@@ -17,8 +16,7 @@ let
       exec python3 ${./beamcomp-discord}/bridge.py "$@"
     '';
   };
-in
-{
+in {
   options.services.beamcomp-discord = {
     enable = lib.mkEnableOption "BeamComp race events to Discord";
 
@@ -59,9 +57,9 @@ in
 
     systemd.services.beamcomp-discord = {
       description = "BeamComp race events to Discord";
-      after = [ "beammp-server.service" "network-online.target" ];
-      wants = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
+      after = ["beammp-server.service" "network-online.target"];
+      wants = ["network-online.target"];
+      wantedBy = ["multi-user.target"];
 
       serviceConfig = {
         ExecStart = "${bridge}/bin/beamcomp-discord";
@@ -69,8 +67,8 @@ in
         DynamicUser = true;
         # journal: read without root; beammp: traverse /var/lib/beammp-server,
         # which is 0770 beammp:beammp (the run log itself is world-readable).
-        SupplementaryGroups = [ "systemd-journal" "beammp" ];
-        LoadCredential = [ "discord-token:${cfg.tokenFile}" ];
+        SupplementaryGroups = ["systemd-journal" "beammp"];
+        LoadCredential = ["discord-token:${cfg.tokenFile}"];
 
         Environment = [
           "BEAMCOMP_CHANNEL_ID=${cfg.channelId}"
