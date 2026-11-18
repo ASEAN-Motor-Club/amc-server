@@ -930,6 +930,16 @@
                   enable = true;
                   sourceDb = "/var/lib/hermes-agent/workspace/mt-workshop-scrape/workshop.db";
                   viewerRoot = "/var/www/www.aseanmotorclub.com/vehicles";
+                  # Snapshot renders were socket-bound on the public edge
+                  # (43 KB/s to a remote renderer vs 19 MB/s here), so assets
+                  # come off local disk over the tailnet and a desktop GPU does
+                  # the raster work. The local SwiftShader browser stays as the
+                  # fallback when the desktop is offline.
+                  viewerOrigin = {
+                    enable = true;
+                    renderUrl = "http://100.126.244.10:7004";
+                  };
+                  snapshotRemoteUrl = "http://127.0.0.1:18099";
                 };
               };
 
