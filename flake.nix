@@ -1144,13 +1144,13 @@
               systemd.services.syslog.serviceConfig.TimeoutStopSec = "5s";
 
               services.motortown-server = {
-                enable = false;
+                enable = true;
                 enableMods = true;
                 maxFps = 30;
                 restartSchedule = "3000-01-01 00:00:00";
                 betaBranch = "beta";
-                # C1 (Shuto loop) map test: launch the mod map instead of Jeju_World.
-                mapName = "/Game/Mods/C1/Maps/C1";
+                # 0.7.20 schedule-i test: default Jeju map, no C1 (the C1 paks
+                # are still 0.7.19 cooks; a mismatched pak crash-loops boot).
                 modVersion = (import ./mod-versions.nix).staging;
                 enableExternalMods = {
                   CarPartsImport_P = false;
@@ -1203,14 +1203,20 @@
                   # no resident pseudo demand; quicklime-only consumption (demand
                   # max 30); quicklime CocaineBricks/MethBase production 120s;
                   # all our recipes capped at 300s.
-                  "Schedule_I_v0.7.8_0.7.19_SERVER_P" = true;
-                  qxZap_satigt3_MoreAttachments_P = true;
+                  # v0.7.9: rebuilt for game 0.7.20 (client build 26722054) —
+                  # 1,202,204 B, sha256 2d9482c3…, 88 entries, 21 cargos.
+                  # STAGING IS THE 0.7.20 TEST: only this pak is enabled; the
+                  # 7.19 paks below stay OFF because a mismatched version
+                  # crash-loops the server at boot (status=3/NOTIMPLEMENTED).
+                  "Schedule_I_v0.7.9_0.7.20_SERVER_P" = true;
+                  qxZap_satigt3_MoreAttachments_P = false;
                   # C1 Shuto loop dedicated-server pak (WindowsServer cook of the
                   # C1 project, 61,986,235 B, sha256 ed3fcfd5a8d20546d8a412dd8521
                   # 8226ac812c9bb0ac9393fd713903075d83f6). Render assets stripped,
                   # collision byte-identical to the client pak. Served from
                   # /var/lib/mod-releases/mods/ on amc-peripheral.
-                  zzz_AMC_C1_Server_P = true;
+                  # C1 Shuto paks are 0.7.19 cooks — OFF for the 0.7.20 test.
+                  zzz_AMC_C1_Server_P = false;
                 };
                 engineIni = ''
                   mh.maxCombinedVehicleLength=4000
