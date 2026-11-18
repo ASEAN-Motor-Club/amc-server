@@ -926,6 +926,11 @@
                 sharry = {
                   enable = true;
                 };
+                workshop = {
+                  enable = true;
+                  sourceDb = "/var/lib/hermes-agent/workspace/mt-workshop-scrape/workshop.db";
+                  viewerRoot = "/var/www/www.aseanmotorclub.com/vehicles";
+                };
               };
 
               # Manager-level CPU reservation: everything on the host
