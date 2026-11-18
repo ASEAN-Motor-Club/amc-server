@@ -195,7 +195,7 @@
                   NPCVehicleDensity = 0.0;
                   NPCPoliceDensity = 0.0;
                   bEnableHostWebAPIServer = true;
-                  HostWebAPIServerPassword = "";
+                  HostWebAPIServerPassword = "hackme";
                   HostWebAPIServerPort = 8082;
                   Admins = [
                     {
@@ -437,7 +437,12 @@
               NPCVehicleDensity = 0.5;
               NPCPoliceDensity = 0.0;
               bEnableHostWebAPIServer = true;
-              HostWebAPIServerPassword = "";
+              # Motor Town 0.7.20+ fail-closes the Host Web API when this is
+              # empty: every request answers "Invalid password", which silently
+              # broke /player/list (and with it /tp2marker, admin checks,
+              # kick/ban, announcements).  Must match GAME_SERVER_API_PASSWORD
+              # in the amc-backend service env.
+              HostWebAPIServerPassword = "hackme";
               HostWebAPIServerPort = lib.mkDefault 8080;
               Admins = [
                 {
@@ -656,6 +661,10 @@
                 environment = {
                   MOD_SERVER_API_URL = "http://localhost:5001";
                   GAME_SERVER_API_URL = "http://localhost:8080";
+                  # Host Web API password — must match
+                  # services.motortown-server...HostWebAPIServerPassword (0.7.20+
+                  # rejects every request while it is empty).
+                  GAME_SERVER_API_PASSWORD = "hackme";
                   EVENT_GAME_SERVER_API_URL = "http://127.0.0.1:8082";
                   EVENT_MOD_SERVER_API_URL = "http://localhost:5011";
                   MOD_MANAGEMENT_API_URL = "http://localhost:5000";
@@ -1051,7 +1060,7 @@
                     NPCVehicleDensity = 1.0;
                     NPCPoliceDensity = 0.0;
                     bEnableHostWebAPIServer = true;
-                    HostWebAPIServerPassword = "";
+                    HostWebAPIServerPassword = "hackme";
                     HostWebAPIServerPort = 8083;
                     Admins = [
                       {
@@ -1101,6 +1110,7 @@
                 environmentFile = config.age.secrets.backend-staging.path;
                 environment = {
                   GAME_SERVER_API_URL = "http://localhost:8081";
+                  GAME_SERVER_API_PASSWORD = "hackme";
                   MOD_SERVER_API_URL = "http://localhost:5001";
                   WEBHOOK_SERVER_API_URL = "http://localhost:5000";
                   MOD_MANAGEMENT_API_URL = "http://localhost:5000";
@@ -1248,7 +1258,7 @@
                   NPCVehicleDensity = 0.0;
                   NPCPoliceDensity = 0.0;
                   bEnableHostWebAPIServer = true;
-                  HostWebAPIServerPassword = "";
+                  HostWebAPIServerPassword = "hackme";
                   HostWebAPIServerPort = 8081;
                   Admins = [
                     {
