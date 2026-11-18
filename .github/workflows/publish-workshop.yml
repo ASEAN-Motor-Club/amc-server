@@ -1,0 +1,86 @@
+name: Publish Workshop
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - amc-peripheral
+      - flake.lock
+      - flake.nix
+      - .github/workflows/publish-workshop.yml
+  workflow_dispatch: {}
+
+concurrency:
+  group: publish-workshop
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: [self-hosted, deploy-peripheral]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+          persist-credentials: false
+
+      - name: Build workshop closure
+        id: build
+        run: |
+          set -euo pipefail
+          out=$(nix build --no-link --print-out-paths .#amc-peripheral-env)
+          test -x "$out/bin/amc_workshop"
+          echo "out=$out" >> "$GITHUB_OUTPUT"
+          echo "built $out"
+
+      - name: Publish release and restart web
+        env:
+          RELEASE: ${{ steps.build.outputs.out }}
+        run: |
+          set -euo pipefail
+          current=/var/lib/amc-workshop/current
+          releases=/var/lib/amc-workshop/releases
+          install -d -m 0750 -o hermes -g hermes "$releases"
+
+          previous=$(readlink -f "$current" 2>/dev/null || true)
+          if [ "$previous" = "$RELEASE" ]; then
+            echo "workshop release already current: $RELEASE"
+            exit 0
+          fi
+
+          stamp="$(date -u +%Y%m%dT%H%M%SZ)-$(git rev-parse --short HEAD)"
+          root="$releases/$stamp"
+          rm -f "$root" "$current.next"
+          nix-store --add-root "$root" --indirect -r "$RELEASE" >/dev/null
+          ln -s "$root" "$current.next"
+          chown -h hermes:hermes "$root" "$current.next"
+          mv -Tf "$current.next" "$current"
+
+          systemctl restart amc-workshop-web
+          systemctl try-restart amc-workshop-snapshots amc-workshop-viewer-origin || true
+
+          healthy=0
+          for _ in $(seq 1 15); do
+            if curl -fsS --max-time 5 http://127.0.0.1:7003/api/workshop/health >/dev/null; then
+              healthy=1
+              break
+            fi
+            sleep 2
+          done
+
+          if [ "$healthy" -ne 1 ]; then
+            echo "workshop health check failed; rolling back" >&2
+            if [ -n "$previous" ]; then
+              ln -s "$previous" "$current.next"
+              mv -Tf "$current.next" "$current"
+            else
+              rm -f "$current"
+            fi
+            systemctl restart amc-workshop-web || true
+            exit 1
+          fi
+
+          echo "workshop release active: $RELEASE"
