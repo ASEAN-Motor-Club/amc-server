@@ -1319,6 +1319,7 @@
       }: let
         pkgs = nixpkgs.legacyPackages.${system};
       in {
+        packages.amc-peripheral-env = amc-peripheral.packages.${system}.default;
         devShells.default = pkgs.mkShell {
           packages =
             [
