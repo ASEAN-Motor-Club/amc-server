@@ -31,7 +31,7 @@ jobs:
         id: build
         run: |
           set -euo pipefail
-          out=$(nix build --no-link --print-out-paths .#amc-peripheral-env)
+          out=$(nix --store daemon build --no-link --print-out-paths .#amc-peripheral-env)
           test -x "$out/bin/amc_workshop"
           echo "out=$out" >> "$GITHUB_OUTPUT"
           echo "built $out"
