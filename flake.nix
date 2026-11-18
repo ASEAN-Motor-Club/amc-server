@@ -340,18 +340,21 @@
             #modVersion = "server-v0.40.0-rc8";
             modVersion = (import ./mod-versions.nix).main;
             enableExternalMods = {
-              # 0.7.20 (dedi build 26722073). Only one mod has a 0.7.20 pak:
+              # 0.7.20 (dedi build 26722073). Mods with 0.7.20 paks:
               #   Maja's Detail Works V4 (DEDI SERVER ONLY, uploaded 2026-11-13)
+              #   Schedule_I v0.7.9 (rebuilt 2026-11-18 off the 0.7.20 CLIENT pak
+              #     build 26722054 with mt-pak-extract + a 0.7.20 Mappings.usmap;
+              #     1,202,204 B, sha256 2d9482c3…, 88 entries, 21 cargos, server
+              #     canary: unversioned DP/DataTables as the 0.7.19 artifact had)
               # The others are OFF until their authors ship 0.7.20 builds —
               #   Maja's Trailer Works    last 7.19 V7 (2026-07-14), author
               #                           warns it crashes on 7.20
               #   More Attachments        last MoreAttachments1.5 (2026-09-06),
               #                           no 7.20 revision
-              #   Schedule_I (ours)       must be rebuilt off the 0.7.20 client
-              #                           pak with mt-pak-extract first
               # Do NOT re-enable a pak whose game version suffix != 0.7.20: it
               # crash-loops the server at boot (status=3/NOTIMPLEMENTED).
               "MajasDetailWorksV4-7.20-SERVER_P" = true;
+              "Schedule_I_v0.7.9_0.7.20_SERVER_P" = true;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
