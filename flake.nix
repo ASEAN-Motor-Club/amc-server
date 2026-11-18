@@ -851,6 +851,14 @@
                 file = ./secrets/cookies.age;
                 mode = "400";
               };
+              # Discord SSO for the workshop site: client id/secret, session
+              # signing key, guild id. Readable by the workshop unit's user.
+              age.secrets.workshop-sso = {
+                file = ./secrets/workshop-sso.age;
+                owner = "hermes";
+                group = "hermes";
+                mode = "440";
+              };
               age.secrets.opencode-peripheral = {
                 file = ./secrets/opencode-peripheral.age;
                 mode = "400";
@@ -892,6 +900,7 @@
                 };
                 workshop = {
                   enable = true;
+                  environmentFile = config.age.secrets.workshop-sso.path;
                   sourceDb = "/var/lib/hermes-agent/workspace/mt-workshop-scrape/workshop.db";
                   viewerRoot = "/var/www/www.aseanmotorclub.com/vehicles";
                   # Snapshot renders were socket-bound on the public edge
