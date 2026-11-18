@@ -41,9 +41,9 @@ jobs:
           RELEASE: ${{ steps.build.outputs.out }}
         run: |
           set -euo pipefail
-          current=/var/lib/amc-workshop/current
-          releases=/var/lib/amc-workshop/releases
-          install -d -m 0750 -o hermes -g hermes "$releases"
+          current=/var/lib/amc-workshop-releases/current
+          releases=/var/lib/amc-workshop-releases/releases
+          install -d -m 0755 -o root -g root "$releases"
 
           previous=$(readlink -f "$current" 2>/dev/null || true)
           if [ "$previous" = "$RELEASE" ]; then
@@ -56,7 +56,6 @@ jobs:
           rm -f "$root" "$current.next"
           nix-store --add-root "$root" --indirect -r "$RELEASE" >/dev/null
           ln -s "$root" "$current.next"
-          chown -h hermes:hermes "$root" "$current.next"
           mv -Tf "$current.next" "$current"
 
           systemctl restart amc-workshop-web
