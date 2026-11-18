@@ -953,6 +953,10 @@
                 serviceOverrides = {
                   ProtectHome = "none";
                   ProtectSystem = "false";
+                  # The publish workflow builds the workshop closure. Nix needs
+                  # real host root to write the release symlink, not a mapped
+                  # user-namespace root.
+                  PrivateUsers = false;
                 };
               };
             })
