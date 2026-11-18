@@ -997,16 +997,14 @@
                   mapName = "/Game/Mods/C1Full/Maps/C1Full";
                   modVersion = (import ./mod-versions.nix).staging;
                   enableExternalMods = {
-                    # WindowsServer cook of the Shuto (C1Full) map, v4,
-                    # 389,480,573 B / 9,524 records, sha256 7232369…4824,
-                    # published 2026-11-13 from releases/c1/pakset_release_v2
-                    # (SET.md). Carries the v30 nav graph (C1Full_Roads.uexp
-                    # 57,027,114 B, 40,062 nodes) in an always-loaded sublevel.
-                    # NOTE: this build also re-serialised the spawner's 16
-                    # VehicleClass refs, which is NOT what fixes traffic —
-                    # vanilla Jeju ships the same rows with null refs. Kept
-                    # because it is already published and harmless.
-                    zzz_AMC_Shuto_Server_v7_P = true;
+                    # WindowsServer cook of the Shuto (C1Full) map for Motor
+                    # Town 0.7.20, v8, 389,032,285 B / 9,524 records, sha256
+                    # ef2c9722…a8768, published 2026-11-18 from
+                    # releases/c1/release_20261118_0720. Fresh 7.20 server cook;
+                    # maps are the byte-identical, class-ref-repaired P22 client
+                    # records. Keeps the v30 nav graph (C1Full_Roads.uexp
+                    # 57,027,114 B) and the pre-existing DataAsset records.
+                    zzz_AMC_Shuto_Server_v8_P = true;
                   };
                   # AI traffic tuning. Production (asean-mt-server) and the
                   # C1 instance both set these; the Shuto test instance ran
