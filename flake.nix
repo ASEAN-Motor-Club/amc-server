@@ -994,7 +994,7 @@
                 amc-backend.nixosModules.log-listener
 
 
-              # --- Third staging instance: Shuto (vanilla 7.20) -----------
+              # --- Third staging instance: Shuto (C1Full, 7.20) ------------
               # Runs as its own service next to the C1 loop server
               # (motortown-server, 27778). Own unit
               # (motortown-server-shuto), own state dir
@@ -1002,9 +1002,8 @@
               # Port map: game 27780 / query 27018 / mod 5012+5013 /
               # webapi 8083.
               #
-              # 0.7.20: C1Full map paks are not supported. Any loaded C1 pak
-              # crashes the server on the GameThread. Boot vanilla Jeju_World
-              # with no external mods until a 0.7.20 boot-verified C1 pak exists.
+              # 0.7.20: boot the pure 7.20 server cook. Do not overlay old
+              # 7.19 DataAssets; those records crash the GameThread.
               (motortown-server.lib.mkExtraInstance {
                 name = "shuto";
                 settings = {
@@ -1012,12 +1011,15 @@
                   enableMods = true;
                   maxFps = 60;
                   betaBranch = "beta";
-                  mapName = "Jeju_World";
+                  mapName = "/Game/Mods/C1Full/Maps/C1Full";
                   modVersion = (import ./mod-versions.nix).staging;
-                  # 0.7.20: drop the unsupported C1Full pak. Loading any
-                  # 7.19-era or 7.20-recook attempt crash-loops the server with
-                  # EXCEPTION_ACCESS_VIOLATION on the GameThread.
-                  enableExternalMods = { };
+                  enableExternalMods = {
+                    # Pure Motor Town 0.7.20 WindowsServer cook of C1Full,
+                    # 1,628 records / 383,743,189 B, sha256 ec72e8d5…8821.
+                    # No 7.19 DataAsset overlays: preserving those records
+                    # caused a GameThread null dereference before ServerLog.
+                    zzz_AMC_Shuto_Server_v10pure_P = true;
+                  };
                   # AI traffic tuning. Production (asean-mt-server) and the
                   # C1 instance both set these; the Shuto test instance ran
                   # without them and spawns no traffic.
