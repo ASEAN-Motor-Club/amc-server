@@ -545,6 +545,10 @@
             ./machines/asean-mt-server/configuration.nix
             ragenix.nixosModules.default
 
+            # Unstable nixpkgs available to modules (used by nix/nginx.nix to
+            # build nginx from the 1.30.7 upstream tarball).
+            {_module.args.nixpkgs-unstable = nixpkgs-unstable;}
+
             ({
               config,
               lib,

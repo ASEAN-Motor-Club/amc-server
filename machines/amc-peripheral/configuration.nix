@@ -76,6 +76,8 @@ in {
   imports = [
     ./hardware-configuration.nix
     ../../nix/unreal-headless.nix
+    # nginx built from the 1.30.7 tarball — see the module for why.
+    ../../nix/nginx.nix
   ];
 
   # Headless Unreal Engine 5 commandlets (UnrealPak / UnrealEditor-Cmd) wrapping
@@ -372,11 +374,7 @@ in {
     recommendedGzipSettings = true;
     # Only allow PFS-enabled ciphers with AES256
     sslCiphers = "AES256+EECDH:AES256+EDH:!aNULL";
-    # Add the ngx_brotli module so precompressed .br static files can be
-    # served (brotli_static) alongside gzip_static.
-    package = pkgs.nginxStable.override {
-      modules = [pkgs.nginxModules.brotli];
-    };
+    # (nginx package, incl. the ngx_brotli module, comes from ../../nix/nginx.nix)
 
     virtualHosts."www.aseanmotorclub.com" = {
       enableACME = true;
@@ -1699,35 +1697,4 @@ in {
     enableACME = true;
     forceSSL = true;
   };
-
-  # ── HTTP/2 disabled host-wide (CVE-2026-123633 / CVE-2026-123007) ──────
-  # The pinned nginx (1.28.0) is affected by two unauthenticated RCEs that are
-  # only reachable when HTTP/2 is enabled. No AMC vhost needs HTTP/2, so turn it
-  # off everywhere until nginx is bumped to a patched release.
-  #
-  # The nixpkgs nginx module defaults `virtualHosts.<name>.http2` to true, and
-  # the directive is emitted per server block, so it has to be overridden per
-  # vhost. Every name below MUST match an existing vhost exactly — a name with
-  # no other definition would create a stray stub server block. Vhosts are also
-  # defined by the amc-peripheral input (share/radio/gov/docs/mods/bridge/
-  # workshop) and by flake.nix (test), so this list is the single place they are
-  # all turned off. Re-check it whenever a vhost is added or removed, and drop
-  # this block once the patched nginx is pinned.
-  #
-  # (Written out one vhost at a time on purpose: assigning the whole
-  # `services.nginx.virtualHosts` attrset here would collide with the nested
-  # definitions above — Nix rejects a value at that path.)
-  services.nginx.virtualHosts."bridge.aseanmotorclub.com".http2 = false;
-  services.nginx.virtualHosts."code-peripheral.aseanmotorclub.com".http2 = false;
-  services.nginx.virtualHosts."docs.aseanmotorclub.com".http2 = false;
-  services.nginx.virtualHosts."gov.aseanmotorclub.com".http2 = false;
-  services.nginx.virtualHosts."legacy.aseanmotorclub.com".http2 = false;
-  services.nginx.virtualHosts."mods.aseanmotorclub.com".http2 = false;
-  services.nginx.virtualHosts."radio.aseanmotorclub.com".http2 = false;
-  services.nginx.virtualHosts."share.aseanmotorclub.com".http2 = false;
-  services.nginx.virtualHosts."test.aseanmotorclub.com".http2 = false;
-  services.nginx.virtualHosts."wiki.aseanmotorclub.com".http2 = false;
-  services.nginx.virtualHosts."workshop.aseanmotorclub.com".http2 = false;
-  services.nginx.virtualHosts."www.aseanmotorclub.com".http2 = false;
-  services.nginx.virtualHosts."youtrack.aseanmotorclub.com".http2 = false;
 }
