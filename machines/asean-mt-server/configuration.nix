@@ -14,6 +14,8 @@
     "${disko}/module.nix"
     ./disko-config.nix
     ./beamcomp-discord.nix
+    # nginx built from the 1.30.7 tarball — see the module for why.
+    ../../nix/nginx.nix
   ];
   disko.devices.disk.main.device = "/dev/nvme0n1";
 
@@ -267,18 +269,4 @@
     "w /sys/kernel/mm/transparent_hugepage/enabled - - - - always"
     "w /sys/kernel/mm/transparent_hugepage/defrag - - - - defer+madvise"
   ];
-
-  # ── HTTP/2 disabled host-wide (CVE-2026-123633 / CVE-2026-123007) ──────
-  # The pinned nginx (1.28.0) is affected by two unauthenticated RCEs that are
-  # only reachable when HTTP/2 is enabled. No AMC vhost needs HTTP/2, so turn it
-  # off everywhere until nginx is bumped to a patched release.
-  #
-  # The nixpkgs nginx module defaults `virtualHosts.<name>.http2` to true, and
-  # the directive is emitted per server block, so it has to be overridden per
-  # vhost. Names below MUST match existing vhosts exactly (the "_" catch-all is
-  # HTTP-only and has no TLS server, so it is unaffected). Drop this block once
-  # the patched nginx is pinned.
-  services.nginx.virtualHosts."api.aseanmotorclub.com".http2 = false;
-  services.nginx.virtualHosts."eco.aseanmotorclub.com".http2 = false;
-  services.nginx.virtualHosts."server.aseanmotorclub.com".http2 = false;
 }
