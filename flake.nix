@@ -1019,11 +1019,10 @@
                     mapName = "/Game/Mods/C1Full/Maps/C1Full";
                     modVersion = (import ./mod-versions.nix).staging;
                     enableExternalMods = {
-                      # Pure Motor Town 0.7.20 WindowsServer cook of C1Full,
-                      # 1,628 records / 383,743,189 B, sha256 ec72e8d5…8821.
-                      # No 7.19 DataAsset overlays: preserving those records
-                      # caused a GameThread null dereference before ServerLog.
-                      zzz_AMC_Shuto_Server_v10pure_P = true;
+                      # 7.20 server cook with patched game-mode/map refs and
+                      # versioned 7.20 C1FullShuto GameResource/Courses rows.
+                      # 1,632 records / 383,814,059 B, sha256 475e4b00…2cbf.
+                      zzz_AMC_Shuto_Server_v11registered_P = true;
                     };
                     # AI traffic tuning. Production (asean-mt-server) and the
                     # C1 instance both set these; the Shuto test instance ran
