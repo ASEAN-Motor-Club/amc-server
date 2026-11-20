@@ -17,21 +17,20 @@
   pkgs,
   nixpkgs-unstable,
   ...
-}:
-let
+}: let
   unstable = nixpkgs-unstable.legacyPackages.${pkgs.stdenv.hostPlatform.system};
-in
-{
-  services.nginx.package = (unstable.nginxStable.override {
-    # ngx_brotli, so precompressed .br static files can be served
-    # (brotli_static) alongside gzip_static.
-    modules = [unstable.nginxModules.brotli];
-  }).overrideAttrs (_: {
-    version = "1.30.7";
-    nginxVersion = "1.30.7";
-    src = pkgs.fetchurl {
-      url = "https://nginx.org/download/nginx-1.30.7.tar.gz";
-      hash = "sha256-JWW1yDcFDpWPcPsPc8SOK8pFQq00n9NW9G+wxyYQvG4=";
-    };
-  });
+in {
+  services.nginx.package =
+    (unstable.nginxStable.override {
+      # ngx_brotli, so precompressed .br static files can be served
+      # (brotli_static) alongside gzip_static.
+      modules = [unstable.nginxModules.brotli];
+    }).overrideAttrs (_: {
+      version = "1.30.7";
+      nginxVersion = "1.30.7";
+      src = pkgs.fetchurl {
+        url = "https://nginx.org/download/nginx-1.30.7.tar.gz";
+        hash = "sha256-JWW1yDcFDpWPcPsPc8SOK8pFQq00n9NW9G+wxyYQvG4=";
+      };
+    });
 }
