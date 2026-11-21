@@ -1019,10 +1019,9 @@
                     mapName = "/Game/Mods/C1Full/Maps/C1Full";
                     modVersion = (import ./mod-versions.nix).staging;
                     enableExternalMods = {
-                      # 7.20 server cook with patched game-mode/map refs and
-                      # versioned 7.20 C1FullShuto GameResource/Courses rows.
-                      # 1,632 records / 383,814,059 B, sha256 475e4b00…2cbf.
-                      zzz_AMC_Shuto_Server_v11registered_P = true;
+                      # v11 plus the known-good six-garage map and fuel actor.
+                      # 1,632 records / 383,814,784 B, sha256 a91aabf5…28d0.
+                      zzz_AMC_Shuto_Server_v12garages_P = true;
                     };
                     # AI traffic tuning. Production (asean-mt-server) and the
                     # C1 instance both set these; the Shuto test instance ran
