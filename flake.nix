@@ -1057,10 +1057,18 @@
                       MOD_TP_LOCATIONS_FILE = "${./nix/c1-tp-locations.json}";
                     };
                     dedicatedServerConfig = {
-                      ServerName = "ASEAN Shuto Highway - Full Map Test";
+                      ServerName = "Shuto Expressway Map | Download on Nexus | ASEAN Motor Club";
                       ServerMessage = ''
-                        THIS IS A TEST SERVER (Shuto full map v2).
-                        Please join ASEAN Motor Club instead'';
+                        Welcome to the Shuto Expressway Map!
+
+                        Explore the full C1 map, drive with the community, or run Time Attack.
+
+                        Commands:
+                        /tps — list available teleport destinations.
+                        /tp <name> — teleport to a listed destination.
+                        /repair — repair your current or last-used vehicle and fill its tank.
+
+                        Hosted by ASEAN Motor Club.'';
                       Password = "";
                       MaxPlayers = 50;
                       MaxVehiclePerPlayer = 10;
