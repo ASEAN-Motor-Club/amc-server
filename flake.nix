@@ -346,15 +346,19 @@
               #     build 26722054 with mt-pak-extract + a 0.7.20 Mappings.usmap;
               #     1,202,204 B, sha256 2d9482c3…, 88 entries, 21 cargos, server
               #     canary: unversioned DP/DataTables as the 0.7.19 artifact had)
+              #   Maja's Trailer Works V8.1 (Nexus mod 13, 2026-11-19): one
+              #     universal pak for client + dedicated server, supplied by
+              #     freeman; 44,589,203 B, sha256 648316c9… (staged both hosts)
               # The others are OFF until their authors ship 0.7.20 builds —
-              #   Maja's Trailer Works    last 7.19 V7 (2026-07-14), author
-              #                           warns it crashes on 7.20
               #   More Attachments        last MoreAttachments1.5 (2026-09-06),
               #                           no 7.20 revision
               # Do NOT re-enable a pak whose game version suffix != 0.7.20: it
               # crash-loops the server at boot (status=3/NOTIMPLEMENTED).
+              # Trailer Works needs mh.maxCombinedVehicleLength; already set
+              # to 20000 under [ConsoleVariables] in engineIni below (200 m).
               "MajasDetailWorksV4-7.20-SERVER_P" = true;
               "Schedule_I_v0.7.9_0.7.20_SERVER_P" = true;
+              "MajasMnTrailerworksV8.1-7.20_P" = true;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
