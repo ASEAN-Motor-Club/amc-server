@@ -1157,7 +1157,8 @@
               systemd.services.syslog.serviceConfig.TimeoutStopSec = "5s";
 
               services.motortown-server = {
-                enable = true;
+                # C1 loop test retired; the full Shuto server is configured separately below.
+                enable = false;
                 enableMods = true;
                 maxFps = 30;
                 restartSchedule = "3000-01-01 00:00:00";
