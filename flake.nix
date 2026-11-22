@@ -1029,6 +1029,19 @@
                       # v11 plus the known-good six-garage map and fuel actor.
                       # 1,632 records / 383,814,784 B, sha256 a91aabf5…28d0.
                       zzz_AMC_Shuto_Server_v12garages_P = true;
+                      # Slide Industries Attachments v1.0.2 + ProxyTech RepairKit
+                      # (both 0.7.20). The zzzz compat pak is REQUIRED: it is the
+                      # only Items.uasset that references both child tables
+                      # (Items_SlidesAttachments + Items_ProxyRepair); without
+                      # it the alphabetical load order lets Slide's table win
+                      # and the RepairKit item is lost.
+                      #   SlideZone_Attachments_P.pak          44,235,092 B, sha256 e05fadfc…d37
+                      #   ProxyTech_RepairKit_P.pak             2,352,369 B, sha256 f12ac045…ee
+                      #   zzzzSlideZone_ProxyTech_Compat_7.20_P.pak 193,948 B, sha256 1aa02109…5d3
+                      # All three staged in the shuto .mod-cache and release store.
+                      SlideZone_Attachments_P = true;
+                      ProxyTech_RepairKit_P = true;
+                      "zzzzSlideZone_ProxyTech_Compat_7.20_P" = true;
                     };
                     # AI traffic tuning. Production (asean-mt-server) and the
                     # C1 instance both set these; the Shuto test instance ran
