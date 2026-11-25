@@ -53,8 +53,13 @@
     }
 
     snapshot() {
-      # Find the Motor Town server PID (read-only: never signals anything).
-      mt_pid="$(pgrep -f 'MotorTownServer-Win64-Shipping.exe' | head -n 1 || true)"
+      # Find the actual Motor Town game PID (read-only: never signals anything).
+      # Match exact comm "GameThread" first so we don't hit the outer bwrap/proton
+      # wrapper whose cmdline also contains MotorTownServer-Win64-Shipping.exe.
+      mt_pid="$(pgrep -x GameThread | head -n 1 || true)"
+      if [ -z "''${mt_pid:-}" ]; then
+        mt_pid="$(pgrep -f 'Z:.*MotorTownServer-Win64-Shipping\.exe' | head -n 1 || true)"
+      fi
       if [ -z "''${mt_pid:-}" ] || [ ! -d "/proc/$mt_pid" ]; then
         echo "=== probe: timeout on $URL but no MotorTownServer PID found ===" >> "$LOG"
         return 0
@@ -119,6 +124,18 @@
           cat /proc/"$mt_pid"/task/"$gt_tid"/stack 2>/dev/null || echo "(stack unreadable)"
         fi
         echo "fd count: $(ls /proc/"$mt_pid"/fd 2>/dev/null | wc -l)"
+
+        echo "### worker threads (Foreground/Background Work)"
+        for tid in /proc/"$mt_pid"/task/*; do
+          wcomm="$(cat "$tid/comm" 2>/dev/null || true)"
+          case "$wcomm" in
+            "Foreground Work"*|"Background Work"*)
+              wstate="$(awk '/^State:/ {print $2}' "$tid/status" 2>/dev/null || echo '?')"
+              wwchan="$(cat "$tid/wchan" 2>/dev/null || echo '?')"
+              echo "tid=$(basename "$tid") ($wcomm) state=$wstate wchan=$wwchan"
+              ;;
+          esac
+        done
 
         echo "### wineserver"
         if [ -n "$wine_pid" ]; then
