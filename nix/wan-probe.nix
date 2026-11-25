@@ -25,7 +25,9 @@
 }: let
   cfg = config.services.wan-probe;
 
-  probeScript = pkgs.writers.writePython3 "wan-probe.py" {} ''
+  probeScript = pkgs.writers.writePython3 "wan-probe.py" {
+    flakeIgnore = ["E501"];
+  } ''
 #!${pkgs.python3}/bin/python3
 import os
 import re
