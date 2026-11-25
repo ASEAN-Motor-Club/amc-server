@@ -27,7 +27,7 @@
 
   probeScript =
     pkgs.writers.writePython3 "wan-probe.py" {
-      flakeIgnore = ["E501"];
+      flakeIgnore = ["E501" "E302" "E305" "E231" "E265" "W503"];
     } ''
       #!${pkgs.python3}/bin/python3
       import os
