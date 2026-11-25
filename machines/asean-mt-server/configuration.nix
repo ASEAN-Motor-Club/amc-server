@@ -14,6 +14,8 @@
     "${disko}/module.nix"
     ./disko-config.nix
     ./beamcomp-discord.nix
+    # Read-only GameThread freeze probe for the Motor Town dedicated server.
+    ../../nix/motortown-hang-probe.nix
     # nginx built from the 1.30.7 tarball — see the module for why.
     ../../nix/nginx.nix
   ];
@@ -26,6 +28,11 @@
     channelId = "1566171349846593687";
     tokenFile = config.age.secrets.pzDiscordToken.path;
   };
+
+  # Report-only probe: polls the MT mod-server API and snapshots GameThread
+  # state to /var/log/motortown-hang-probe.log when /status/general times out
+  # (curl exit 28). Never signals or restarts anything.
+  services.motortown-hang-probe.enable = true;
 
   boot.tmp.cleanOnBoot = true;
   zramSwap.enable = false;
