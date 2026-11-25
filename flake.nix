@@ -345,12 +345,12 @@
               #   Maja's Trailer Works V8.1 (Nexus mod 13, 2026-11-19): one
               #     universal pak for client + dedicated server, supplied by
               #     freeman; 44,589,203 B, sha256 648316c9… (staged both hosts)
-              # Slide Industries Attachments v1.0.2 + ProxyTech RepairKit
-              #   (both 0.7.20, staged 2026-11-22): the zzzz compat pak is the
-              #   only Items.uasset parent that references BOTH child tables
-              #   (Items_SlidesAttachments/Items_ProxyRepair) AND Maja's
-              #   Items_MajasDetailWorks, so no existing rows are dropped.
-              #   Verified on the Shuto staging instance: clean 0.7.20 boot.
+              # Slide Industries Attachments v1.0.2 + ProxyTech RepairKit + compat
+              #   pak are DISABLED on prod by operator directive (2026-11-25) for
+              #   the next scheduled restart. Paks stay staged in .mod-cache/paks
+              #   for a one-line re-enable; pre-start will not copy them into
+              #   Content/Paks. Maja's Detail Works V4 provides its own Items.uasset
+              #   parent once the compat pak is off.
               #     SlideZone_Attachments_P.pak 44,235,092 B, sha256 e05fadfc…d37
               #     ProxyTech_RepairKit_P.pak    2,352,369 B, sha256 f12ac045…ee
               #     zzzzSlideZone_ProxyTech_Compat_7.20_P.pak 193,948 B, sha256 1aa02109…5d3
@@ -368,9 +368,9 @@
               "MajasDetailWorksV4-7.20-SERVER_P" = true;
               "Schedule_I_v0.7.9_0.7.20_SERVER_P" = false;
               "MajasMnTrailerworksV8.1-7.20_P" = true;
-              SlideZone_Attachments_P = true;
-              ProxyTech_RepairKit_P = true;
-              "zzzzSlideZone_ProxyTech_Compat_7.20_P" = true;
+              SlideZone_Attachments_P = false;
+              ProxyTech_RepairKit_P = false;
+              "zzzzSlideZone_ProxyTech_Compat_7.20_P" = false;
             };
             engineIni = ''
               mh.maxCombinedVehicleLength=20000
