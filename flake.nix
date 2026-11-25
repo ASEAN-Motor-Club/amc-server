@@ -1186,8 +1186,8 @@
               systemd.services.syslog.serviceConfig.TimeoutStopSec = "5s";
 
               services.motortown-server = {
-                # C1 loop test retired; the full Shuto server is configured separately below.
-                enable = false;
+                # Jeju staging test instance (port 27778, separate from shuto on 27780).
+                enable = true;
                 enableMods = true;
                 maxFps = 30;
                 restartSchedule = "3000-01-01 00:00:00";
@@ -1310,7 +1310,7 @@
                 };
                 credentialsFile = config.age.secrets.steam-game.path;
                 dedicatedServerConfig = {
-                  ServerName = "ASEAN Shuto Highway Test - C1 Loop";
+                  ServerName = "ASEAN Motor Club - Staging Test";
                   ServerMessage = ''                    THIS IS A TEST SERVER.
                     Please join ASEAN Motor Club instead'';
                   Password = "";
