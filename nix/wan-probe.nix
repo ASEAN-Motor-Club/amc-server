@@ -133,8 +133,8 @@
               return None
           try:
               with urllib.request.urlopen(PLAYERS_URL, timeout=1.0) as resp:
-                  data = json.load(resp).get("data") or {}
-              if isinstance(data, dict):
+                  data = json.load(resp).get("data")
+              if isinstance(data, (list, dict)):
                   return len(data)
           except Exception:
               pass
