@@ -334,6 +334,8 @@
             # 0.7.20 Build 1167 hotfix ("Raised the Steam server data send limit")
             # lives on Steam app 2223650 branch "test" (buildid 26936495).
             betaBranch = "test";
+            # Vanilla server sim rate (60 FPS); 120 FPS multiplied replication load.
+            maxFps = 60;
             # Restart only Mondays and Thursdays, 08:30 Asia/Bangkok (server
             # local). Other days the server keeps running; new mod paks still
             # only take effect on the next restart, so a mod ship lands on the
@@ -383,8 +385,6 @@
               mh.invalidPartsDisableLeaderboard=0
               mh.refuelEVMinPercentPerSeconds=0.002000000026077032
               mh.refuelkWPerSeconds=0.2
-              mh.trafficSpawnVehicleMaxDistance=40000.0
-              mh.trafficSpawnVehicleMinDistance=25000.0
               mh.towPaymentMultiplier=3
               mh.vehicleMaxGVWFinePerTon=1
               mh.vehicleMaxWeightFine=1
@@ -395,6 +395,16 @@
               mh.garbageCollectRateDecreasePerSeconds=0.00001
               mk.policeSpikePadDeploySeconds=6
               mk.policeSpikePadDurationSeconds=60
+
+              [/Script/SteamSockets.SteamSocketsNetDriver]
+              NetServerMaxTickRate=30
+
+              [/Script/MotorTown.MTSteamSocketsNetDriver]
+              NetServerMaxTickRate=30
+
+              [Core.Log]
+              LogNet=Log
+              LogSteamSockets=Log
             '';
             openFirewall = true;
             user = "steam";

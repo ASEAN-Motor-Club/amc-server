@@ -140,7 +140,9 @@
       def fetch_players():
           try:
               with urllib.request.urlopen(PLAYERS_URL, timeout=2.0) as resp:
-                  data = json.load(resp).get("data") or {}
+                  data = json.load(resp).get("data")
+              if isinstance(data, list):
+                  return data
               if isinstance(data, dict):
                   return list(data.values())
           except Exception:
