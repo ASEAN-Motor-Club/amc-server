@@ -331,6 +331,9 @@
             enable = true;
             enableMods = true;
             enableLogStreaming = true;
+            # 0.7.20 Build 1167 hotfix ("Raised the Steam server data send limit")
+            # lives on Steam app 2223650 branch "test" (buildid 26936495).
+            betaBranch = "test";
             # Restart only Mondays and Thursdays, 08:30 Asia/Bangkok (server
             # local). Other days the server keeps running; new mod paks still
             # only take effect on the next restart, so a mod ship lands on the
