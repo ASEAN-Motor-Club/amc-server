@@ -223,9 +223,10 @@ in {
         NoNewPrivileges = true;
         PrivateTmp = true;
         # Reading another user's /proc/<pid>/stack & friends needs ptrace
-        # permission; the game runs as "steam", so keep CAP_SYS_PTRACE and
-        # drop everything else.
-        CapabilityBoundingSet = ["CAP_SYS_PTRACE"];
+        # permission, and reading UE4SS.log / motortown.log inside 0700
+        # /var/lib/motortown-server needs CAP_DAC_READ_SEARCH. Drop everything
+        # else; ProtectSystem=full still prevents writes outside /var/log.
+        CapabilityBoundingSet = ["CAP_SYS_PTRACE" "CAP_DAC_READ_SEARCH"];
         RestrictNamespaces = true;
         LockPersonality = true;
         MemoryDenyWriteExecute = true;

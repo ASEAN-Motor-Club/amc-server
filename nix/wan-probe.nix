@@ -30,20 +30,26 @@
       flakeIgnore = ["E501" "E302" "E305" "E231" "E265" "W503"];
     } ''
       #!${pkgs.python3}/bin/python3
+      import json
       import os
       import re
       import signal
       import subprocess
       import threading
       import time
+      import urllib.request
       from datetime import datetime, timezone
 
       TARGETS = ${builtins.toJSON cfg.targets}
       LOG = ${builtins.toJSON cfg.logFile}
       IFACE = ${builtins.toJSON cfg.interface}
+      PLAYERS_URL = ${builtins.toJSON cfg.playersUrl}
+      TX_PER_PLAYER_KBPS_THRESHOLD = ${toString cfg.txPerPlayerKbpsThreshold}
+      UDP_OUT_PER_PLAYER_PPS_THRESHOLD = ${toString cfg.udpOutPerPlayerPpsThreshold}
       RTT_THRESHOLD_MS = 150.0
       WINDOW_SECONDS = 10
       SUMMARY_INTERVAL = 300  # 5 minutes
+      PRESSURE_INTERVAL = 15  # 15 s check; 2 consecutive = 30 s sustained
       ANOMALY_MIN_GAP = 10    # at most one anomaly line / 10 s per target
       MAX_LOG_BYTES = 10 * 1024 * 1024  # rotate above 10 MB, keep one .log.1
 
@@ -85,22 +91,24 @@
 
       # ---- system counters (read-only /proc reads) ---------------------------
 
-      _iface_re = re.compile(r"^\s*" + re.escape(IFACE) + r":\s*(\d+)\s+(\d+)\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+(\d+)\s+(\d+)")
-
-      def iface_dropped():
-          """Return (rx_dropped, tx_dropped) for the interface, or None."""
+      def iface_stats():
+          """Return (rx_bytes, rx_dropped, tx_bytes, tx_dropped) for IFACE, or None."""
           try:
               with open("/proc/net/dev", encoding="utf-8") as fh:
                   for line in fh.read().splitlines()[2:]:
-                      m = _iface_re.match(line)
-                      if m:
-                          return int(m.group(3)), int(m.group(4))
-          except OSError:
+                      if ":" not in line:
+                          continue
+                      name, rest = line.split(":", 1)
+                      if name.strip() == IFACE:
+                          cols = rest.split()
+                          if len(cols) >= 12:
+                              return int(cols[0]), int(cols[3]), int(cols[8]), int(cols[11])
+          except (OSError, ValueError):
               pass
           return None
 
-      def udp_errors():
-          """Return (RcvbufErrors, InErrors) from /proc/net/snmp, or None."""
+      def udp_stats():
+          """Return (RcvbufErrors, InErrors, InDatagrams, OutDatagrams) from /proc/net/snmp, or None."""
           try:
               with open("/proc/net/snmp", encoding="utf-8") as fh:
                   lines = fh.read().splitlines()
@@ -109,34 +117,62 @@
                       keys = lines[i].split()[1:]
                       vals = lines[i + 1].split()[1:]
                       d = dict(zip(keys, vals))
-                      return int(d.get("RcvbufErrors", 0)), int(d.get("InErrors", 0))
+                      return (
+                          int(d.get("RcvbufErrors", 0)),
+                          int(d.get("InErrors", 0)),
+                          int(d.get("InDatagrams", 0)),
+                          int(d.get("OutDatagrams", 0)),
+                      )
           except (OSError, ValueError, IndexError):
+              pass
+          return None
+
+      def fetch_player_count():
+          """Return active player count from local mod-server API, or None."""
+          if not PLAYERS_URL:
+              return None
+          try:
+              with urllib.request.urlopen(PLAYERS_URL, timeout=1.0) as resp:
+                  data = json.load(resp).get("data") or {}
+              if isinstance(data, dict):
+                  return len(data)
+          except Exception:
               pass
           return None
 
       last_iface = None
       last_udp = None
+      last_counter_ts = None
 
       def counter_deltas():
-          global last_iface, last_udp
-          cur = iface_dropped()
-          udp = udp_errors()
-          if cur is not None:
-              if last_iface is None:
-                  last_iface = cur
-          if udp is not None:
-              if last_udp is None:
-                  last_udp = udp
+          global last_iface, last_udp, last_counter_ts
+          now = now_epoch()
+          cur = iface_stats()
+          udp = udp_stats()
+          dt = (now - last_counter_ts) if last_counter_ts is not None else 0.0
+          last_counter_ts = now
+
+          if cur is not None and last_iface is None:
+              last_iface = cur
+          if udp is not None and last_udp is None:
+              last_udp = udp
+
           rx_d = tx_d = rcv_d = in_d = None
+          rx_kbps = tx_kbps = udp_out_pps = None
           if cur is not None and last_iface is not None:
-              rx_d = cur[0] - last_iface[0]
-              tx_d = cur[1] - last_iface[1]
+              rx_d = cur[1] - last_iface[1]
+              tx_d = cur[3] - last_iface[3]
+              if dt > 0.5:
+                  rx_kbps = (cur[0] - last_iface[0]) / 1024.0 / dt
+                  tx_kbps = (cur[2] - last_iface[2]) / 1024.0 / dt
               last_iface = cur
           if udp is not None and last_udp is not None:
               rcv_d = udp[0] - last_udp[0]
               in_d = udp[1] - last_udp[1]
+              if dt > 0.5:
+                  udp_out_pps = (udp[3] - last_udp[3]) / dt
               last_udp = udp
-          return rx_d, tx_d, rcv_d, in_d
+          return rx_d, tx_d, rcv_d, in_d, rx_kbps, tx_kbps, udp_out_pps
 
       # ---- per-target ping threads -------------------------------------------
 
@@ -175,15 +211,18 @@
               return
           last_anomaly[target] = epoch
           utc, bk, local = timestamps()
-          rx_d, tx_d, rcv_d, in_d = counter_deltas()
+          rx_d, tx_d, rcv_d, in_d, rx_kbps, tx_kbps, udp_out_pps = counter_deltas()
           parts = []
           for t in TARGETS:
               parts.append("{}: {}".format(t, window_status(t)))
           line = ("ANOMALY {} (+07 {}) [{}] target={} reason={} | {}"
-                  " | {} rx_drop_delta={} tx_drop_delta={}"
+                  " | {} rx_kbps={} tx_kbps={} udp_out_pps={} rx_drop_delta={} tx_drop_delta={}"
                   " | udp RcvbufErrors_delta={} InErrors_delta={}"
                   .format(utc, bk, local, target, reason,
                           " ".join(parts), IFACE,
+                          "-" if rx_kbps is None else "{:.1f}".format(rx_kbps),
+                          "-" if tx_kbps is None else "{:.1f}".format(tx_kbps),
+                          "-" if udp_out_pps is None else "{:.1f}".format(udp_out_pps),
                           "-" if rx_d is None else rx_d,
                           "-" if tx_d is None else tx_d,
                           "-" if rcv_d is None else rcv_d,
@@ -247,13 +286,53 @@
           w.start()
 
       next_summary = now_epoch() + SUMMARY_INTERVAL
+      next_pressure = now_epoch() + PRESSURE_INTERVAL
+      last_p_iface = iface_stats()
+      last_p_udp = udp_stats()
+      last_p_ts = now_epoch()
+      high_pressure_streak = 0
+      last_pressure_anomaly = 0.0
+
       while running:
           time.sleep(1)
           epoch = now_epoch()
+          if epoch >= next_pressure:
+              next_pressure += PRESSURE_INTERVAL
+              cur_i = iface_stats()
+              cur_u = udp_stats()
+              dt = epoch - last_p_ts
+              if cur_i and last_p_iface and cur_u and last_p_udp and dt > 1.0:
+                  tx_kbps = (cur_i[2] - last_p_iface[2]) / 1024.0 / dt
+                  udp_out_pps = (cur_u[3] - last_p_udp[3]) / dt
+                  players = fetch_player_count()
+                  if players and players > 0:
+                      tx_per_p = tx_kbps / players
+                      pps_per_p = udp_out_pps / players
+                      if (tx_per_p > TX_PER_PLAYER_KBPS_THRESHOLD
+                              or pps_per_p > UDP_OUT_PER_PLAYER_PPS_THRESHOLD):
+                          high_pressure_streak += 1
+                          if high_pressure_streak >= 2 and (epoch - last_pressure_anomaly) >= 60.0:
+                              last_pressure_anomaly = epoch
+                              utc, bk, local = timestamps()
+                              log_line(
+                                  "ANOMALY {} (+07 {}) [{}] target=net-pressure "
+                                  "reason=high_tx_per_player players={} tx_kbps={:.1f} "
+                                  "tx_per_player_kbps={:.1f} udp_out_pps={:.1f} "
+                                  "udp_out_per_player_pps={:.1f}".format(
+                                      utc, bk, local, players, tx_kbps, tx_per_p,
+                                      udp_out_pps, pps_per_p))
+                      else:
+                          high_pressure_streak = 0
+                  else:
+                      high_pressure_streak = 0
+              last_p_iface = cur_i
+              last_p_udp = cur_u
+              last_p_ts = epoch
+
           if epoch >= next_summary:
               next_summary += SUMMARY_INTERVAL
               utc, bk, local = timestamps()
-              rx_d, tx_d, rcv_d, in_d = counter_deltas()
+              rx_d, tx_d, rcv_d, in_d, rx_kbps, tx_kbps, udp_out_pps = counter_deltas()
               parts = []
               for t in TARGETS:
                   tt = totals[t]
@@ -268,10 +347,13 @@
                   parts.append("{}: sent/recv {}/{} loss {:.1f}% {}".format(
                       t, sent, recv, 100.0 * (sent - recv) / sent if sent else 0.0,
                       stat))
-              log_line("SUMMARY {} (+07 {}) [{}] {} | {} rx_drop_delta={} "
-                       "tx_drop_delta={} | udp RcvbufErrors_delta={} "
-                       "InErrors_delta={}".format(
+              log_line("SUMMARY {} (+07 {}) [{}] {} | {} rx_kbps={} tx_kbps={} "
+                       "udp_out_pps={} rx_drop_delta={} tx_drop_delta={} "
+                       "| udp RcvbufErrors_delta={} InErrors_delta={}".format(
                            utc, bk, local, " | ".join(parts), IFACE,
+                           "-" if rx_kbps is None else "{:.1f}".format(rx_kbps),
+                           "-" if tx_kbps is None else "{:.1f}".format(tx_kbps),
+                           "-" if udp_out_pps is None else "{:.1f}".format(udp_out_pps),
                            "-" if rx_d is None else rx_d,
                            "-" if tx_d is None else tx_d,
                            "-" if rcv_d is None else rcv_d,
@@ -298,7 +380,22 @@ in {
     interface = lib.mkOption {
       type = lib.types.str;
       default = "enp11s0";
-      description = "WAN interface whose rx/tx dropped counters are reported.";
+      description = "WAN interface whose rx/tx rates and dropped counters are reported.";
+    };
+    playersUrl = lib.mkOption {
+      type = lib.types.str;
+      default = "http://127.0.0.1:5001/players";
+      description = "Local mod-server players endpoint used to compute per-player TX rate.";
+    };
+    txPerPlayerKbpsThreshold = lib.mkOption {
+      type = lib.types.int;
+      default = 120;
+      description = "Alert threshold for sustained outbound KB/s per online player.";
+    };
+    udpOutPerPlayerPpsThreshold = lib.mkOption {
+      type = lib.types.int;
+      default = 150;
+      description = "Alert threshold for sustained outbound UDP packets/s per online player.";
     };
   };
 

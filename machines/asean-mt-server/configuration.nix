@@ -16,6 +16,8 @@
     ./beamcomp-discord.nix
     # Read-only GameThread freeze probe for the Motor Town dedicated server.
     ../../nix/motortown-hang-probe.nix
+    # Read-only mass-disconnect & replication-saturation correlator.
+    ../../nix/motortown-disconnect-probe.nix
     # Read-only continuous WAN connectivity probe (3-hop ping monitor).
     ../../nix/wan-probe.nix
     # nginx built from the 1.30.7 tarball — see the module for why.
@@ -35,6 +37,11 @@
   # state to /var/log/motortown-hang-probe.log when /status/general times out
   # (curl exit 28). Never signals or restarts anything.
   services.motortown-hang-probe.enable = true;
+
+  # Report-only correlator: watches motortown.log for >= 2 player disconnects
+  # within 15 s and snapshots live NIC/UDP rates, player clustering, active
+  # Valve SDR relay pings, TickProfiler, and wan-probe status.
+  services.motortown-disconnect-probe.enable = true;
 
   # Report-only probe: pings the local router, Cloudflare BKK and the Valve SG
   # SDR relay every second and logs loss/RTT anomalies to /var/log/wan-probe.log
