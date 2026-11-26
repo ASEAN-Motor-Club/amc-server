@@ -283,6 +283,24 @@ in {
   system.stateVersion = "23.11";
   nix.settings.experimental-features = ["nix-command" "flakes"];
 
+  # ── yt-dlp SOCKS5 tunnel ───────────────────────────────────────────
+  # YouTube blocks amc-peripheral's Vultr IP. This auto-restarting SSH
+  # dynamic forward exposes a SOCKS5 proxy on loopback:1081 whose traffic
+  # exits from asean-mt-server. Only yt-dlp uses it (via settings.YTDL_PROXY):
+  # a process-wide HTTPS_PROXY breaks httpx/OpenAI, which has no socksio.
+  systemd.services.ytdlp-socks5 = {
+    description = "SOCKS5 proxy to asean-mt-server for yt-dlp";
+    wantedBy = ["multi-user.target"];
+    after = ["network-online.target"];
+    wants = ["network-online.target"];
+    serviceConfig = {
+      Type = "simple";
+      Restart = "always";
+      RestartSec = "5";
+      ExecStart = "${pkgs.openssh}/bin/ssh -F /root/.ssh/config -N -D 127.0.0.1:1081 -o BatchMode=yes -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o TCPKeepAlive=yes root@asean-mt-server";
+    };
+  };
+
   # ── Automatic garbage collection ───────────────────────────────────
   # The peripheral host deploys on every push to master, accumulating NixOS
   # generations that previously filled the 52G root disk (98%), which crashed
