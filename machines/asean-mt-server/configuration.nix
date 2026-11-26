@@ -282,6 +282,43 @@
   security.acme.defaults.email = "contact@fmnxl.xyz";
   security.acme.acceptTerms = true;
 
+  # ── SMT-clean CPU core isolation for Motor Town GameThread ──────────
+  # Ryzen 5 9600X topology (lscpu -e):
+  #   Physical cores 0-3 = logical CPUs 0,1,2,3 + SMT siblings 6,7,8,9
+  #   Physical cores 4-5 = logical CPUs 4,5     + SMT siblings 10,11
+  #
+  # motortown-server pins itself to CPUAffinity="0 1 2 3" (physical cores 0-3).
+  # Previously zomboid-server used 4-11 and unpinned services (amc-backend,
+  # postgres, nginx, qemu motortown-win, SSH) used 0-11, landing directly on
+  # cores 0-3 and their SMT siblings 6-9 and stealing Zen 5 execution units /
+  # L1/L2 cache from GameThread.
+  #
+  # Keep physical cores 0-3 (and their idle siblings 6-9) exclusive to
+  # motortown-server by confining PID 1 defaults, slices, and non-MT services
+  # to physical cores 4-5 (logical CPUs 4, 5, 10, 11).
+  systemd.extraConfig = ''
+    CPUAffinity=4 5 10 11
+  '';
+
+  systemd.slices.machine.sliceConfig = {
+    AllowedCPUs = "4 5 10 11";
+  };
+
+  systemd.slices.user.sliceConfig = {
+    AllowedCPUs = "4 5 10 11";
+  };
+
+  # zomboid-server and amc-backend both have X-RestartIfChanged=false, so
+  # updating their affinity/cpuset does not restart running instances.
+  systemd.services.zomboid-server.serviceConfig = {
+    CPUAffinity = lib.mkForce "4 5 10 11";
+    AllowedCPUs = "4 5 10 11";
+  };
+
+  systemd.services.amc-backend.serviceConfig = {
+    AllowedCPUs = "4 5 10 11";
+  };
+
   # Ensure workspace directory exists
   systemd.tmpfiles.rules = [
     "d /var/lib/mod-releases 0775 steam modders -"
