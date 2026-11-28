@@ -580,17 +580,17 @@
     # deploy-mod
     # ---------------------------------------------------------------------------
     # One-command mod deployment cycle:
-    #   1. Auto-increment RC version (or use --version)
+    #   1. Auto-increment stable SemVer patch version (or use --version)
     #   2. Build C++ if changed since last tag (skip with --skip-build)
     #   3. Package the mod
     #   4. Upload to amc-peripheral
     #   5. Verify upload via HTTP HEAD
-    #   6. Update modVersion in flake.nix
+    #   6. Update modVersion in mod-versions.nix
     #   7. Deploy to target server
     # ---------------------------------------------------------------------------
     deploy-mod = ''
       # @arg --server!     Target server: 'test' (amc-peripheral) or 'main' (asean-mt-server)
-      # @flag --version    Override version (default: auto-increment from last tag)
+      # @option --version  Override version (default: next stable patch from SERVER_VERSION / last tag)
       # @flag --skip-build Skip C++ build
       # @flag --skip-deploy Stop after upload (don't update mod-versions.nix or deploy)
 
@@ -606,16 +606,24 @@
         *) echo "Unknown server: $argc_server"; exit 1 ;;
       esac
 
-      # Determine version
+      # Determine version (plain SemVer, formatted as server-vX.Y.Z for mod-versions.nix)
       cd MTDediMod
       if [[ -n "$argc_version" ]]; then
-        NEW_VERSION="$argc_version"
+        RAW_VERSION="''${argc_version#server/}"
+        RAW_VERSION="''${RAW_VERSION#server-}"
+        RAW_VERSION="''${RAW_VERSION#v}"
+        NEW_VERSION="server-v''${RAW_VERSION}"
       else
-        LAST_TAG=$(git tag -l 'server/*' --sort=-v:refname | head -1)
-        # Increment RC: server/v0.40.1-rc4 → server/v0.40.1-rc5
-        RC_NUM=$(echo "$LAST_TAG" | sed 's/.*rc\([0-9]*\).*/\1/')
-        NEW_VERSION=$(echo "$LAST_TAG" | sed "s/rc''${RC_NUM}/rc$((RC_NUM + 1))/")
-        echo "Auto-incrementing: $LAST_TAG → $NEW_VERSION"
+        if [[ -f SERVER_VERSION ]]; then
+          BASE_VER="$(tr -d '\r\n' < SERVER_VERSION)"
+        else
+          LAST_TAG=$(git tag -l 'server/v*' --sort=-v:refname | head -1)
+          BASE_VER="$(echo "$LAST_TAG" | sed -E 's|^server/v([0-9]+\.[0-9]+\.[0-9]+).*|\1|')"
+        fi
+        IFS='.' read -r MAJOR MINOR PATCH <<< "$BASE_VER"
+        NEXT_VER="''${MAJOR}.''${MINOR}.$((PATCH + 1))"
+        NEW_VERSION="server-v''${NEXT_VER}"
+        echo "Auto-incrementing patch: ''${BASE_VER} → ''${NEW_VERSION}"
       fi
 
       # Build C++ if needed
